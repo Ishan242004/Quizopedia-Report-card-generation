@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+  :root {
+    --bg-base: #07070b;
+    --panel: #0f0f16;
+
+    /* Your brand colors */
+    --accent-primary: #FD1843;
+    --accent-secondary: #FF9FAF;
+
+    --accent-primary-rgb: 253, 24, 67;
+    --accent-secondary-rgb: 255, 159, 175;
+
+    --border-soft: rgba(255, 255, 255, 0.08);
+  }
+
+  * {
+    font-family: 'Inter', system-ui, sans-serif;
+    box-sizing: border-box;
+  }
+
+  h1,
+  h2,
+  .brand-font {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  html,
+  body {
+    background: var(--bg-base);
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    color: #fff;
+  }
+
+  ::selection {
+    background: rgba(var(--accent-primary-rgb), 0.35);
+    color: #fff;
+  }
+
+  /* =========================================
+     AMBIENT BACKGROUND BLOBS
+     ========================================= */
+
+  .blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.45;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .blob-1 {
+    background: var(--accent-primary);
+    animation: drift-a 16s ease-in-out infinite;
+  }
+
+  .blob-2 {
+    background: var(--accent-secondary);
+    animation: drift-b 20s ease-in-out infinite;
+  }
+
+  .blob-3 {
+    background: var(--accent-primary);
+    animation: drift-c 14s ease-in-out infinite;
+  }
+
+  @keyframes drift-a {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+      transform: translate(40px, -30px) scale(1.08);
+    }
+  }
+
+  @keyframes drift-b {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+      transform: translate(-50px, 40px) scale(1.05);
+    }
+  }
+
+  @keyframes drift-c {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+      transform: translate(30px, 30px) scale(0.95);
+    }
+  }
+
+  /* =========================================
+     GRAIN / NOISE
+     ========================================= */
+
+  .noise-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* =========================================
+     GLASS CARD
+     ========================================= */
+
+  .glass-card {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.02)
+    );
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+
+    border: 1px solid var(--border-soft);
+
+    box-shadow:
+      0 30px 80px -20px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  }
+
+  /* =========================================
+     INPUT
+     ========================================= */
+
+  .input-shell {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease,
+      background 0.25s ease;
+  }
+
+  .input-shell:focus-within {
+    border-color: rgba(var(--accent-primary-rgb), 0.75);
+
+    box-shadow:
+      0 0 0 4px rgba(var(--accent-primary-rgb), 0.15),
+      0 0 25px rgba(var(--accent-primary-rgb), 0.08);
+
+    background: rgba(255, 255, 255, 0.045);
+  }
+
+  .input-shell.input-error {
+    border-color: rgba(248, 113, 113, 0.7);
+
+    box-shadow:
+      0 0 0 4px rgba(248, 113, 113, 0.12);
+  }
+
+  .input-shell.input-success {
+    border-color: rgba(52, 211, 153, 0.6);
+
+    box-shadow:
+      0 0 0 4px rgba(52, 211, 153, 0.12);
+  }
+
+  input::placeholder {
+    color: rgba(255, 255, 255, 0.32);
+  }
+
+  input:-webkit-autofill {
+    -webkit-text-fill-color: #fff;
+
+    -webkit-box-shadow:
+      0 0 0 1000px rgba(20, 20, 28, 1) inset;
+
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  /* =========================================
+     FIELD ERROR
+     ========================================= */
+
+  .field-error-msg {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+
+    transition:
+      max-height 0.25s ease,
+      opacity 0.2s ease,
+      margin 0.25s ease;
+  }
+
+  .field-error-msg.show {
+    max-height: 40px;
+    opacity: 1;
+    margin-top: 6px;
+  }
+
+  /* =========================================
+     CUSTOM CHECKBOX
+     ========================================= */
+
+  .chk {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 6px;
+
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.03);
+
+    display: inline-grid;
+    place-content: center;
+
+    cursor: pointer;
+    flex-shrink: 0;
+
+    transition: all 0.2s ease;
+  }
+
+  .chk::before {
+    content: "";
+
+    width: 11px;
+    height: 11px;
+
+    transform: scale(0);
+    transition: transform 0.15s ease;
+
+    box-shadow: inset 1em 1em #fff;
+
+    clip-path: polygon(
+      14% 44%,
+      0 65%,
+      50% 100%,
+      100% 16%,
+      80% 0%,
+      45% 68%
+    );
+  }
+
+  .chk:checked {
+    background: linear-gradient(
+      135deg,
+      var(--accent-primary),
+      var(--accent-secondary)
+    );
+
+    border-color: transparent;
+
+    box-shadow:
+      0 5px 15px rgba(var(--accent-primary-rgb), 0.35);
+  }
+
+  .chk:checked::before {
+    transform: scale(1);
+  }
+
+  .chk:focus-visible {
+    outline: 2px solid rgba(var(--accent-primary-rgb), 0.7);
+    outline-offset: 2px;
+  }
+
+  /* =========================================
+     PASSWORD STRENGTH
+     ========================================= */
+
+  .strength-seg {
+    height: 4px;
+    border-radius: 999px;
+    flex: 1;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    transition: background-color 0.3s ease;
+  }
+
+  /* =========================================
+     CTA BUTTON
+     ========================================= */
+
+  .cta-btn {
+    position: relative;
+
+    background: linear-gradient(
+      135deg,
+      #FD1843 0%,
+      #ff3d63 50%,
+      #FF9FAF 100%
+    );
+
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.25s ease,
+      filter 0.2s ease;
+
+    box-shadow:
+      0 10px 30px -8px rgba(var(--accent-primary-rgb), 0.55);
+  }
+
+  .cta-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+
+    box-shadow:
+      0 16px 40px -10px rgba(var(--accent-primary-rgb), 0.75),
+      0 0 30px -4px rgba(var(--accent-secondary-rgb), 0.45);
+  }
+
+  .cta-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.99);
+  }
+
+  .cta-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
+    box-shadow: none;
+  }
+
+  /* Button shine */
+
+  .cta-btn .shine {
+    position: absolute;
+    inset: 0;
+
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .cta-btn .shine::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -60%;
+
+    width: 40%;
+    height: 100%;
+
+    background: linear-gradient(
+      120deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+
+    transform: skewX(-20deg);
+
+    transition: left 0.6s ease;
+  }
+
+  .cta-btn:hover:not(:disabled) .shine::after {
+    left: 130%;
+  }
+
+  /* =========================================
+     BRAND ICON
+     ========================================= */
+
+  .brand-icon {
+    background: linear-gradient(
+      135deg,
+      var(--accent-primary),
+      var(--accent-secondary)
+    );
+
+    box-shadow:
+      0 8px 24px -6px rgba(var(--accent-primary-rgb), 0.6);
+  }
+
+  /* =========================================
+     FEATURE DOT
+     ========================================= */
+
+  .feature-dot {
+    background: linear-gradient(
+      135deg,
+      var(--accent-primary),
+      var(--accent-secondary)
+    );
+  }
+
+  /* =========================================
+     LINKS
+     ========================================= */
+
+  .link-accent {
+    background-image: linear-gradient(
+      var(--accent-primary),
+      var(--accent-primary)
+    );
+
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    background-position: 0 100%;
+
+    transition: background-size 0.25s ease;
+  }
+
+  .link-accent:hover {
+    background-size: 100% 1px;
+  }
+
+  /* =========================================
+     SPINNER
+     ========================================= */
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    border: 2.5px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* =========================================
+     FADE UP
+     ========================================= */
+
+  .fade-up {
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* =========================================
+     SERVER ERRORS
+     ========================================= */
+
+  .server-errors:empty {
+    display: none;
+  }
+
+  /* =========================================
+     REDUCED MOTION
+     ========================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob-1,
+    .blob-2,
+    .blob-3,
+    .fade-up {
+      animation: none !important;
+    }
+
+    .cta-btn,
+    .input-shell,
+    .chk {
+      transition: none !important;
+    }
+  }
+
+  /* =========================================
+     SCROLLBAR
+     ========================================= */
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+</style>
+
+</head>
+
+<body class="relative min-h-screen w-full overflow-x-hidden text-white">
+
+  <!-- Background layer -->
+  <div class="fixed inset-0 -z-10 overflow-hidden"
+    style="background: radial-gradient(120% 120% at 15% 10%, #14101f 0%, #07070b 55%), #07070b;">
+    <div class="blob blob-1 bg-violet-600" style="width:520px;height:520px;top:-140px;left:-120px;"></div>
+    <div class="blob blob-2 bg-blue-600" style="width:480px;height:480px;bottom:-160px;right:-100px;"></div>
+    <div class="blob blob-3 bg-fuchsia-500" style="width:360px;height:360px;top:40%;left:55%;opacity:0.28;"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <div class="relative z-10 min-h-screen w-full flex">
+
+    <!-- Left branding panel (desktop only) -->
+    <aside class="hidden lg:flex lg:w-1/2 flex-col justify-between px-16 py-14 relative">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="brand-icon w-10 h-10 rounded-xl flex items-center justify-center">
+            <i data-lucide="hexagon" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="brand-font text-lg font-semibold tracking-tight">Nexora</span>
+        </div>
+      </div>
+
+      <div class="max-w-md fade-up">
+        <h1 class="brand-font text-5xl font-bold leading-[1.08] tracking-tight">
+          Build.<br />Learn.<br />Grow.
+        </h1>
+        <p class="mt-6 text-white/55 text-base leading-relaxed">
+          Join a workspace built for people who ship. Track progress, collaborate in real time, and turn ideas into
+          finished work.
+        </p>
+
+        <div class="mt-10 space-y-5">
+          <div class="flex items-start gap-3">
+            <span class="feature-dot w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+            </span>
+            <div>
+              <p class="text-sm font-medium text-white/90">Fast by default</p>
+              <p class="text-sm text-white/45">No setup ceremony. Start working in seconds.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="feature-dot w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
+            </span>
+            <div>
+              <p class="text-sm font-medium text-white/90">Private by design</p>
+              <p class="text-sm text-white/45">Your data stays encrypted, always.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="feature-dot w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="users" class="w-4 h-4 text-white"></i>
+            </span>
+            <div>
+              <p class="text-sm font-medium text-white/90">Built for teams</p>
+              <p class="text-sm text-white/45">Invite anyone, work together instantly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-xs text-white/30">© 2026 Nexora, Inc. All rights reserved.</p>
+    </aside>
+
+    <!-- Right form panel -->
+    <main class="flex-1 flex items-center justify-center px-4 py-10 sm:px-6 lg:px-12">
+      <div class="w-full max-w-md fade-up">
+
+        <div class="glass-card rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
+
+          {% if student %}
+          <!-- Success screen -->
+          <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-6 animate-bounce">
+              <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-400"></i>
+            </div>
+            
+            <h2 class="text-2xl sm:text-[28px] font-bold tracking-tight text-white mb-2">Registration Successful!</h2>
+            <p class="text-white/60 text-sm mb-6">Welcome aboard. Your student account has been created.</p>
+            
+            <div class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-left space-y-4 mb-8">
+              <div class="border-b border-white/5 pb-3">
+                <span class="text-xs text-white/40 block mb-1">Username</span>
+                <span class="text-sm font-semibold text-white/90">{{ student.username }}</span>
+              </div>
+              <div class="border-b border-white/5 pb-3">
+                <span class="text-xs text-white/40 block mb-1">Email Address</span>
+                <span class="text-sm font-semibold text-white/90">{{ student.email }}</span>
+              </div>
+              <div>
+                <span class="text-xs text-white/40 block mb-1">Phone Number</span>
+                <span class="text-sm font-semibold text-white/90">{{ student.phone }}</span>
+              </div>
+            </div>
+
+            <a href="{% url 'login' %}" class="cta-btn w-full h-12 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 relative mb-4">
+              <span class="shine"></span>
+              <span class="flex items-center gap-2 relative z-10">
+                <span>Login to Account</span>
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+              </span>
+            </a>
+
+            <a href="{% url 'register' %}" class="w-full h-12 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition duration-200 font-semibold text-sm text-white/80 flex items-center justify-center gap-2 relative">
+              <span class="flex items-center gap-2 relative z-10">
+                <span>Register Another Student</span>
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+              </span>
+            </a>
+          </div>
+          {% else %}
+          <!-- Registration form -->
+          <div class="flex flex-col items-center text-center mb-8">
+            <div class="brand-icon w-12 h-12 rounded-2xl flex items-center justify-center mb-5 lg:hidden">
+              <i data-lucide="hexagon" class="w-6 h-6 text-white"></i>
+            </div>
+            <h2 class="text-2xl sm:text-[28px] font-bold tracking-tight">Create Your Account</h2>
+            <p class="text-white/45 text-sm mt-2">Join us today and get started.</p>
+          </div>
+
+          <!-- Server-side / Django form errors -->
+          <div class="server-errors mb-5 space-y-2">
+            {% if errors %}
+            {% for error in errors %}
+            <div
+              class="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+              <span>{{ error }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+          </div>
+
+          <form method="POST" id="registerForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="mb-5">
+              <label for="username" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Username</label>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="usernameShell">
+                <i data-lucide="user" class="w-[18px] h-[18px] text-white/40"></i>
+                <input type="text" id="username" name="username" placeholder="Enter your username"
+                  autocomplete="username"
+                  value="{{ request.POST.username|default:'' }}"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+              </div>
+              <p class="field-error-msg text-xs text-red-400 ml-1" id="usernameError">Username must be at least 3
+                characters.</p>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-5">
+              <label for="email" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Email address</label>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="emailShell">
+                <i data-lucide="mail" class="w-[18px] h-[18px] text-white/40"></i>
+                <input type="email" id="email" name="email" placeholder="Enter your email address" autocomplete="email"
+                  value="{{ request.POST.email|default:'' }}"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+              </div>
+              <p class="field-error-msg text-xs text-red-400 ml-1" id="emailError">Enter a valid email address.</p>
+            </div>
+
+            <!-- Phone -->
+            <div class="mb-5">
+              <label for="phone" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Phone number</label>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="phoneShell">
+                <i data-lucide="phone" class="w-[18px] h-[18px] text-white/40"></i>
+                <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" autocomplete="tel"
+                  value="{{ request.POST.phone|default:'' }}"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+              </div>
+              <p class="field-error-msg text-xs text-red-400 ml-1" id="phoneError">Enter a valid phone number.</p>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-2">
+              <label for="password" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Password</label>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="passwordShell">
+                <i data-lucide="lock" class="w-[18px] h-[18px] text-white/40"></i>
+                <input type="password" id="password" name="password" placeholder="Create a strong password"
+                  autocomplete="new-password"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+                <button type="button" id="togglePassword" aria-label="Show password"
+                  class="text-white/40 hover:text-white/80 transition-colors flex-shrink-0">
+                  <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
+                </button>
+              </div>
+              <!-- Strength meter -->
+              <div class="flex gap-1.5 mt-2.5 mb-1 px-1" id="strengthBars">
+                <div class="strength-seg" data-seg="0"></div>
+                <div class="strength-seg" data-seg="1"></div>
+                <div class="strength-seg" data-seg="2"></div>
+                <div class="strength-seg" data-seg="3"></div>
+              </div>
+              <p class="text-xs text-white/35 ml-1" id="strengthLabel">Use 8+ characters with a mix of letters, numbers
+                &amp; symbols.</p>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-6 mt-5">
+              <label for="confirm_password" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Confirm
+                password</label>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="confirmShell">
+                <i data-lucide="lock-keyhole" class="w-[18px] h-[18px] text-white/40" id="confirmIcon"></i>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password"
+                  autocomplete="new-password"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+                <button type="button" id="toggleConfirm" aria-label="Show password"
+                  class="text-white/40 hover:text-white/80 transition-colors flex-shrink-0">
+                  <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
+                </button>
+              </div>
+              <p class="field-error-msg text-xs ml-1" id="confirmError">Passwords do not match.</p>
+            </div>
+
+            <!-- Terms -->
+            <div class="mb-7">
+              <label class="flex items-start gap-3 cursor-pointer select-none">
+                <input type="checkbox" name="terms" id="terms" class="chk mt-0.5" {% if request.POST.terms %}checked{% endif %}>
+                <span class="text-sm text-white/55 leading-relaxed">
+                  I agree to the
+                  <a href="#" class="link-accent text-white/80 font-medium">Terms &amp; Conditions</a>
+                  and
+                  <a href="#" class="link-accent text-white/80 font-medium">Privacy Policy</a>
+                </span>
+              </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submitBtn" disabled
+              class="cta-btn w-full h-12 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 relative">
+              <span class="shine"></span>
+              <span id="btnContent" class="flex items-center gap-2 relative z-10">
+                <span id="btnText">Create Account</span>
+                <i data-lucide="arrow-right" class="w-4 h-4" id="btnArrow"></i>
+              </span>
+            </button>
+
+          </form>
+
+          <p class="text-center text-sm text-white/45 mt-7">
+            Already have an account?
+            <a href="{% url 'login' %}" class="link-accent text-white font-medium">Sign In</a>
+          </p>
+          {% endif %}
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const form = document.getElementById('registerForm');
+    if (form) {
+      const usernameInput = document.getElementById('username');
+      const emailInput = document.getElementById('email');
+      const phoneInput = document.getElementById('phone');
+      const passwordInput = document.getElementById('password');
+      const confirmInput = document.getElementById('confirm_password');
+      const termsInput = document.getElementById('terms');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnArrow = document.getElementById('btnArrow');
+      const btnContent = document.getElementById('btnContent');
+
+      function setShellState(shellId, state) {
+        const el = document.getElementById(shellId);
+        el.classList.remove('input-error', 'input-success');
+        if (state === 'error') el.classList.add('input-error');
+        if (state === 'success') el.classList.add('input-success');
+      }
+      function showError(id, show) {
+        document.getElementById(id).classList.toggle('show', show);
+      }
+
+      // Show / hide password toggles
+      function wireToggle(btnId, inputId) {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        btn.addEventListener('click', () => {
+          const isHidden = input.type === 'password';
+          input.type = isHidden ? 'text' : 'password';
+          btn.innerHTML = isHidden
+            ? '<i data-lucide="eye-off" class="w-[18px] h-[18px]"></i>'
+            : '<i data-lucide="eye" class="w-[18px] h-[18px]"></i>';
+          btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+          lucide.createIcons();
+        });
+      }
+      wireToggle('togglePassword', 'password');
+      wireToggle('toggleConfirm', 'confirm_password');
+
+      // Username validation
+      function validateUsername() {
+        const val = usernameInput.value.trim();
+        const valid = val.length >= 3;
+        setShellState('usernameShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('usernameError', val.length > 0 && !valid);
+        return valid;
+      }
+      usernameInput.addEventListener('input', validateUsername);
+
+      // Email validation
+      function validateEmail() {
+        const val = emailInput.value.trim();
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const valid = re.test(val);
+        setShellState('emailShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('emailError', val.length > 0 && !valid);
+        return valid;
+      }
+      emailInput.addEventListener('input', validateEmail);
+
+      // Phone validation
+      function validatePhone() {
+        const val = phoneInput.value.trim();
+        const re = /^[\d\s\-\+\(\)]{7,20}$/;
+        const valid = re.test(val);
+        setShellState('phoneShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('phoneError', val.length > 0 && !valid);
+        return valid;
+      }
+      phoneInput.addEventListener('input', validatePhone);
+
+      // Password strength
+      function getStrength(val) {
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/\d/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+        return score;
+      }
+      const segColors = ['#f87171', '#fb923c', '#facc15', '#34d399'];
+      const labels = ['Very weak', 'Weak', 'Good', 'Strong'];
+
+      function validatePassword() {
+        const val = passwordInput.value;
+        const score = getStrength(val);
+        const segs = document.querySelectorAll('.strength-seg');
+        segs.forEach((seg, i) => {
+          seg.style.background = i < score ? segColors[Math.max(score - 1, 0)] : 'rgba(255,255,255,0.08)';
+        });
+        const label = document.getElementById('strengthLabel');
+        if (val.length === 0) {
+          label.textContent = 'Use 8+ characters with a mix of letters, numbers & symbols.';
+          label.style.color = '';
+          setShellState('passwordShell', 'default');
+        } else {
+          label.textContent = labels[Math.max(score - 1, 0)] + ' password';
+          label.style.color = segColors[Math.max(score - 1, 0)];
+          setShellState('passwordShell', score >= 2 ? 'success' : 'error');
+        }
+        validateConfirm();
+        return val.length >= 8 && score >= 2;
+      }
+      passwordInput.addEventListener('input', validatePassword);
+
+      // Confirm password
+      function validateConfirm() {
+        const val = confirmInput.value;
+        const match = val.length > 0 && val === passwordInput.value;
+        const mismatch = val.length > 0 && val !== passwordInput.value;
+        setShellState('confirmShell', val.length === 0 ? 'default' : (match ? 'success' : 'error'));
+        showError('confirmError', mismatch);
+        const icon = document.getElementById('confirmIcon');
+        icon.setAttribute('data-lucide', match ? 'check-circle-2' : 'lock-keyhole');
+        icon.className = 'w-[18px] h-[18px] flex-shrink-0 ' + (match ? 'text-emerald-400' : 'text-white/40');
+        lucide.createIcons();
+        return match;
+      }
+      confirmInput.addEventListener('input', validateConfirm);
+
+      // Enable / disable submit button
+      function refreshSubmitState() {
+        submitBtn.disabled = !termsInput.checked;
+      }
+      termsInput.addEventListener('change', refreshSubmitState);
+      refreshSubmitState();
+
+      // Submit handling
+      form.addEventListener('submit', function (e) {
+        const validUsername = validateUsername();
+        const validEmail = validateEmail();
+        const validPhone = validatePhone();
+        const validPassword = validatePassword();
+        const validConfirm = validateConfirm();
+        const termsOk = termsInput.checked;
+
+        if (!validUsername || !validEmail || !validPhone || !validPassword || !validConfirm || !termsOk) {
+          e.preventDefault();
+          return;
+        }
+
+        submitBtn.disabled = true;
+        btnContent.innerHTML = '<span class="spinner"></span><span>Creating Account...</span>';
+      });
+    }
+  </script>
+</body>
+
+</html>

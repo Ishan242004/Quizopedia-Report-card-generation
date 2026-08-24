@@ -1,0 +1,69 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Quiz Attempts - Quizopedia Admin{% endblock %}
+
+{% block active_attempts %}active{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <h1 class="text-3xl font-bold tracking-tight mb-1">Quiz Attempts Log</h1>
+  <p class="text-white/60 text-sm">Review student performance logs and delete attempts if necessary.</p>
+</div>
+
+<!-- Success Message -->
+{% if success %}
+<div class="mb-6 flex items-start gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+  <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+  <span>{{ success }}</span>
+</div>
+{% endif %}
+
+<!-- Attempts Table -->
+<div class="glass-card rounded-3xl overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm border-collapse">
+      <thead>
+        <tr class="border-b border-white/10 bg-white/5 text-white/60 font-semibold">
+          <th class="px-6 py-4">Student</th>
+          <th class="px-6 py-4">Quiz Title</th>
+          <th class="px-6 py-4">Score</th>
+          <th class="px-6 py-4">Completed On</th>
+          <th class="px-6 py-4 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5 text-white/90">
+        {% if attempts %}
+          {% for attempt in attempts %}
+          <tr class="hover:bg-white/2 transition">
+            <td class="px-6 py-4">
+              <span class="font-bold block text-white/95">{{ attempt.student.user.username }}</span>
+              <span class="text-xs text-white/45 block mt-0.5">{{ attempt.student.user.email }}</span>
+            </td>
+            <td class="px-6 py-4 font-medium text-white/80">{{ attempt.quiz.title }}</td>
+            <td class="px-6 py-4 font-bold text-emerald-400">
+              {{ attempt.score }} <span class="text-[10px] text-white/40">/ {{ attempt.quiz.total_marks }}</span>
+            </td>
+            <td class="px-6 py-4 text-white/55">{{ attempt.completed_at|date:"F d, Y H:i" }}</td>
+            <td class="px-6 py-4 text-right">
+              <!-- Delete form -->
+              <form method="POST" onsubmit="return confirm('Are you sure you want to delete this quiz attempt log? All associated report cards will also be deleted.');" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="delete_attempt" value="1">
+                <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
+                <button type="submit" class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-rose-400 transition" title="Delete Attempt">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" class="px-6 py-10 text-center text-white/40">No student quiz attempts have been recorded yet.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

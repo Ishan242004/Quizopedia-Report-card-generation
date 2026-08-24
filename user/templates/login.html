@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In to Nexora</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    :root {
+      --bg-base: #07070b;
+      --panel: #0f0f16;
+      
+      /* Primary brand colors matching register.html */
+      --accent-primary: #FD1843;
+      --accent-secondary: #FF9FAF;
+
+      --accent-primary-rgb: 253, 24, 67;
+      --accent-secondary-rgb: 255, 159, 175;
+
+      --border-soft: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      font-family: 'Inter', system-ui, sans-serif;
+      box-sizing: border-box;
+    }
+
+    h1,
+    h2,
+    .brand-font {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+
+    html,
+    body {
+      background: var(--bg-base);
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      color: #fff;
+    }
+
+    ::selection {
+      background: rgba(var(--accent-primary-rgb), 0.35);
+      color: #fff;
+    }
+
+    /* Ambient background blobs */
+    .blob {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(90px);
+      opacity: 0.45;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      background: var(--accent-primary);
+      animation: drift-a 16s ease-in-out infinite;
+    }
+
+    .blob-2 {
+      background: var(--accent-secondary);
+      animation: drift-b 20s ease-in-out infinite;
+    }
+
+    .blob-3 {
+      background: var(--accent-primary);
+      animation: drift-c 14s ease-in-out infinite;
+    }
+
+    @keyframes drift-a {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, -30px) scale(1.08); }
+    }
+
+    @keyframes drift-b {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-50px, 40px) scale(1.05); }
+    }
+
+    @keyframes drift-c {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 30px) scale(0.95); }
+    }
+
+    .noise-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .glass-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+    }
+
+    .input-shell {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      transition: border-color .25s ease, box-shadow .25s ease, background .25s ease;
+    }
+
+    .input-shell:focus-within {
+      border-color: rgba(var(--accent-primary-rgb), 0.75);
+      box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb), 0.15), 0 0 25px rgba(var(--accent-primary-rgb), 0.08);
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .input-shell.input-error {
+      border-color: rgba(248, 113, 113, 0.7);
+      box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.12);
+    }
+
+    .input-shell.input-success {
+      border-color: rgba(52, 211, 153, 0.6);
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.32);
+    }
+
+    input:-webkit-autofill {
+      -webkit-text-fill-color: #fff;
+      -webkit-box-shadow: 0 0 0px 1000px rgba(20, 20, 28, 1) inset;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+
+    .field-error-msg {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height .25s ease, opacity .2s ease, margin .25s ease;
+    }
+
+    .field-error-msg.show {
+      max-height: 40px;
+      opacity: 1;
+      margin-top: 6px;
+    }
+
+    .chk {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.03);
+      display: inline-grid;
+      place-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all .2s ease;
+    }
+
+    .chk::before {
+      content: "";
+      width: 11px;
+      height: 11px;
+      transform: scale(0);
+      transition: transform .15s ease;
+      box-shadow: inset 1em 1em #fff;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 45% 68%);
+    }
+
+    .chk:checked {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-color: transparent;
+      box-shadow: 0 5px 15px rgba(var(--accent-primary-rgb), 0.35);
+    }
+
+    .chk:checked::before {
+      transform: scale(1);
+    }
+
+    .chk:focus-visible {
+      outline: 2px solid rgba(var(--accent-primary-rgb), 0.7);
+      outline-offset: 2px;
+    }
+
+    .cta-btn {
+      position: relative;
+      background: linear-gradient(135deg, #FD1843 0%, #ff3d63 50%, #FF9FAF 100%);
+      transition: transform .18s ease, box-shadow .25s ease, filter .2s ease;
+      box-shadow: 0 10px 30px -8px rgba(var(--accent-primary-rgb), 0.55);
+    }
+
+    .cta-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px -10px rgba(var(--accent-primary-rgb), 0.75), 0 0 30px -4px rgba(var(--accent-secondary-rgb), 0.45);
+    }
+
+    .cta-btn:active:not(:disabled) {
+      transform: translateY(0px) scale(0.99);
+    }
+
+    .cta-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(0.3);
+      box-shadow: none;
+    }
+
+    .cta-btn .shine {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .cta-btn .shine::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transform: skewX(-20deg);
+      transition: left .6s ease;
+    }
+
+    .cta-btn:hover:not(:disabled) .shine::after {
+      left: 130%;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      box-shadow: 0 8px 24px -6px rgba(var(--accent-primary-rgb), 0.6);
+    }
+
+    .feature-dot {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    }
+
+    .link-accent {
+      background-image: linear-gradient(var(--accent-primary), var(--accent-primary));
+      background-repeat: no-repeat;
+      background-size: 0% 1px;
+      background-position: 0 100%;
+      transition: background-size .25s ease;
+    }
+
+    .link-accent:hover {
+      background-size: 100% 1px;
+    }
+
+    .link-accent-subtle {
+      color: var(--accent-secondary);
+      transition: color 0.2s ease;
+    }
+    .link-accent-subtle:hover {
+      color: var(--accent-primary);
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .fade-up {
+      animation: fadeUp .6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .server-errors:empty {
+      display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .blob-1, .blob-2, .blob-3, .fade-up {
+        animation: none !important;
+      }
+      .cta-btn, .input-shell, .chk {
+        transition: none !important;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen w-full overflow-x-hidden text-white">
+
+  <!-- Background layer -->
+  <div class="fixed inset-0 -z-10 overflow-hidden"
+    style="background: radial-gradient(120% 120% at 15% 10%, #14101f 0%, #07070b 55%), #07070b;">
+    <div class="blob blob-1" style="width:520px;height:520px;top:-140px;left:-120px;"></div>
+    <div class="blob blob-2" style="width:480px;height:480px;bottom:-160px;right:-100px;"></div>
+    <div class="blob blob-3" style="width:360px;height:360px;top:40%;left:55%;opacity:0.28;"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <div class="relative z-10 min-h-screen w-full flex">
+
+    <!-- Left branding panel (desktop only) -->
+    <aside class="hidden lg:flex lg:w-1/2 flex-col justify-between px-16 py-14 relative">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="brand-icon w-10 h-10 rounded-xl flex items-center justify-center">
+            <i data-lucide="hexagon" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="brand-font text-lg font-semibold tracking-tight">Nexora</span>
+        </div>
+      </div>
+
+      <div class="max-w-md fade-up">
+        <h1 class="brand-font text-5xl font-bold leading-[1.08] tracking-tight">
+          Build.<br />Learn.<br />Grow.
+        </h1>
+        <p class="mt-6 text-white/55 text-base leading-relaxed">
+          Join a workspace built for people who ship. Track progress, collaborate in real time, and turn ideas into
+          finished work.
+        </p>
+      </div>
+
+      <p class="text-xs text-white/30">© 2026 Nexora, Inc. All rights reserved.</p>
+    </aside>
+
+    <!-- Right form panel -->
+    <main class="flex-1 flex items-center justify-center px-4 py-10 sm:px-6 lg:px-12">
+      <div class="w-full max-w-md fade-up">
+
+        <div class="glass-card rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
+
+          <div class="flex flex-col items-center text-center mb-8">
+            <div class="brand-icon w-12 h-12 rounded-2xl flex items-center justify-center mb-5 lg:hidden">
+              <i data-lucide="hexagon" class="w-6 h-6 text-white"></i>
+            </div>
+            <h2 class="text-2xl sm:text-[28px] font-bold tracking-tight">Sign In</h2>
+            <p class="text-white/45 text-sm mt-2">Welcome back to Nexora.</p>
+          </div>
+
+          <!-- Server-side errors -->
+          <div class="server-errors mb-5 space-y-2">
+            {% if errors %}
+            {% for error in errors %}
+            <div
+              class="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+              <span>{{ error }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+          </div>
+
+          <form method="POST" id="loginForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="mb-5">
+              <label for="username" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Username or Email</label>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="usernameShell">
+                <i data-lucide="user" class="w-[18px] h-[18px] text-white/40"></i>
+                <input type="text" id="username" name="username" placeholder="Enter your username or email"
+                  autocomplete="username"
+                  value="{{ request.POST.username|default:'' }}"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-1.5 ml-1">
+                <label for="password" class="block text-xs font-medium text-white/60">Password</label>
+                <a href="#" class="text-xs link-accent-subtle transition-colors">Forgot password?</a>
+              </div>
+              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="passwordShell">
+                <i data-lucide="lock" class="w-[18px] h-[18px] text-white/40"></i>
+                <input type="password" id="password" name="password" placeholder="Enter your password"
+                  autocomplete="current-password"
+                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
+                  required>
+                <button type="button" id="togglePassword" aria-label="Show password"
+                  class="text-white/40 hover:text-white/80 transition-colors flex-shrink-0">
+                  <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Remember me -->
+            <div class="mb-7 flex items-center justify-between">
+              <label class="flex items-center gap-3 cursor-pointer select-none">
+                <input type="checkbox" name="remember" id="remember" class="chk">
+                <span class="text-sm text-white/55">Remember me</span>
+              </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submitBtn"
+              class="cta-btn w-full h-12 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 relative">
+              <span class="shine"></span>
+              <span id="btnContent" class="flex items-center gap-2 relative z-10">
+                <span id="btnText">Sign In</span>
+                <i data-lucide="arrow-right" class="w-4 h-4" id="btnArrow"></i>
+              </span>
+            </button>
+
+          </form>
+
+          <p class="text-center text-sm text-white/45 mt-7">
+            Don't have an account?
+            <a href="{% url 'register' %}" class="link-accent text-white font-medium">Sign Up</a>
+          </p>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const form = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnContent = document.getElementById('btnContent');
+
+    function setShellState(shellId, state) {
+      const el = document.getElementById(shellId);
+      el.classList.remove('input-error', 'input-success');
+      if (state === 'error') el.classList.add('input-error');
+      if (state === 'success') el.classList.add('input-success');
+    }
+
+    // Show / hide password toggle
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    togglePasswordBtn.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      togglePasswordBtn.innerHTML = isHidden
+        ? '<i data-lucide="eye-off" class="w-[18px] h-[18px]"></i>'
+        : '<i data-lucide="eye" class="w-[18px] h-[18px]"></i>';
+      togglePasswordBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+      lucide.createIcons();
+    });
+
+    usernameInput.addEventListener('input', () => {
+      const val = usernameInput.value.trim();
+      setShellState('usernameShell', val.length > 0 ? 'success' : 'default');
+    });
+
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+      setShellState('passwordShell', val.length > 0 ? 'success' : 'default');
+    });
+
+    form.addEventListener('submit', function (e) {
+      if (!usernameInput.value.trim() || !passwordInput.value) {
+        e.preventDefault();
+        if (!usernameInput.value.trim()) setShellState('usernameShell', 'error');
+        if (!passwordInput.value) setShellState('passwordShell', 'error');
+        return;
+      }
+      submitBtn.disabled = true;
+      btnContent.innerHTML = '<span class="spinner"></span><span>Signing In...</span>';
+    });
+  </script>
+</body>
+
+</html>

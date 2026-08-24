@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Card - Nexora</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    :root {
+      --bg-base: #07070b;
+      --panel: #0f0f16;
+      --accent-primary: #FD1843;
+      --accent-secondary: #FF9FAF;
+      --accent-primary-rgb: 253, 24, 67;
+      --accent-secondary-rgb: 255, 159, 175;
+      --border-soft: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      font-family: 'Inter', system-ui, sans-serif;
+      box-sizing: border-box;
+    }
+
+    h1, h2, h3, .brand-font {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+
+    html, body {
+      background: var(--bg-base);
+      min-height: 100%;
+      margin: 0;
+      color: #fff;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(90px);
+      opacity: 0.35;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      background: var(--accent-primary);
+      width: 450px;
+      height: 450px;
+      top: -100px;
+      left: -100px;
+    }
+
+    .blob-2 {
+      background: var(--accent-secondary);
+      width: 400px;
+      height: 400px;
+      bottom: -100px;
+      right: -100px;
+    }
+
+    .noise-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .glass-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-link {
+      transition: all 0.25s ease;
+      border-bottom: 2px solid transparent;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--accent-secondary);
+      border-color: var(--accent-primary);
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen w-full overflow-x-hidden">
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="relative z-20 border-b border-white/10 bg-white/2 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="brand-icon w-8 h-8 rounded-lg flex items-center justify-center">
+          <i data-lucide="hexagon" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="brand-font text-md font-semibold tracking-tight">Nexora</span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 h-full">
+        <a href="{% url 'dashboard' %}" class="nav-link h-full flex items-center text-sm font-medium text-white/60">Dashboard</a>
+        <a href="{% url 'quiz_list' %}" class="nav-link h-full flex items-center text-sm font-medium text-white/60">Quizzes</a>
+        <a href="{% url 'result_list' %}" class="nav-link h-full flex items-center text-sm font-medium text-white/60">Results</a>
+        <a href="{% url 'report_card' %}" class="nav-link active h-full flex items-center text-sm font-medium text-white/80">Report Cards</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <span class="hidden sm:inline text-xs text-white/60">Hello, {{ request.user.username }}</span>
+        <a href="{% url 'logout' %}" class="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-xs font-semibold flex items-center gap-1.5">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          Logout
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Nav -->
+  <div class="md:hidden border-b border-white/10 bg-white/1 flex justify-around py-3 text-xs text-white/60">
+    <a href="{% url 'dashboard' %}" class="hover:text-white">Dashboard</a>
+    <a href="{% url 'quiz_list' %}" class="hover:text-white">Quizzes</a>
+    <a href="{% url 'result_list' %}" class="hover:text-white">Results</a>
+    <a href="{% url 'report_card' %}" class="text-white font-semibold">Reports</a>
+  </div>
+
+  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-2">Academic Report Card</h1>
+        <p class="text-white/60 text-sm">Access your overall grades, evaluations, and teacher remarks.</p>
+      </div>
+      <a href="{% url 'dashboard' %}" class="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-xs font-semibold flex items-center gap-1.5 self-start sm:self-center">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Report Card Displays -->
+    {% if report_cards %}
+    <div class="space-y-8">
+      {% for card in report_cards %}
+      <div class="glass-card rounded-3xl p-8 max-w-2xl mx-auto">
+        <!-- Badge and Date -->
+        <div class="flex justify-between items-center border-b border-white/10 pb-5 mb-6">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            <span class="text-xs font-bold text-white/80 uppercase tracking-widest">Report Card #{{ card.id }}</span>
+          </div>
+          <span class="text-xs text-white/40">{{ card.generated_at|date:"F d, Y" }}</span>
+        </div>
+
+        <!-- Grade Ring -->
+        <div class="flex flex-col sm:flex-row items-center gap-8 mb-8">
+          <div class="w-28 h-28 rounded-full border-4 border-rose-500/30 flex items-center justify-center bg-rose-500/10 flex-shrink-0">
+            <span class="text-4xl font-extrabold text-white tracking-tight">{{ card.grade }}</span>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold mb-1">Performance Summary</h2>
+            <p class="text-xs text-white/45">Grade assigned based on completed quizzes, assignments, and test history.</p>
+          </div>
+        </div>
+
+        <!-- Remarks Section -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+          <div class="flex items-center gap-2 text-rose-300 mb-3">
+            <i data-lucide="message-square" class="w-4 h-4"></i>
+            <span class="text-xs font-bold uppercase tracking-wider">Teacher Remarks</span>
+          </div>
+          <p class="text-sm text-white/80 leading-relaxed italic">"{{ card.remarks|default:'No remarks provided yet.' }}"</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="glass-card rounded-3xl p-12 text-center max-w-lg mx-auto">
+      <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-white/40">
+        <i data-lucide="file-text" class="w-6 h-6"></i>
+      </div>
+      <h2 class="text-lg font-bold mb-2">No Report Cards Issued</h2>
+      <p class="text-xs text-white/55 leading-relaxed mb-6">There are currently no report cards issued for your student profile. Grades are published by admin personnel.</p>
+      <a href="/admin/" target="_blank" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-xs font-semibold transition hover:opacity-90 inline-flex items-center gap-1.5 mx-auto">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i> Issue via Admin
+      </a>
+    </div>
+    {% endif %}
+  </main>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+
+</html>
