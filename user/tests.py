@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import Student, Quiz, Question, StudentAttempt, ReportCard
+from .models import Student
 
 class RegistrationFlowTests(TestCase):
     def test_register_get_request(self):
@@ -129,29 +129,6 @@ class IntegrationFlowTests(TestCase):
         
         # Create admin user
         self.admin_user = User.objects.create_superuser(username='admin_test', email='admin@example.com', password='password123')
-        
-        # Create a quiz and questions
-        self.quiz = Quiz.objects.create(title='Python Basics', description='Introduction to Python.', total_marks=100)
-        self.q1 = Question.objects.create(
-            quiz=self.quiz,
-            text='What is the output of print(2**3)?',
-            option_a='6',
-            option_b='8',
-            option_c='9',
-            option_d='5',
-            correct_option='B',
-            marks=50
-        )
-        self.q2 = Question.objects.create(
-            quiz=self.quiz,
-            text='Which data type is mutable?',
-            option_a='list',
-            option_b='tuple',
-            option_c='str',
-            option_d='int',
-            correct_option='A',
-            marks=50
-        )
 
     def test_student_login_redirection(self):
         # Post login as student
@@ -193,44 +170,6 @@ class IntegrationFlowTests(TestCase):
         response = self.client.get(reverse('dashboard'))
         # Should redirect to admin dashboard
         self.assertRedirects(response, reverse('admin_dashboard'))
-
-    def test_quiz_attempt_scoring_and_report_card(self):
-        # Login as student
-        self.client.login(username='student_test', password='password123')
-        
-        # Access take quiz page
-        response = self.client.get(reverse('take_quiz', args=[self.quiz.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'take_quiz.html')
-        
-        # Submit quiz answers: Q1 correct (B), Q2 incorrect (B)
-        response = self.client.post(reverse('submit_quiz', args=[self.quiz.id]), {
-            f'question_{self.q1.id}': 'B',
-            f'question_{self.q2.id}': 'B', # Correct is A
-        })
-        
-        # Should create StudentAttempt and ReportCard
-        self.assertEqual(StudentAttempt.objects.count(), 1)
-        self.assertEqual(ReportCard.objects.count(), 1)
-        
-        attempt = StudentAttempt.objects.first()
-        self.assertEqual(attempt.score, 50)  # Q1 got 50 marks, Q2 got 0
-        
-        card = ReportCard.objects.first()
-        self.assertEqual(card.grade, 'F')  # 50% is < 60% which is F
-        self.assertEqual(card.student, self.student)
-        self.assertEqual(card.attempt, attempt)
-        
-        # Verify redirect to result view
-        self.assertRedirects(response, reverse('quiz_result', args=[attempt.id]))
-        
-        # Access result details
-        result_response = self.client.get(reverse('quiz_result', args=[attempt.id]))
-        self.assertEqual(result_response.status_code, 200)
-        self.assertTemplateUsed(result_response, 'quiz_result.html')
-        self.assertContains(result_response, '50.0%')
-        self.assertContains(result_response, 'Python Basics')
-        self.assertContains(result_response, 'student_test')
 
     def test_logout(self):
         self.client.login(username='student_test', password='password123')

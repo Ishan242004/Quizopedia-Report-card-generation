@@ -127,18 +127,6 @@
       <a href="{% url 'admin_students' %}" class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
         <i data-lucide="users" class="w-4 h-4"></i> Student Accounts
       </a>
-      <a href="{% url 'admin_quizzes' %}" class="sidebar-link {% block active_quizzes %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
-        <i data-lucide="book-open" class="w-4 h-4"></i> Quiz Manager
-      </a>
-      <a href="{% url 'admin_questions' %}" class="sidebar-link {% block active_questions %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
-        <i data-lucide="help-circle" class="w-4 h-4"></i> Question Bank
-      </a>
-      <a href="{% url 'admin_attempts' %}" class="sidebar-link {% block active_attempts %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
-        <i data-lucide="award" class="w-4 h-4"></i> Attempt logs
-      </a>
-      <a href="{% url 'admin_report_cards' %}" class="sidebar-link {% block active_report_cards %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
-        <i data-lucide="file-text" class="w-4 h-4"></i> Report Cards
-      </a>
     </nav>
 
     <!-- Footer logout -->
@@ -175,10 +163,6 @@
     <div class="lg:hidden border-b border-white/10 bg-white/2 flex justify-around py-3 text-[10px] text-white/60 font-medium">
       <a href="{% url 'admin_dashboard' %}" class="hover:text-white">Dashboard</a>
       <a href="{% url 'admin_students' %}" class="hover:text-white">Students</a>
-      <a href="{% url 'admin_quizzes' %}" class="hover:text-white">Quizzes</a>
-      <a href="{% url 'admin_questions' %}" class="hover:text-white">Questions</a>
-      <a href="{% url 'admin_attempts' %}" class="hover:text-white">Attempts</a>
-      <a href="{% url 'admin_report_cards' %}" class="hover:text-white">Reports</a>
     </div>
 
     <!-- Main Container -->
