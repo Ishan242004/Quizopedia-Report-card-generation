@@ -7,8 +7,8 @@
 {% block content %}
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
   <div>
-    <h1 class="text-3xl font-extrabold tracking-tight mb-2">Student Accounts</h1>
-    <p class="text-white/50 text-sm">Register new student profiles and manage their credentials and profiles.</p>
+    <h1 class="text-3xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Student Accounts</h1>
+    <p class="text-[var(--text-muted)] text-sm">Register new student profiles and manage their credentials and profiles.</p>
   </div>
 </div>
 
@@ -36,9 +36,9 @@
   
   <!-- Add Student Form (Left / Col 1) -->
   <div class="glass-card rounded-[28px] p-6 h-fit relative overflow-hidden">
-    <div class="flex items-center gap-2 mb-6 border-b border-white/5 pb-4">
+    <div class="flex items-center gap-2 mb-6 border-b border-[var(--sidebar-border)] pb-4">
       <i data-lucide="user-plus" class="w-4 h-4 text-[var(--accent-primary)]"></i>
-      <h2 class="text-md font-bold text-white/90">Add New Student</h2>
+      <h2 class="text-md font-bold text-[var(--text-main)]">Add New Student</h2>
     </div>
     <form method="POST">
       {% csrf_token %}
@@ -46,30 +46,30 @@
       
       <!-- Username -->
       <div class="mb-4">
-        <label for="username" class="block text-xs font-semibold text-white/60 mb-1.5 ml-1">Username</label>
+        <label for="username" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Username</label>
         <input type="text" id="username" name="username" placeholder="e.g. john_doe" required
-          class="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-sm outline-none text-white focus:border-[var(--accent-primary)]/50 transition">
+          class="w-full h-11 px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm outline-none text-[var(--input-text)] placeholder:text-[var(--input-placeholder)] focus:border-[var(--accent-primary)]/50 transition">
       </div>
       
       <!-- Email -->
       <div class="mb-4">
-        <label for="email" class="block text-xs font-semibold text-white/60 mb-1.5 ml-1">Email Address</label>
+        <label for="email" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Email Address</label>
         <input type="email" id="email" name="email" placeholder="e.g. john@example.com" required
-          class="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-sm outline-none text-white focus:border-[var(--accent-primary)]/50 transition">
+          class="w-full h-11 px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm outline-none text-[var(--input-text)] placeholder:text-[var(--input-placeholder)] focus:border-[var(--accent-primary)]/50 transition">
       </div>
       
       <!-- Phone -->
       <div class="mb-4">
-        <label for="phone" class="block text-xs font-semibold text-white/60 mb-1.5 ml-1">Phone Number</label>
+        <label for="phone" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Phone Number</label>
         <input type="text" id="phone" name="phone" placeholder="e.g. 1234567890" required
-          class="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-sm outline-none text-white focus:border-[var(--accent-primary)]/50 transition">
+          class="w-full h-11 px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm outline-none text-[var(--input-text)] placeholder:text-[var(--input-placeholder)] focus:border-[var(--accent-primary)]/50 transition">
       </div>
       
       <!-- Password -->
       <div class="mb-6">
-        <label for="password" class="block text-xs font-semibold text-white/60 mb-1.5 ml-1">Password</label>
+        <label for="password" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Password</label>
         <input type="password" id="password" name="password" placeholder="••••••••" required
-          class="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-sm outline-none text-white focus:border-[var(--accent-primary)]/50 transition">
+          class="w-full h-11 px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm outline-none text-[var(--input-text)] placeholder:text-[var(--input-placeholder)] focus:border-[var(--accent-primary)]/50 transition">
       </div>
       
       <!-- Submit -->
@@ -87,25 +87,25 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm border-collapse">
           <thead>
-            <tr class="border-b border-white/5 bg-white/[0.03] text-white/50 font-bold uppercase tracking-wider text-[10px]">
+            <tr class="border-b border-[var(--sidebar-border)] bg-[var(--table-header-bg)] text-[var(--text-muted)] font-bold uppercase tracking-wider text-[10px]">
               <th class="px-6 py-4">Student</th>
               <th class="px-6 py-4">Phone</th>
               <th class="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5 text-white/80">
+          <tbody class="divide-y divide-[var(--sidebar-border)] text-[var(--text-main)]">
             {% for student in students %}
-            <tr class="hover:bg-white/[0.01] transition">
+            <tr class="hover:bg-[var(--sidebar-link-hover)] transition">
               <td class="px-6 py-4">
-                <span class="font-bold block text-white/90">{{ student.user.username }}</span>
-                <span class="text-xs text-white/40 block mt-0.5">{{ student.user.email }}</span>
+                <span class="font-bold block text-[var(--text-main)]">{{ student.user.username }}</span>
+                <span class="text-xs text-[var(--text-muted)] block mt-0.5">{{ student.user.email }}</span>
               </td>
-              <td class="px-6 py-4 text-white/60 font-medium">{{ student.phone }}</td>
+              <td class="px-6 py-4 text-[var(--text-muted)] font-medium">{{ student.phone }}</td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <!-- Edit trigger -->
                   <button onclick="openEditModal('{{ student.id }}', '{{ student.user.username }}', '{{ student.user.email }}', '{{ student.phone }}')"
-                    class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-400 transition" title="Edit Student">
+                    class="p-2 rounded-lg bg-[var(--input-bg)] hover:bg-white/10 border border-[var(--input-border)] text-cyan-400 transition" title="Edit Student">
                     <i data-lucide="edit-3" class="w-4 h-4"></i>
                   </button>
                   
@@ -114,7 +114,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="delete_student" value="1">
                     <input type="hidden" name="student_id" value="{{ student.id }}">
-                    <button type="submit" class="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-rose-400 transition" title="Delete Student">
+                    <button type="submit" class="p-2 rounded-lg bg-[var(--input-bg)] hover:bg-red-500/20 border border-[var(--input-border)] hover:border-red-500/30 text-rose-400 transition" title="Delete Student">
                       <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
                   </form>
@@ -132,13 +132,13 @@
 <!-- Edit Student Modal Overlay -->
 <div id="editModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden items-center justify-center p-4">
   <div class="glass-card rounded-[28px] p-6 sm:p-8 max-w-md w-full relative">
-    <button onclick="closeEditModal()" class="absolute top-4 right-4 text-white/40 hover:text-white transition">
+    <button onclick="closeEditModal()" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text-main)] transition">
       <i data-lucide="x" class="w-5 h-5"></i>
     </button>
     
-    <div class="flex items-center gap-2 mb-6 border-b border-white/5 pb-4">
+    <div class="flex items-center gap-2 mb-6 border-b border-[var(--sidebar-border)] pb-4">
       <i data-lucide="edit-3" class="w-4 h-4 text-[var(--accent-primary)]"></i>
-      <h2 class="text-md font-bold text-white/90">Edit Student: <span id="editName" class="text-[var(--accent-secondary)]"></span></h2>
+      <h2 class="text-md font-bold text-[var(--text-main)]">Edit Student: <span id="editName" class="text-[var(--accent-secondary)]"></span></h2>
     </div>
     
     <form method="POST">
@@ -148,16 +148,16 @@
       
       <!-- Email -->
       <div class="mb-4">
-        <label for="editEmail" class="block text-xs font-semibold text-white/60 mb-1.5 ml-1">Email Address</label>
+        <label for="editEmail" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Email Address</label>
         <input type="email" id="editEmail" name="email" required
-          class="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-sm outline-none text-white focus:border-[var(--accent-primary)]/50 transition">
+          class="w-full h-11 px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm outline-none text-[var(--input-text)] placeholder:text-[var(--input-placeholder)] focus:border-[var(--accent-primary)]/50 transition">
       </div>
       
       <!-- Phone -->
       <div class="mb-6">
-        <label for="editPhone" class="block text-xs font-semibold text-white/60 mb-1.5 ml-1">Phone Number</label>
+        <label for="editPhone" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Phone Number</label>
         <input type="text" id="editPhone" name="phone" required
-          class="w-full h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-sm outline-none text-white focus:border-[var(--accent-primary)]/50 transition">
+          class="w-full h-11 px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm outline-none text-[var(--input-text)] placeholder:text-[var(--input-placeholder)] focus:border-[var(--accent-primary)]/50 transition">
       </div>
       
       <!-- Submit -->

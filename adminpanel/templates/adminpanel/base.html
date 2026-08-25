@@ -11,6 +11,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
     :root {
+      /* Dark Theme (Default) */
       --bg-base: #020617; /* Slate 950 */
       --panel: #0b0f19;
       --accent-primary: #FD1843;
@@ -18,6 +19,47 @@
       --accent-primary-rgb: 253, 24, 67;
       --accent-secondary-rgb: 255, 159, 175;
       --border-soft: rgba(255, 255, 255, 0.06);
+
+      --sidebar-bg: rgba(0, 0, 0, 0.3);
+      --sidebar-border: rgba(255, 255, 255, 0.05);
+      --sidebar-link: rgba(255, 255, 255, 0.6);
+      --sidebar-link-hover: rgba(255, 255, 255, 0.05);
+      --sidebar-link-active: #ffffff;
+      --header-bg: rgba(255, 255, 255, 0.02);
+      --header-border: rgba(255, 255, 255, 0.05);
+      --input-bg: rgba(255, 255, 255, 0.05);
+      --input-border: rgba(255, 255, 255, 0.1);
+      --input-text: #ffffff;
+      --input-placeholder: rgba(255, 255, 255, 0.4);
+      --table-header-bg: rgba(255, 255, 255, 0.03);
+      --text-main: #ffffff;
+      --text-muted: #94a3b8;
+      --card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+      --card-border: var(--border-soft);
+    }
+
+    body.light-mode {
+      /* Light Theme */
+      --bg-base: #f1f5f9; /* Slate 100 */
+      --panel: #ffffff;
+      --border-soft: rgba(15, 23, 42, 0.06);
+
+      --sidebar-bg: rgba(255, 255, 255, 0.4);
+      --sidebar-border: rgba(15, 23, 42, 0.08);
+      --sidebar-link: rgba(15, 23, 42, 0.6);
+      --sidebar-link-hover: rgba(15, 23, 42, 0.05);
+      --sidebar-link-active: #0f172a;
+      --header-bg: rgba(255, 255, 255, 0.6);
+      --header-border: rgba(15, 23, 42, 0.08);
+      --input-bg: #f8fafc;
+      --input-border: #cbd5e1;
+      --input-text: #0f172a;
+      --input-placeholder: #94a3b8;
+      --table-header-bg: rgba(15, 23, 42, 0.03);
+      --text-main: #0f172a; /* Slate 900 */
+      --text-muted: #64748b; /* Slate 500 */
+      --card-bg: #ffffff;
+      --card-border: rgba(15, 23, 42, 0.08);
     }
 
     * {
@@ -31,9 +73,10 @@
 
     body {
       background: var(--bg-base);
-      color: #fff;
+      color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .blob {
@@ -71,19 +114,25 @@
     }
 
     .glass-card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+      background: var(--card-bg);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--border-soft);
+      border: 1px solid var(--card-border);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body.light-mode .glass-card {
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
     }
 
     .sidebar-link {
+      color: var(--sidebar-link);
       transition: all 0.2s ease;
     }
 
     .sidebar-link:hover, .sidebar-link.active {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
+      background: var(--sidebar-link-hover);
+      color: var(--sidebar-link-active);
       border-left: 3px solid var(--accent-primary);
     }
 
@@ -110,9 +159,9 @@
   </div>
 
   <!-- Sidebar -->
-  <aside class="hidden lg:flex flex-col w-64 bg-black/30 border-r border-white/5 flex-shrink-0 h-screen sticky top-0 backdrop-blur-md">
+  <aside class="hidden lg:flex flex-col w-64 bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)] flex-shrink-0 h-screen sticky top-0 backdrop-blur-md transition-all duration-300">
     <!-- Header -->
-    <div class="h-16 flex items-center gap-3 px-6 border-b border-white/5">
+    <div class="h-16 flex items-center gap-3 px-6 border-b border-[var(--sidebar-border)]">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg shadow-[rgba(253,24,67,0.25)]">
         <i data-lucide="shield" class="w-4 h-4 text-white"></i>
       </div>
@@ -121,17 +170,17 @@
     
     <!-- Navlinks -->
     <nav class="flex-1 py-6 space-y-1">
-      <a href="{% url 'admin_dashboard' %}" class="sidebar-link {% block active_db %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
+      <a href="{% url 'admin_dashboard' %}" class="sidebar-link {% block active_db %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard Overview
       </a>
-      <a href="{% url 'admin_students' %}" class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium text-white/60">
+      <a href="{% url 'admin_students' %}" class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="users" class="w-4 h-4"></i> Student Accounts
       </a>
     </nav>
 
     <!-- Footer logout -->
-    <div class="p-4 border-t border-white/5 bg-black/10">
-      <a href="{% url 'logout' %}" class="w-full py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center justify-center gap-1.5 text-white/70 hover:text-red-400">
+    <div class="p-4 border-t border-[var(--sidebar-border)] bg-black/10">
+      <a href="{% url 'logout' %}" class="w-full py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center justify-center gap-1.5 text-[var(--text-muted)] hover:text-red-400">
         <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
       </a>
     </div>
@@ -140,7 +189,7 @@
   <!-- Main Content Wrapper -->
   <div class="flex-1 flex flex-col min-w-0">
     <!-- Top bar -->
-    <header class="h-16 border-b border-white/5 bg-white/[0.02] backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-30">
+    <header class="h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300">
       <div class="flex items-center gap-3 lg:hidden">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg">
           <i data-lucide="shield" class="w-4 h-4 text-white"></i>
@@ -148,20 +197,26 @@
         <span class="brand-font text-md font-bold tracking-tight">Quizopedia Admin</span>
       </div>
       
-      <span class="hidden sm:inline text-xs text-white/40 font-medium">Quizopedia Management Terminal v1.0</span>
+      <span class="hidden sm:inline text-xs text-[var(--text-muted)] font-medium">Quizopedia Management Terminal v1.0</span>
 
       <div class="flex items-center gap-4">
-        <span class="text-xs text-white/60 font-semibold">Session: <strong class="text-white">{{ request.user.username }}</strong> (Admin)</span>
-        <a href="{% url 'logout' %}" class="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white">
+        <!-- Theme Switch Button -->
+        <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
+          <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
+          <span id="themeBtnText">Dark</span>
+        </button>
+
+        <span class="text-xs text-[var(--text-muted)] font-semibold">Session: <strong class="text-[var(--text-main)]">{{ request.user.username }}</strong> (Admin)</span>
+        <a href="{% url 'logout' %}" class="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white">
           <i data-lucide="log-out" class="w-4 h-4"></i>
         </a>
       </div>
     </header>
 
     <!-- Mobile Nav Bar (Visible only on small screens) -->
-    <div class="lg:hidden border-b border-white/5 bg-white/[0.01] flex justify-around py-3 text-[10px] text-white/50 font-bold uppercase tracking-wider">
-      <a href="{% url 'admin_dashboard' %}" class="hover:text-white">Dashboard</a>
-      <a href="{% url 'admin_students' %}" class="hover:text-white">Students</a>
+    <div class="lg:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+      <a href="{% url 'admin_dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
+      <a href="{% url 'admin_students' %}" class="hover:text-[var(--text-main)]">Students</a>
     </div>
 
     <!-- Main Container -->
@@ -173,6 +228,36 @@
 
   <script>
     lucide.createIcons();
+
+    // =========================================
+    // THEME CONTROLLER & INITIALIZATION
+    // =========================================
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeBtnText = document.getElementById('themeBtnText');
+    const themeBtnIcon = document.getElementById('themeBtnIcon');
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+        if (themeBtnText) themeBtnText.textContent = 'Light';
+        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        document.body.classList.remove('light-mode');
+        if (themeBtnText) themeBtnText.textContent = 'Dark';
+        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isLight = document.body.classList.contains('light-mode');
+      const targetTheme = isLight ? 'dark' : 'light';
+      localStorage.setItem('theme', targetTheme);
+      applyTheme(targetTheme);
+    });
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(savedTheme);
   </script>
 </body>
 

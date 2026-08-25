@@ -697,91 +697,63 @@
          SLIDING OVERLAY PANEL (Desktop Only)
          - Remains strictly dark (#101726 to #030712) in all modes
          ========================================= -->
+    <!-- =========================================
+         SLIDING OVERLAY PANEL (Desktop Only)
+         - Remains strictly dark (#101726 to #030712) in all modes
+         ========================================= -->
     <div class="absolute top-0 left-0 h-full w-1/2 z-20 transition-transform duration-600 ease-in-out hidden lg:block overflow-hidden" id="overlayContainer">
-      <div class="h-full w-full transition-transform duration-600 ease-in-out text-white flex" id="overlay" style="width: 200%; transform: translateX(0);">
+      <div class="h-full w-full text-white flex flex-col justify-between p-12 relative overflow-hidden" style="background: radial-gradient(120% 120% at 15% 10%, #101726 0%, #030712 70%);">
         
-        <!-- Overlay Left (Visible when Login active, shows Sign Up CTA on overlay left side) -->
-        <div class="overlay-panel w-1/2 h-full flex flex-col justify-between p-12 relative overflow-hidden" style="background: radial-gradient(120% 120% at 15% 10%, #101726 0%, #030712 70%);">
-          <div class="absolute blob bg-[var(--accent-primary)] opacity-35 blur-[90px]" style="width:280px;height:280px;top:-60px;left:-60px;"></div>
-          <div class="absolute blob bg-[var(--accent-secondary)] opacity-25 blur-[90px]" style="width:280px;height:280px;bottom:-60px;right:-60px;"></div>
-          <div class="noise-overlay"></div>
+        <div class="absolute blob bg-[var(--accent-primary)] opacity-35 blur-[90px]" style="width:280px;height:280px;top:-60px;left:-60px;"></div>
+        <div class="absolute blob bg-[var(--accent-secondary)] opacity-25 blur-[90px]" style="width:280px;height:280px;bottom:-60px;right:-60px;"></div>
+        <div class="noise-overlay"></div>
 
-          <div class="relative z-10">
-            <div class="flex items-center gap-3">
-              <!-- Dark square badge containing decorative icon matching reference structure -->
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/15 backdrop-blur shadow-md">
-                <span class="text-sm font-bold text-white tracking-wide">Q</span>
-              </div>
-              <span class="brand-font text-lg font-bold tracking-tight">Quizopedia</span>
+        <div class="relative z-10">
+          <div class="flex items-center gap-3">
+            <!-- Dark square badge containing decorative icon matching reference structure -->
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/15 backdrop-blur shadow-md">
+              <span class="text-sm font-bold text-white tracking-wide">Q</span>
             </div>
-          </div>
-
-          <div class="relative z-10 my-auto max-w-sm">
-            <h1 class="brand-font text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-6">
-              Quiz<br /><span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]">opedia</span>
-            </h1>
-            <p class="text-white/60 text-sm leading-relaxed mb-8">
-              Generate custom learning cards, play quizzes in real-time, monitor your academic metrics, and track your workspace goals.
-            </p>
-
-            <div class="space-y-4 mb-8">
-              <div class="flex items-center gap-3">
-                <span class="w-7 h-7 rounded-lg bg-[rgba(253,24,67,0.12)] border border-[rgba(253,24,67,0.2)] flex items-center justify-center flex-shrink-0">
-                  <i data-lucide="check" class="w-4 h-4 text-[var(--accent-primary)]"></i>
-                </span>
-                <span class="text-sm text-white/80 font-medium">Interactive Student Dashboards</span>
-              </div>
-              <div class="flex items-center gap-3">
-                <span class="w-7 h-7 rounded-lg bg-[rgba(253,24,67,0.12)] border border-[rgba(253,24,67,0.2)] flex items-center justify-center flex-shrink-0">
-                  <i data-lucide="check" class="w-4 h-4 text-[var(--accent-primary)]"></i>
-                </span>
-                <span class="text-sm text-white/80 font-medium">Dynamic Quiz Cards</span>
-              </div>
-            </div>
-
-            <button onclick="toggleView('register')" class="px-8 h-12 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition font-bold text-sm tracking-wide flex items-center gap-2">
-              <i data-lucide="user-plus" class="w-4 h-4"></i> Sign Up
-            </button>
-          </div>
-
-          <div class="relative z-10 text-xs text-white/30 font-medium">
-            © 2026 Quizopedia System. Protected by secure authentication.
+            <span class="brand-font text-lg font-bold tracking-tight">Quizopedia</span>
           </div>
         </div>
 
-        <!-- Overlay Right (Visible when Register active, shows Sign In CTA on overlay right side) -->
-        <div class="overlay-panel w-1/2 h-full flex flex-col justify-between p-12 relative overflow-hidden" style="background: radial-gradient(120% 120% at 15% 10%, #101726 0%, #030712 70%);">
-          <div class="absolute blob bg-[var(--accent-primary)] opacity-35 blur-[90px]" style="width:280px;height:280px;top:-60px;left:-60px;"></div>
-          <div class="absolute blob bg-[var(--accent-secondary)] opacity-25 blur-[90px]" style="width:280px;height:280px;bottom:-60px;right:-60px;"></div>
-          <div class="noise-overlay"></div>
-          
-          <div class="relative z-10">
+        <div class="relative z-10 my-auto max-w-sm">
+          <h1 class="brand-font text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-6">
+            Quiz<br /><span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]">opedia</span>
+          </h1>
+          <p class="text-white/60 text-sm leading-relaxed mb-8">
+            Generate custom learning cards, play quizzes in real-time, monitor your academic metrics, and track your workspace goals.
+          </p>
+
+          <div class="space-y-4 mb-8">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(253,24,67,0.3)]">
-                <i data-lucide="award" class="w-5 h-5 text-white animate-pulse"></i>
-              </div>
-              <span class="brand-font text-lg font-bold tracking-tight">Quizopedia</span>
+              <span class="w-7 h-7 rounded-lg bg-[rgba(253,24,67,0.12)] border border-[rgba(253,24,67,0.2)] flex items-center justify-center flex-shrink-0">
+                <i data-lucide="check" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+              </span>
+              <span class="text-sm text-white/80 font-medium">Interactive Student Dashboards</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-lg bg-[rgba(253,24,67,0.12)] border border-[rgba(253,24,67,0.2)] flex items-center justify-center flex-shrink-0">
+                <i data-lucide="check" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+              </span>
+              <span class="text-sm text-white/80 font-medium">Dynamic Quiz Cards</span>
             </div>
           </div>
 
-          <div class="relative z-10 my-auto max-w-sm">
-            <h1 class="brand-font text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-6">
-              Welcome<br /><span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]">Back!</span>
-            </h1>
-            <p class="text-white/60 text-sm leading-relaxed mb-8">
-              Already have a student account? Skip the registration and jump straight back into your custom quizzes dashboard.
-            </p>
-
-            <button onclick="toggleView('login')" class="px-8 h-12 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition font-bold text-sm tracking-wide flex items-center gap-2">
+          <div class="flex items-center gap-4">
+            <button id="overlayRegisterBtn" onclick="toggleView('register')" class="px-8 h-12 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition font-bold text-sm tracking-wide flex items-center gap-2">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Sign Up
+            </button>
+            <button id="overlayLoginBtn" onclick="toggleView('login')" class="px-8 h-12 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition font-bold text-sm tracking-wide flex items-center gap-2">
               <i data-lucide="log-in" class="w-4 h-4"></i> Sign In
             </button>
           </div>
-
-          <div class="relative z-10 text-xs text-white/30 font-medium">
-            © 2026 Quizopedia System. Protected by secure authentication.
-          </div>
         </div>
 
+        <div class="relative z-10 text-xs text-white/30 font-medium">
+          © 2026 Quizopedia System. Protected by secure authentication.
+        </div>
       </div>
     </div>
 
@@ -836,19 +808,33 @@
 
     // Controls the current active view (login or register)
     function setViewState(view, triggerPush = true) {
+      const overlayRegisterBtn = document.getElementById('overlayRegisterBtn');
+      const overlayLoginBtn = document.getElementById('overlayLoginBtn');
+
       if (view === 'register') {
         authCard.classList.add('right-panel-active');
         document.title = 'Create Your Account | Quizopedia';
+        
+        // Show Sign In button in overlay, hide Sign Up button
+        if (overlayLoginBtn) overlayLoginBtn.classList.remove('hidden');
+        if (overlayRegisterBtn) overlayRegisterBtn.classList.add('hidden');
+
         if (triggerPush) {
           window.history.pushState({ view: 'register' }, '', '/register/');
         }
       } else {
         authCard.classList.remove('right-panel-active');
         document.title = 'Sign In | Quizopedia';
+
+        // Show Sign Up button in overlay, hide Sign In button
+        if (overlayLoginBtn) overlayLoginBtn.classList.add('hidden');
+        if (overlayRegisterBtn) overlayRegisterBtn.classList.remove('hidden');
+
         if (triggerPush) {
           window.history.pushState({ view: 'login' }, '', '/login/');
         }
       }
+      lucide.createIcons();
     }
 
     // Explicit switch trigger from CTA buttons
