@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - Quizopedia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    :root {
+      /* Dark Theme (Default) */
+      --bg-base: #020617; /* Slate 950 */
+      --header-bg: rgba(11, 15, 25, 0.4);
+      --header-border: rgba(255, 255, 255, 0.05);
+      --card-bg: #0b0f19;
+      --card-border: rgba(255, 255, 255, 0.06);
+      --text-main: #ffffff;
+      --text-muted: #94a3b8; /* Slate 400 */
+      --border-soft: rgba(255, 255, 255, 0.06);
+
+      --accent-primary: #FD1843;
+      --accent-secondary: #FF9FAF;
+      --accent-primary-rgb: 253, 24, 67;
+      --accent-secondary-rgb: 255, 159, 175;
+
+      --input-bg: rgba(255, 255, 255, 0.03);
+      --input-border: rgba(255, 255, 255, 0.08);
+      --input-text: #ffffff;
+      --input-placeholder: rgba(255, 255, 255, 0.4);
+    }
+
+    body.light-mode {
+      /* Light Theme */
+      --bg-base: #f1f5f9; /* Slate 100 */
+      --header-bg: rgba(255, 255, 255, 0.6);
+      --header-border: rgba(15, 23, 42, 0.06);
+      --card-bg: #ffffff;
+      --card-border: rgba(15, 23, 42, 0.08);
+      --text-main: #0f172a; /* Slate 900 */
+      --text-muted: #64748b; /* Slate 500 */
+      --border-soft: rgba(15, 23, 42, 0.06);
+
+      --input-bg: #f8fafc;
+      --input-border: #cbd5e1;
+      --input-text: #0f172a;
+      --input-placeholder: #94a3b8;
+    }
+
+    * {
+      font-family: 'Inter', system-ui, sans-serif;
+      box-sizing: border-box;
+    }
+
+    h1, h2, h3, h4, .brand-font {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Ambient background blobs */
+    .blob {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(100px);
+      opacity: 0.25;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      background: var(--accent-primary);
+      width: 500px;
+      height: 500px;
+      top: -100px;
+      left: -100px;
+    }
+
+    .blob-2 {
+      background: var(--accent-secondary);
+      width: 450px;
+      height: 450px;
+      bottom: -100px;
+      right: -100px;
+    }
+
+    .noise-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.02;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body.light-mode .glass-card {
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    .cta-btn {
+      position: relative;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, #ff3d63 50%, var(--accent-secondary) 100%);
+      transition: transform .18s ease, box-shadow .25s ease;
+      box-shadow: 0 8px 20px -6px rgba(var(--accent-primary-rgb), 0.4);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px -8px rgba(var(--accent-primary-rgb), 0.6);
+    }
+
+    .input-shell {
+      position: relative;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 100%;
+    }
+
+    .input-shell:focus-within {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb), 0.15);
+      background: var(--card-bg);
+    }
+
+    .input-field {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 12px 16px 12px 42px;
+      font-size: 0.875rem;
+      color: var(--input-text);
+      font-weight: 500;
+    }
+
+    .input-field::placeholder {
+      color: var(--input-placeholder);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color 0.2s ease;
+    }
+
+    .input-shell:focus-within .input-icon {
+      color: var(--accent-primary);
+    }
+
+    #portalSub {
+      color: var(--accent-secondary);
+    }
+    body.light-mode #portalSub {
+      color: var(--accent-primary);
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen w-full pb-16">
+  <!-- Background blobs -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <!-- =========================================
+       HEADER NAVIGATION BAR
+       ========================================= -->
+  <header class="w-full h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <!-- Logo Badge matching reference image structure -->
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(253,24,67,0.25)] flex-shrink-0">
+        <i data-lucide="award" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <span class="brand-font text-md font-bold tracking-tight block text-[var(--text-main)]">Quizopedia</span>
+        <span class="text-[9px] font-bold tracking-widest uppercase block leading-none mt-0.5" id="portalSub">Student Portal</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <a href="{% url 'dashboard' %}" class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)]">
+        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+        <span>Dashboard</span>
+      </a>
+      
+      <!-- Theme Switch Button -->
+      <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
+        <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
+        <span id="themeBtnText">Dark</span>
+      </button>
+
+      <a href="{% url 'logout' %}" class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)] hover:text-red-400">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Bar -->
+  <div class="md:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">
+    <a href="{% url 'dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
+    <a href="{% url 'profile' %}" class="text-[var(--text-main)] border-b border-[var(--accent-primary)] pb-1">Profile</a>
+  </div>
+
+  <!-- Main Container -->
+  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <div class="mb-10">
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Profile Settings</h1>
+      <p class="text-[var(--text-muted)] text-sm">View and customize your account parameters, contact info, and credentials.</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Profile Details Column -->
+      <div class="lg:col-span-1">
+        <div class="glass-card rounded-[28px] p-6 relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[380px]">
+          <!-- Card Decorative Blob -->
+          <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-[var(--accent-primary)] opacity-20 blur-xl"></div>
+          
+          <div class="relative z-10 flex flex-col items-center">
+            <!-- Profile Avatar Badge -->
+            <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-xl shadow-[rgba(253,24,67,0.3)] mb-5">
+              <i data-lucide="user" class="w-10 h-10 text-white"></i>
+            </div>
+            
+            <h2 class="text-xl font-extrabold text-[var(--text-main)] tracking-tight leading-tight mb-1">
+              {{ student.username|default:request.user.username }}
+            </h2>
+            <span class="text-xs text-[var(--accent-secondary)] font-bold tracking-wide uppercase px-3 py-1 rounded-full bg-[rgba(253,24,67,0.08)] border border-[rgba(253,24,67,0.15)] mb-6">
+              Student Subscriber
+            </span>
+
+            <div class="space-y-4 w-full text-left border-t border-[var(--border-soft)] pt-6 text-sm">
+              <div>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Registration Status</span>
+                <span class="font-medium text-emerald-400 flex items-center gap-1.5 mt-0.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Verified Account
+                </span>
+              </div>
+              <div>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Email Associated</span>
+                <span class="font-medium text-[var(--text-main)] break-all">{{ student.email|default:request.user.email }}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Phone Associated</span>
+                <span class="font-medium text-[var(--text-main)]">{{ student.phone|default:'Not provided' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Edit Form Column -->
+      <div class="lg:col-span-2">
+        <div class="glass-card rounded-[28px] p-6 md:p-8">
+          <h3 class="text-lg font-extrabold text-[var(--text-main)] tracking-tight mb-6 flex items-center gap-2">
+            <i data-lucide="edit" class="w-5 h-5 text-[var(--accent-primary)]"></i> Update Profile Credentials
+          </h3>
+
+          <!-- Notifications -->
+          {% if errors %}
+          <div class="mb-6 p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-semibold space-y-1">
+            {% for error in errors %}
+            <p class="flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> {{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if success %}
+          <div class="mb-6 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> {{ success }}
+          </div>
+          {% endif %}
+
+          <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <!-- Username input -->
+              <div class="space-y-2">
+                <label for="username" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Username</label>
+                <div class="input-shell" id="usernameShell">
+                  <i data-lucide="user" class="input-icon w-[18px] h-[18px]"></i>
+                  <input type="text" name="username" id="username" value="{{ student.username|default:request.user.username }}" class="input-field" placeholder="Username" required>
+                </div>
+              </div>
+
+              <!-- Phone input -->
+              <div class="space-y-2">
+                <label for="phone" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Phone Number</label>
+                <div class="input-shell" id="phoneShell">
+                  <i data-lucide="phone" class="input-icon w-[18px] h-[18px]"></i>
+                  <input type="text" name="phone" id="phone" value="{{ student.phone }}" class="input-field" placeholder="10 Digit Number" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <!-- Email input -->
+              <div class="space-y-2">
+                <label for="email" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Email Address</label>
+                <div class="input-shell" id="emailShell">
+                  <i data-lucide="mail" class="input-icon w-[18px] h-[18px]"></i>
+                  <input type="email" name="email" id="email" value="{{ student.email|default:request.user.email }}" class="input-field" placeholder="you@example.com" required>
+                </div>
+              </div>
+
+              <!-- Password input (optional) -->
+              <div class="space-y-2">
+                <label for="password" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">New Password</label>
+                <div class="input-shell" id="passwordShell">
+                  <i data-lucide="lock" class="input-icon w-[18px] h-[18px]"></i>
+                  <input type="password" name="password" id="password" class="input-field" placeholder="Leave blank to keep unchanged">
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit buttons -->
+            <div class="flex items-center justify-between border-t border-[var(--border-soft)] pt-6 mt-8">
+              <a href="{% url 'dashboard' %}" class="px-5 py-2.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1 text-[var(--text-main)]">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+              </a>
+
+              <button type="submit" class="cta-btn px-6 py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center gap-1.5 shadow-md">
+                <i data-lucide="save" class="w-4 h-4"></i> Save Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // =========================================
+    // THEME CONTROLLER & INITIALIZATION
+    // =========================================
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeBtnText = document.getElementById('themeBtnText');
+    const themeBtnIcon = document.getElementById('themeBtnIcon');
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+        if (themeBtnText) themeBtnText.textContent = 'Light';
+        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        document.body.classList.remove('light-mode');
+        if (themeBtnText) themeBtnText.textContent = 'Dark';
+        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isLight = document.body.classList.contains('light-mode');
+      const targetTheme = isLight ? 'dark' : 'light';
+      localStorage.setItem('theme', targetTheme);
+      applyTheme(targetTheme);
+    });
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(savedTheme);
+  </script>
+</body>
+
+</html>

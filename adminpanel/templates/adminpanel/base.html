@@ -176,6 +176,9 @@
       <a href="{% url 'admin_students' %}" class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="users" class="w-4 h-4"></i> Student Accounts
       </a>
+      <a href="{% url 'admin_profile' %}" class="sidebar-link {% block active_profile %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+        <i data-lucide="user-cog" class="w-4 h-4"></i> Profile Settings
+      </a>
     </nav>
 
     <!-- Footer logout -->
@@ -217,6 +220,7 @@
     <div class="lg:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
       <a href="{% url 'admin_dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
       <a href="{% url 'admin_students' %}" class="hover:text-[var(--text-main)]">Students</a>
+      <a href="{% url 'admin_profile' %}" class="hover:text-[var(--text-main)]">Profile</a>
     </div>
 
     <!-- Main Container -->

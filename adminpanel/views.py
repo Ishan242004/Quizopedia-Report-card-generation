@@ -69,4 +69,41 @@ def student_list(request):
         'success': success_msg
     })
 
+@admin_required
+def admin_profile(request):
+    errors = []
+    success_msg = None
+    user = request.user
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        
+        if not username or not email:
+            errors.append("Username and Email are required.")
+        else:
+            if User.objects.exclude(id=user.id).filter(username__iexact=username).exists():
+                errors.append("Username already exists.")
+            elif User.objects.exclude(id=user.id).filter(email__iexact=email).exists():
+                errors.append("Email already in use.")
+            else:
+                user.username = username
+                user.email = email
+                user.save()
+                
+                if password:
+                    user.set_password(password)
+                    user.save()
+                    from django.contrib.auth import update_session_auth_hash
+                    update_session_auth_hash(request, user)
+                    
+                success_msg = "Admin profile updated successfully."
+                
+    return render(request, 'adminpanel/profile.html', {
+        'errors': errors,
+        'success': success_msg
+    })
+
+
 

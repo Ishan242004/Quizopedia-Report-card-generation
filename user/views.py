@@ -105,3 +105,48 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
 
+@student_required
+def profile_view(request):
+    errors = []
+    success_msg = None
+    student = getattr(request.user, 'student', None)
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        password = request.POST.get('password', '')
+        
+        if not username or not email or not phone:
+            errors.append("Username, Email, and Phone are required.")
+        else:
+            # Unique checks
+            if User.objects.exclude(id=request.user.id).filter(username__iexact=username).exists():
+                errors.append("Username already exists.")
+            elif User.objects.exclude(id=request.user.id).filter(email__iexact=email).exists():
+                errors.append("Email already in use.")
+            else:
+                request.user.username = username
+                request.user.email = email
+                request.user.save()
+                
+                if student:
+                    student.phone = phone
+                    student.save()
+                    
+                if password:
+                    request.user.set_password(password)
+                    request.user.save()
+                    from django.contrib.auth import update_session_auth_hash
+                    update_session_auth_hash(request, request.user)
+                    
+                success_msg = "Profile updated successfully."
+                
+    return render(request, 'profile.html', {
+        'student': student,
+        'user': request.user,
+        'errors': errors,
+        'success': success_msg
+    })
+
+

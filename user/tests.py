@@ -175,3 +175,65 @@ class IntegrationFlowTests(TestCase):
         self.client.login(username='student_test', password='password123')
         response = self.client.get(reverse('logout'))
         self.assertRedirects(response, reverse('login'))
+
+    def test_student_profile_get_unauthenticated(self):
+        response = self.client.get(reverse('profile'))
+        self.assertRedirects(response, reverse('login') + '?next=' + reverse('profile'))
+
+    def test_student_profile_get_authenticated(self):
+        self.client.login(username='student_test', password='password123')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'profile.html')
+        self.assertContains(response, 'student_test')
+        self.assertContains(response, 'student@example.com')
+
+    def test_student_profile_post_update(self):
+        self.client.login(username='student_test', password='password123')
+        response = self.client.post(reverse('profile'), {
+            'username': 'student_updated',
+            'email': 'updated@example.com',
+            'phone': '0987654321',
+            'password': 'newpassword123'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Profile updated successfully.')
+        
+        # Verify db updates
+        self.student_user.refresh_from_db()
+        self.student.refresh_from_db()
+        self.assertEqual(self.student_user.username, 'student_updated')
+        self.assertEqual(self.student_user.email, 'updated@example.com')
+        self.assertEqual(self.student.phone, '0987654321')
+        from django.contrib.auth.hashers import check_password
+        self.assertTrue(check_password('newpassword123', self.student_user.password))
+
+    def test_admin_profile_get_unauthenticated(self):
+        response = self.client.get(reverse('admin_profile'))
+        self.assertRedirects(response, reverse('login') + '?next=' + reverse('admin_profile'))
+
+    def test_admin_profile_get_authenticated(self):
+        self.client.login(username='admin_test', password='password123')
+        response = self.client.get(reverse('admin_profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'adminpanel/profile.html')
+        self.assertContains(response, 'admin_test')
+        self.assertContains(response, 'admin@example.com')
+
+    def test_admin_profile_post_update(self):
+        self.client.login(username='admin_test', password='password123')
+        response = self.client.post(reverse('admin_profile'), {
+            'username': 'admin_updated',
+            'email': 'admin_updated@example.com',
+            'password': 'newpassword123'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Admin profile updated successfully.')
+        
+        # Verify db updates
+        self.admin_user.refresh_from_db()
+        self.assertEqual(self.admin_user.username, 'admin_updated')
+        self.assertEqual(self.admin_user.email, 'admin_updated@example.com')
+        from django.contrib.auth.hashers import check_password
+        self.assertTrue(check_password('newpassword123', self.admin_user.password))
+
