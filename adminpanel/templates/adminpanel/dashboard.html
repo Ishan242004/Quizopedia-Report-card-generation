@@ -6,19 +6,27 @@
 
 {% block content %}
 <div class="mb-8">
-  <h1 class="text-3xl font-bold tracking-tight mb-1">Dashboard Overview</h1>
-  <p class="text-white/60 text-sm">Real-time statistics and recent activity logs from the database.</p>
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2">Dashboard Overview</h1>
+  <p class="text-white/50 text-sm">Real-time statistics and recent activity logs from the database.</p>
 </div>
 
 <!-- Stat Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
   <!-- Students Count -->
-  <div class="glass-card rounded-2xl p-5 hover:border-white/15 transition">
-    <div class="flex items-center justify-between mb-3 text-violet-400">
-      <span class="text-xs text-white/50 font-bold uppercase tracking-wider">Total Students</span>
-      <i data-lucide="users" class="w-5 h-5"></i>
+  <div class="glass-card rounded-[22px] p-6 hover:border-white/10 transition duration-300 relative overflow-hidden">
+    <!-- Card glow accent -->
+    <div class="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-[var(--accent-primary)] opacity-10 blur-xl"></div>
+    
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs text-white/40 font-bold uppercase tracking-wider">Total Students</span>
+      <span class="p-2.5 rounded-lg bg-[rgba(253,24,67,0.1)] text-[var(--accent-primary)]">
+        <i data-lucide="users" class="w-5 h-5"></i>
+      </span>
     </div>
-    <span class="text-3xl font-extrabold text-white tracking-tight">{{ total_students }}</span>
+    <div class="flex items-baseline gap-2">
+      <span class="text-4xl font-extrabold text-white tracking-tight">{{ total_students }}</span>
+      <span class="text-xs text-white/40 font-medium">registered</span>
+    </div>
   </div>
 </div>
 {% endblock %}

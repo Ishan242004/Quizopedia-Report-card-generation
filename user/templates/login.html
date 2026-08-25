@@ -4,24 +4,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In to Nexora</title>
+  <title>Sign In to Quizopedia</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
     :root {
-      --bg-base: #07070b;
-      --panel: #0f0f16;
-      
-      /* Primary brand colors matching register.html */
+      /* Dark Theme (Default) */
+      --bg-base: #020617; /* Slate 950 */
+      --header-bg: rgba(11, 15, 25, 0.4);
+      --header-border: rgba(255, 255, 255, 0.05);
+      --card-bg: #0b0f19;
+      --card-border: rgba(255, 255, 255, 0.06);
+      --text-main: #ffffff;
+      --text-muted: #94a3b8; /* Slate 400 */
+      --input-bg: #1e293b; /* Slate 800 */
+      --input-border: rgba(255, 255, 255, 0.08);
+      --input-text: #ffffff;
+      --input-placeholder: rgba(255, 255, 255, 0.3);
+      --checkbox-border: #475569;
+      --checkbox-bg: #0f172a;
+
       --accent-primary: #FD1843;
       --accent-secondary: #FF9FAF;
-
       --accent-primary-rgb: 253, 24, 67;
       --accent-secondary-rgb: 255, 159, 175;
+      --border-soft: rgba(255, 255, 255, 0.06);
+    }
 
-      --border-soft: rgba(255, 255, 255, 0.08);
+    body.light-mode {
+      /* Light Theme */
+      --bg-base: #f1f5f9; /* Slate 100 */
+      --header-bg: rgba(255, 255, 255, 0.6);
+      --header-border: rgba(15, 23, 42, 0.06);
+      --card-bg: #ffffff;
+      --card-border: rgba(15, 23, 42, 0.08);
+      --text-main: #0f172a; /* Slate 900 */
+      --text-muted: #64748b; /* Slate 500 */
+      --input-bg: #f8fafc; /* Slate 50 */
+      --input-border: #cbd5e1; /* Slate 300 */
+      --input-text: #0f172a;
+      --input-placeholder: #94a3b8;
+      --checkbox-border: #cbd5e1;
+      --checkbox-bg: #f8fafc;
+      --border-soft: rgba(15, 23, 42, 0.06);
     }
 
     * {
@@ -29,21 +56,15 @@
       box-sizing: border-box;
     }
 
-    h1,
-    h2,
-    .brand-font {
+    h1, h2, h3, .brand-font {
       font-family: 'Space Grotesk', 'Inter', sans-serif;
     }
 
-    html,
     body {
       background: var(--bg-base);
-      min-height: 100%;
-      margin: 0;
-    }
-
-    body {
-      color: #fff;
+      color: var(--text-main);
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     ::selection {
@@ -55,123 +76,98 @@
     .blob {
       position: absolute;
       border-radius: 9999px;
-      filter: blur(90px);
-      opacity: 0.45;
+      filter: blur(100px);
+      opacity: 0.3;
       pointer-events: none;
       will-change: transform;
     }
 
     .blob-1 {
       background: var(--accent-primary);
-      animation: drift-a 16s ease-in-out infinite;
+      animation: drift-a 22s ease-in-out infinite;
     }
 
     .blob-2 {
       background: var(--accent-secondary);
-      animation: drift-b 20s ease-in-out infinite;
-    }
-
-    .blob-3 {
-      background: var(--accent-primary);
-      animation: drift-c 14s ease-in-out infinite;
+      animation: drift-b 26s ease-in-out infinite;
     }
 
     @keyframes drift-a {
       0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(40px, -30px) scale(1.08); }
+      50% { transform: translate(60px, -40px) scale(1.1); }
     }
 
     @keyframes drift-b {
       0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(-50px, 40px) scale(1.05); }
-    }
-
-    @keyframes drift-c {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(30px, 30px) scale(0.95); }
+      50% { transform: translate(-60px, 50px) scale(1.05); }
     }
 
     .noise-overlay {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      opacity: 0.035;
+      opacity: 0.02;
       mix-blend-mode: overlay;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     .glass-card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      border: 1px solid var(--border-soft);
-      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .input-shell {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      transition: border-color .25s ease, box-shadow .25s ease, background .25s ease;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      transition: all 0.25s ease;
     }
 
     .input-shell:focus-within {
-      border-color: rgba(var(--accent-primary-rgb), 0.75);
-      box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb), 0.15), 0 0 25px rgba(var(--accent-primary-rgb), 0.08);
-      background: rgba(255, 255, 255, 0.045);
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb), 0.12);
     }
 
     .input-shell.input-error {
-      border-color: rgba(248, 113, 113, 0.7);
-      box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.12);
+      border-color: #f87171;
+      background: rgba(248, 113, 113, 0.05);
+      box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+    }
+
+    body.light-mode .input-shell.input-error {
+      background: #fef2f2;
     }
 
     .input-shell.input-success {
-      border-color: rgba(52, 211, 153, 0.6);
-      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+      border-color: #34d399;
+      background: rgba(52, 211, 153, 0.05);
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
     }
 
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.32);
-    }
-
-    input:-webkit-autofill {
-      -webkit-text-fill-color: #fff;
-      -webkit-box-shadow: 0 0 0px 1000px rgba(20, 20, 28, 1) inset;
-      transition: background-color 9999s ease-in-out 0s;
-    }
-
-    .field-error-msg {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: max-height .25s ease, opacity .2s ease, margin .25s ease;
-    }
-
-    .field-error-msg.show {
-      max-height: 40px;
-      opacity: 1;
-      margin-top: 6px;
+    body.light-mode .input-shell.input-success {
+      background: #f0fdf4;
     }
 
     .chk {
       appearance: none;
       -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 6px;
-      border: 1.5px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.03);
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--checkbox-border);
+      background: var(--checkbox-bg);
       display: inline-grid;
       place-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: all .2s ease;
+      transition: all 0.2s ease;
     }
 
     .chk::before {
       content: "";
-      width: 11px;
-      height: 11px;
+      width: 10px;
+      height: 10px;
       transform: scale(0);
       transition: transform .15s ease;
       box-shadow: inset 1em 1em #fff;
@@ -181,28 +177,23 @@
     .chk:checked {
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
       border-color: transparent;
-      box-shadow: 0 5px 15px rgba(var(--accent-primary-rgb), 0.35);
+      box-shadow: 0 4px 10px rgba(var(--accent-primary-rgb), 0.3);
     }
 
     .chk:checked::before {
       transform: scale(1);
     }
 
-    .chk:focus-visible {
-      outline: 2px solid rgba(var(--accent-primary-rgb), 0.7);
-      outline-offset: 2px;
-    }
-
     .cta-btn {
       position: relative;
-      background: linear-gradient(135deg, #FD1843 0%, #ff3d63 50%, #FF9FAF 100%);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, #ff3d63 50%, var(--accent-secondary) 100%);
       transition: transform .18s ease, box-shadow .25s ease, filter .2s ease;
-      box-shadow: 0 10px 30px -8px rgba(var(--accent-primary-rgb), 0.55);
+      box-shadow: 0 8px 24px -6px rgba(var(--accent-primary-rgb), 0.5);
     }
 
     .cta-btn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 16px 40px -10px rgba(var(--accent-primary-rgb), 0.75), 0 0 30px -4px rgba(var(--accent-secondary-rgb), 0.45);
+      box-shadow: 0 12px 30px -8px rgba(var(--accent-primary-rgb), 0.7), 0 0 20px -4px rgba(var(--accent-secondary-rgb), 0.4);
     }
 
     .cta-btn:active:not(:disabled) {
@@ -212,7 +203,6 @@
     .cta-btn:disabled {
       opacity: 0.45;
       cursor: not-allowed;
-      filter: grayscale(0.3);
       box-shadow: none;
     }
 
@@ -231,7 +221,7 @@
       left: -60%;
       width: 40%;
       height: 100%;
-      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
       transform: skewX(-20deg);
       transition: left .6s ease;
     }
@@ -240,40 +230,11 @@
       left: 130%;
     }
 
-    .brand-icon {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      box-shadow: 0 8px 24px -6px rgba(var(--accent-primary-rgb), 0.6);
-    }
-
-    .feature-dot {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    }
-
-    .link-accent {
-      background-image: linear-gradient(var(--accent-primary), var(--accent-primary));
-      background-repeat: no-repeat;
-      background-size: 0% 1px;
-      background-position: 0 100%;
-      transition: background-size .25s ease;
-    }
-
-    .link-accent:hover {
-      background-size: 100% 1px;
-    }
-
-    .link-accent-subtle {
-      color: var(--accent-secondary);
-      transition: color 0.2s ease;
-    }
-    .link-accent-subtle:hover {
-      color: var(--accent-primary);
-    }
-
     .spinner {
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      border: 2.5px solid rgba(255, 255, 255, 0.35);
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
       border-top-color: #fff;
       animation: spin .7s linear infinite;
     }
@@ -282,230 +243,752 @@
       to { transform: rotate(360deg); }
     }
 
-    .fade-up {
-      animation: fadeUp .6s ease both;
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .server-errors:empty {
-      display: none;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .blob-1, .blob-2, .blob-3, .fade-up {
-        animation: none !important;
-      }
-      .cta-btn, .input-shell, .chk {
-        transition: none !important;
-      }
-    }
-
-    ::-webkit-scrollbar {
-      width: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.12);
+    .strength-seg {
+      height: 4px;
       border-radius: 999px;
+      flex: 1;
+      background: var(--checkbox-border);
+      transition: background-color 0.3s ease;
     }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.2);
+
+    .field-error-msg {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height .25s ease, opacity .2s ease, margin .25s ease;
+    }
+
+    .field-error-msg.show {
+      max-height: 40px;
+      opacity: 1;
+      margin-top: 6px;
+    }
+
+    #portalSub {
+      color: var(--accent-secondary);
+    }
+    body.light-mode #portalSub {
+      color: var(--accent-primary);
+    }
+
+    body.light-mode .status-pill {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.15);
+      color: #059669;
+    }
+
+    /* Desktop Sliding transitions */
+    @media (min-width: 1024px) {
+      #authCard.right-panel-active #overlayContainer {
+        transform: translateX(100%);
+      }
+      #authCard.right-panel-active #overlay {
+        transform: translateX(-50%);
+      }
+
+      #authCard.right-panel-active .register-panel {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 15;
+      }
+      #authCard.right-panel-active .login-panel {
+        transform: translateX(-10px);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 5;
+      }
+
+      #authCard:not(.right-panel-active) .register-panel {
+        transform: translateX(10px);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 5;
+      }
+      #authCard:not(.right-panel-active) .login-panel {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 15;
+      }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 1023px) {
+      .auth-panel {
+        position: relative !important;
+        width: 100% !important;
+        left: auto !important;
+        right: auto !important;
+      }
+      #authCard.right-panel-active .register-panel {
+        display: flex !important;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #authCard.right-panel-active .login-panel {
+        display: none !important;
+      }
+      #authCard:not(.right-panel-active) .register-panel {
+        display: none !important;
+      }
+      #authCard:not(.right-panel-active) .login-panel {
+        display: flex !important;
+        opacity: 1;
+        pointer-events: auto;
+      }
     }
   </style>
 </head>
 
-<body class="relative min-h-screen w-full overflow-x-hidden text-white">
+<body class="relative min-h-screen w-full overflow-x-hidden flex flex-col items-center justify-between pb-8">
 
-  <!-- Background layer -->
+  <!-- =========================================
+       HEADER NAVIGATION BAR (Add to all page but not admin dashboard)
+       ========================================= -->
+  <header class="w-full h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <!-- Logo Badge matching reference image structure -->
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(253,24,67,0.25)] flex-shrink-0">
+        <i data-lucide="award" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <span class="brand-font text-md font-bold tracking-tight block text-[var(--text-main)]">Quizopedia</span>
+        <span class="text-[9px] font-bold tracking-widest uppercase block leading-none mt-0.5" id="portalSub">Student Portal</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <!-- Theme Switch Button -->
+      <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
+        <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
+        <span id="themeBtnText">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Ambient background overlay -->
   <div class="fixed inset-0 -z-10 overflow-hidden"
-    style="background: radial-gradient(120% 120% at 15% 10%, #14101f 0%, #07070b 55%), #07070b;">
-    <div class="blob blob-1" style="width:520px;height:520px;top:-140px;left:-120px;"></div>
-    <div class="blob blob-2" style="width:480px;height:480px;bottom:-160px;right:-100px;"></div>
-    <div class="blob blob-3" style="width:360px;height:360px;top:40%;left:55%;opacity:0.28;"></div>
+    style="background: radial-gradient(120% 120% at 15% 10%, var(--bg-base) 0%, var(--bg-base) 65%);">
+    <div class="blob blob-1" style="width:550px;height:550px;top:-100px;left:-100px;"></div>
+    <div class="blob blob-2" style="width:500px;height:500px;bottom:-100px;right:-100px;"></div>
     <div class="noise-overlay"></div>
   </div>
 
-  <div class="relative z-10 min-h-screen w-full flex">
-
-    <!-- Left branding panel (desktop only) -->
-    <aside class="hidden lg:flex lg:w-1/2 flex-col justify-between px-16 py-14 relative">
-      <div>
-        <div class="flex items-center gap-3">
-          <div class="brand-icon w-10 h-10 rounded-xl flex items-center justify-center">
-            <i data-lucide="hexagon" class="w-5 h-5 text-white"></i>
-          </div>
-          <span class="brand-font text-lg font-semibold tracking-tight">Nexora</span>
+  <!-- Auth Card Container -->
+  <div class="auth-card relative w-full max-w-5xl min-h-[660px] rounded-[32px] overflow-hidden glass-card flex my-auto" id="authCard">
+    
+    <!-- =========================================
+         REGISTER PANEL (Underneath Left on Desktop)
+         ========================================= -->
+    <div class="auth-panel register-panel absolute top-0 left-0 h-full w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 transition-all duration-500 ease-in-out">
+      <div class="w-full max-w-md text-[var(--text-main)]">
+        
+        <!-- Registration Form Header -->
+        <div class="flex flex-col items-center text-center mb-6">
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Create Account</h2>
+          <p class="text-[var(--text-muted)] text-sm mt-1.5">Join us today to play and learn</p>
         </div>
-      </div>
 
-      <div class="max-w-md fade-up">
-        <h1 class="brand-font text-5xl font-bold leading-[1.08] tracking-tight">
-          Build.<br />Learn.<br />Grow.
-        </h1>
-        <p class="mt-6 text-white/55 text-base leading-relaxed">
-          Join a workspace built for people who ship. Track progress, collaborate in real time, and turn ideas into
-          finished work.
-        </p>
-      </div>
+        <!-- Server-side errors for Register -->
+        <div class="server-errors mb-4 space-y-2">
+          {% if errors and request.path == '/register/' %}
+          {% for error in errors %}
+          <div class="flex items-start gap-2 rounded-xl border border-red-200 bg-red-500/10 px-4 py-2.5 text-xs text-red-400">
+            <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5 text-red-500"></i>
+            <span>{{ error }}</span>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
 
-      <p class="text-xs text-white/30">© 2026 Nexora, Inc. All rights reserved.</p>
-    </aside>
+        <form method="POST" id="registerForm" action="{% url 'register' %}" novalidate>
+          {% csrf_token %}
 
-    <!-- Right form panel -->
-    <main class="flex-1 flex items-center justify-center px-4 py-10 sm:px-6 lg:px-12">
-      <div class="w-full max-w-md fade-up">
-
-        <div class="glass-card rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
-
-          <div class="flex flex-col items-center text-center mb-8">
-            <div class="brand-icon w-12 h-12 rounded-2xl flex items-center justify-center mb-5 lg:hidden">
-              <i data-lucide="hexagon" class="w-6 h-6 text-white"></i>
+          <!-- Username -->
+          <div class="mb-4">
+            <label for="reg_username" class="block text-xs font-bold text-[var(--text-main)] mb-1 ml-1">Username</label>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-11" id="regUsernameShell">
+              <i data-lucide="user" class="w-[18px] h-[18px] text-[var(--text-muted)]"></i>
+              <input type="text" id="reg_username" name="username" placeholder="Create a unique username"
+                autocomplete="username"
+                value="{% if request.path == '/register/' %}{{ request.POST.username|default:'' }}{% endif %}"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
             </div>
-            <h2 class="text-2xl sm:text-[28px] font-bold tracking-tight">Sign In</h2>
-            <p class="text-white/45 text-sm mt-2">Welcome back to Nexora.</p>
+            <p class="field-error-msg text-xs text-red-500 ml-1" id="usernameError">Username must be at least 3 characters.</p>
           </div>
 
-          <!-- Server-side errors -->
-          <div class="server-errors mb-5 space-y-2">
-            {% if errors %}
-            {% for error in errors %}
-            <div
-              class="flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
-              <span>{{ error }}</span>
+          <!-- Email -->
+          <div class="mb-4">
+            <label for="reg_email" class="block text-xs font-bold text-[var(--text-main)] mb-1 ml-1">Email Address</label>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-11" id="regEmailShell">
+              <i data-lucide="mail" class="w-[18px] h-[18px] text-[var(--text-muted)]"></i>
+              <input type="email" id="reg_email" name="email" placeholder="you@example.com" autocomplete="email"
+                value="{% if request.path == '/register/' %}{{ request.POST.email|default:'' }}{% endif %}"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
             </div>
-            {% endfor %}
-            {% endif %}
+            <p class="field-error-msg text-xs text-red-500 ml-1" id="emailError">Enter a valid email address.</p>
           </div>
 
-          <form method="POST" id="loginForm" novalidate>
-            {% csrf_token %}
-
-            <!-- Username -->
-            <div class="mb-5">
-              <label for="username" class="block text-xs font-medium text-white/60 mb-1.5 ml-1">Username or Email</label>
-              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="usernameShell">
-                <i data-lucide="user" class="w-[18px] h-[18px] text-white/40"></i>
-                <input type="text" id="username" name="username" placeholder="Enter your username or email"
-                  autocomplete="username"
-                  value="{{ request.POST.username|default:'' }}"
-                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
-                  required>
-              </div>
+          <!-- Phone -->
+          <div class="mb-4">
+            <label for="reg_phone" class="block text-xs font-bold text-[var(--text-main)] mb-1 ml-1">Phone Number</label>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-11" id="regPhoneShell">
+              <i data-lucide="phone" class="w-[18px] h-[18px] text-[var(--text-muted)]"></i>
+              <input type="tel" id="reg_phone" name="phone" placeholder="Enter your 10 digit number" autocomplete="tel"
+                value="{% if request.path == '/register/' %}{{ request.POST.phone|default:'' }}{% endif %}"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
             </div>
+            <p class="field-error-msg text-xs text-red-500 ml-1" id="phoneError">Enter a valid phone number.</p>
+          </div>
 
-            <!-- Password -->
-            <div class="mb-6">
-              <div class="flex justify-between items-center mb-1.5 ml-1">
-                <label for="password" class="block text-xs font-medium text-white/60">Password</label>
-                <a href="#" class="text-xs link-accent-subtle transition-colors">Forgot password?</a>
-              </div>
-              <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="passwordShell">
-                <i data-lucide="lock" class="w-[18px] h-[18px] text-white/40"></i>
-                <input type="password" id="password" name="password" placeholder="Enter your password"
-                  autocomplete="current-password"
-                  class="bg-transparent outline-none border-none w-full text-sm placeholder:text-white/30 text-white"
-                  required>
-                <button type="button" id="togglePassword" aria-label="Show password"
-                  class="text-white/40 hover:text-white/80 transition-colors flex-shrink-0">
-                  <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
-                </button>
-              </div>
+          <!-- Password -->
+          <div class="mb-2">
+            <label for="reg_password" class="block text-xs font-bold text-[var(--text-main)] mb-1 ml-1">Password</label>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-11" id="regPasswordShell">
+              <i data-lucide="lock" class="w-[18px] h-[18px] text-[var(--text-muted)]"></i>
+              <input type="password" id="reg_password" name="password" placeholder="Create a strong password"
+                autocomplete="new-password"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
+              <button type="button" id="toggleRegPassword" aria-label="Show password"
+                class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors flex-shrink-0">
+                <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
+              </button>
             </div>
-
-            <!-- Remember me -->
-            <div class="mb-7 flex items-center justify-between">
-              <label class="flex items-center gap-3 cursor-pointer select-none">
-                <input type="checkbox" name="remember" id="remember" class="chk">
-                <span class="text-sm text-white/55">Remember me</span>
-              </label>
+            <!-- Password Strength meter -->
+            <div class="flex gap-1.5 mt-2 mb-1 px-1" id="strengthBars">
+              <div class="strength-seg" data-seg="0"></div>
+              <div class="strength-seg" data-seg="1"></div>
+              <div class="strength-seg" data-seg="2"></div>
+              <div class="strength-seg" data-seg="3"></div>
             </div>
+            <p class="text-[10px] text-[var(--text-muted)] ml-1" id="strengthLabel">Use 8+ characters with mixed letters, numbers & symbols.</p>
+          </div>
 
-            <!-- Submit -->
-            <button type="submit" id="submitBtn"
-              class="cta-btn w-full h-12 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 relative">
-              <span class="shine"></span>
-              <span id="btnContent" class="flex items-center gap-2 relative z-10">
-                <span id="btnText">Sign In</span>
-                <i data-lucide="arrow-right" class="w-4 h-4" id="btnArrow"></i>
+          <!-- Confirm Password -->
+          <div class="mb-4 mt-3">
+            <label for="reg_confirm_password" class="block text-xs font-bold text-[var(--text-main)] mb-1 ml-1">Confirm Password</label>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-11" id="regConfirmShell">
+              <i data-lucide="lock-keyhole" class="w-[18px] h-[18px] text-[var(--text-muted)]" id="confirmIcon"></i>
+              <input type="password" id="reg_confirm_password" name="confirm_password" placeholder="Confirm your password"
+                autocomplete="new-password"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
+              <button type="button" id="toggleRegConfirm" aria-label="Show password"
+                class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors flex-shrink-0">
+                <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
+              </button>
+            </div>
+            <p class="field-error-msg text-xs text-red-500 ml-1" id="confirmError">Passwords do not match.</p>
+          </div>
+
+          <!-- Terms -->
+          <div class="mb-5">
+            <label class="flex items-start gap-2.5 cursor-pointer select-none">
+              <input type="checkbox" name="terms" id="terms" class="chk mt-0.5" {% if request.path == '/register/' and request.POST.terms %}checked{% endif %}>
+              <span class="text-xs text-[var(--text-muted)] leading-normal">
+                I agree to the
+                <a href="#" class="text-[var(--accent-primary)] hover:underline font-semibold">Terms &amp; Conditions</a>
+                and
+                <a href="#" class="text-[var(--accent-primary)] hover:underline font-semibold">Privacy Policy</a>
               </span>
-            </button>
+            </label>
+          </div>
 
-          </form>
+          <!-- Submit Register -->
+          <button type="submit" id="regSubmitBtn" disabled
+            class="cta-btn w-full h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 relative">
+            <span class="shine"></span>
+            <span id="regBtnContent" class="flex items-center gap-2 relative z-10">
+              <span id="regBtnText">Create Account</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </button>
 
-          <p class="text-center text-sm text-white/45 mt-7">
-            Don't have an account?
-            <a href="{% url 'register' %}" class="link-accent text-white font-medium">Sign Up</a>
-          </p>
+        </form>
 
-        </div>
+        <p class="text-center text-xs text-[var(--text-muted)] mt-6 lg:hidden">
+          Already have an account?
+          <button onclick="toggleView('login')" class="text-[var(--accent-primary)] font-bold hover:underline">Sign In</button>
+        </p>
+
       </div>
-    </main>
+    </div>
+
+    <!-- =========================================
+         LOGIN PANEL (Default Right on Desktop)
+         ========================================= -->
+    <div class="auth-panel login-panel absolute top-0 right-0 h-full w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 transition-all duration-500 ease-in-out">
+      <div class="w-full max-w-md text-[var(--text-main)]">
+        
+        <!-- Login Form Header -->
+        <div class="flex flex-col items-center text-center mb-8">
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Welcome Back 👋</h2>
+          <p class="text-[var(--text-muted)] text-sm mt-1.5">Sign in to continue to your dashboard</p>
+        </div>
+
+        <!-- Server-side errors for Login -->
+        <div class="server-errors mb-5 space-y-2">
+          {% if errors and request.path == '/login/' or errors and request.path == '/' %}
+          {% for error in errors %}
+          <div class="flex items-start gap-2 rounded-xl border border-red-200 bg-red-500/10 px-4 py-3 text-xs text-red-400">
+            <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5 text-red-500"></i>
+            <span>{{ error }}</span>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+
+        <form method="POST" id="loginForm" action="{% url 'login' %}" novalidate>
+          {% csrf_token %}
+
+          <!-- Username -->
+          <div class="mb-5">
+            <label for="login_username" class="block text-xs font-bold text-[var(--text-main)] mb-1.5 ml-1">Username or Email</label>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="loginUsernameShell">
+              <i data-lucide="user" class="w-[18px] h-[18px] text-[var(--text-muted)]"></i>
+              <input type="text" id="login_username" name="username" placeholder="Enter your username or email"
+                autocomplete="username"
+                value="{% if request.path == '/login/' or request.path == '/' %}{{ request.POST.username|default:'' }}{% endif %}"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-5">
+            <div class="flex justify-between items-center mb-1.5 ml-1">
+              <label for="login_password" class="block text-xs font-bold text-[var(--text-main)]">Password</label>
+              <a href="#" class="text-xs text-[var(--accent-primary)] hover:underline font-semibold">Forgot Password?</a>
+            </div>
+            <div class="input-shell rounded-xl flex items-center gap-3 px-4 h-12" id="loginPasswordShell">
+              <i data-lucide="lock" class="w-[18px] h-[18px] text-[var(--text-muted)]"></i>
+              <input type="password" id="login_password" name="password" placeholder="Enter your password"
+                autocomplete="current-password"
+                class="bg-transparent outline-none border-none w-full text-sm text-[var(--input-text)] placeholder:text-[var(--input-placeholder)]"
+                required>
+              <button type="button" id="toggleLoginPassword" aria-label="Show password"
+                class="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors flex-shrink-0">
+                <i data-lucide="eye" class="w-[18px] h-[18px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember me -->
+          <div class="mb-6 flex items-center justify-between">
+            <label class="flex items-center gap-2.5 cursor-pointer select-none">
+              <input type="checkbox" name="remember" id="remember" class="chk">
+              <span class="text-xs text-[var(--text-muted)] font-medium">Remember me</span>
+            </label>
+          </div>
+
+          <!-- Submit Login -->
+          <button type="submit" id="loginSubmitBtn"
+            class="cta-btn w-full h-12 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 relative">
+            <span class="shine"></span>
+            <span id="loginBtnContent" class="flex items-center gap-2 relative z-10">
+              <span id="loginBtnText">Sign In</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </button>
+
+        </form>
+
+        <p class="text-center text-xs text-[var(--text-muted)] mt-7">
+          🔒 Your login is protected by secure authentication.
+        </p>
+
+        <p class="text-center text-sm text-[var(--text-muted)] mt-6 lg:hidden">
+          Don't have an account?
+          <button onclick="toggleView('register')" class="text-[var(--accent-primary)] font-bold hover:underline">Sign Up</button>
+        </p>
+
+      </div>
+    </div>
+
+    <!-- =========================================
+         SLIDING OVERLAY PANEL (Desktop Only)
+         - Remains strictly dark (#101726 to #030712) in all modes
+         ========================================= -->
+    <div class="absolute top-0 left-0 h-full w-1/2 z-20 transition-transform duration-600 ease-in-out hidden lg:block overflow-hidden" id="overlayContainer">
+      <div class="h-full w-full transition-transform duration-600 ease-in-out text-white flex" id="overlay" style="width: 200%; transform: translateX(0);">
+        
+        <!-- Overlay Left (Visible when Login active, shows Sign Up CTA on overlay left side) -->
+        <div class="overlay-panel w-1/2 h-full flex flex-col justify-between p-12 relative overflow-hidden" style="background: radial-gradient(120% 120% at 15% 10%, #101726 0%, #030712 70%);">
+          <div class="absolute blob bg-[var(--accent-primary)] opacity-35 blur-[90px]" style="width:280px;height:280px;top:-60px;left:-60px;"></div>
+          <div class="absolute blob bg-[var(--accent-secondary)] opacity-25 blur-[90px]" style="width:280px;height:280px;bottom:-60px;right:-60px;"></div>
+          <div class="noise-overlay"></div>
+
+          <div class="relative z-10">
+            <div class="flex items-center gap-3">
+              <!-- Dark square badge containing decorative icon matching reference structure -->
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/15 backdrop-blur shadow-md">
+                <span class="text-sm font-bold text-white tracking-wide">Q</span>
+              </div>
+              <span class="brand-font text-lg font-bold tracking-tight">Quizopedia</span>
+            </div>
+          </div>
+
+          <div class="relative z-10 my-auto max-w-sm">
+            <h1 class="brand-font text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-6">
+              Quiz<br /><span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]">opedia</span>
+            </h1>
+            <p class="text-white/60 text-sm leading-relaxed mb-8">
+              Generate custom learning cards, play quizzes in real-time, monitor your academic metrics, and track your workspace goals.
+            </p>
+
+            <div class="space-y-4 mb-8">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-lg bg-[rgba(253,24,67,0.12)] border border-[rgba(253,24,67,0.2)] flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="check" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+                </span>
+                <span class="text-sm text-white/80 font-medium">Interactive Student Dashboards</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-lg bg-[rgba(253,24,67,0.12)] border border-[rgba(253,24,67,0.2)] flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="check" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+                </span>
+                <span class="text-sm text-white/80 font-medium">Dynamic Quiz Cards</span>
+              </div>
+            </div>
+
+            <button onclick="toggleView('register')" class="px-8 h-12 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition font-bold text-sm tracking-wide flex items-center gap-2">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Sign Up
+            </button>
+          </div>
+
+          <div class="relative z-10 text-xs text-white/30 font-medium">
+            © 2026 Quizopedia System. Protected by secure authentication.
+          </div>
+        </div>
+
+        <!-- Overlay Right (Visible when Register active, shows Sign In CTA on overlay right side) -->
+        <div class="overlay-panel w-1/2 h-full flex flex-col justify-between p-12 relative overflow-hidden" style="background: radial-gradient(120% 120% at 15% 10%, #101726 0%, #030712 70%);">
+          <div class="absolute blob bg-[var(--accent-primary)] opacity-35 blur-[90px]" style="width:280px;height:280px;top:-60px;left:-60px;"></div>
+          <div class="absolute blob bg-[var(--accent-secondary)] opacity-25 blur-[90px]" style="width:280px;height:280px;bottom:-60px;right:-60px;"></div>
+          <div class="noise-overlay"></div>
+          
+          <div class="relative z-10">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(253,24,67,0.3)]">
+                <i data-lucide="award" class="w-5 h-5 text-white animate-pulse"></i>
+              </div>
+              <span class="brand-font text-lg font-bold tracking-tight">Quizopedia</span>
+            </div>
+          </div>
+
+          <div class="relative z-10 my-auto max-w-sm">
+            <h1 class="brand-font text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-6">
+              Welcome<br /><span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]">Back!</span>
+            </h1>
+            <p class="text-white/60 text-sm leading-relaxed mb-8">
+              Already have a student account? Skip the registration and jump straight back into your custom quizzes dashboard.
+            </p>
+
+            <button onclick="toggleView('login')" class="px-8 h-12 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition font-bold text-sm tracking-wide flex items-center gap-2">
+              <i data-lucide="log-in" class="w-4 h-4"></i> Sign In
+            </button>
+          </div>
+
+          <div class="relative z-10 text-xs text-white/30 font-medium">
+            © 2026 Quizopedia System. Protected by secure authentication.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
+
+  <!-- Footer block -->
+  <p class="text-xs text-[var(--text-muted)] font-medium text-center relative z-10">
+    © 2026 Quizopedia, Inc. All rights reserved.
+  </p>
 
   <script>
     lucide.createIcons();
 
-    const form = document.getElementById('loginForm');
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const submitBtn = document.getElementById('submitBtn');
-    const btnContent = document.getElementById('btnContent');
+    // =========================================
+    // THEME CONTROLLER & INITIALIZATION
+    // =========================================
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeBtnText = document.getElementById('themeBtnText');
+    const themeBtnIcon = document.getElementById('themeBtnIcon');
 
-    function setShellState(shellId, state) {
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+        if (themeBtnText) themeBtnText.textContent = 'Light';
+        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        document.body.classList.remove('light-mode');
+        if (themeBtnText) themeBtnText.textContent = 'Dark';
+        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+
+    // Toggle click handler
+    themeToggleBtn.addEventListener('click', () => {
+      const isLight = document.body.classList.contains('light-mode');
+      const targetTheme = isLight ? 'dark' : 'light';
+      localStorage.setItem('theme', targetTheme);
+      applyTheme(targetTheme);
+    });
+
+    // Initialize on load
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(savedTheme);
+
+
+    // =========================================
+    // AUTH CARD STATE CONTROLLER (SLIDING)
+    // =========================================
+    const authCard = document.getElementById('authCard');
+    const overlay = document.getElementById('overlay');
+
+    // Controls the current active view (login or register)
+    function setViewState(view, triggerPush = true) {
+      if (view === 'register') {
+        authCard.classList.add('right-panel-active');
+        document.title = 'Create Your Account | Quizopedia';
+        if (triggerPush) {
+          window.history.pushState({ view: 'register' }, '', '/register/');
+        }
+      } else {
+        authCard.classList.remove('right-panel-active');
+        document.title = 'Sign In | Quizopedia';
+        if (triggerPush) {
+          window.history.pushState({ view: 'login' }, '', '/login/');
+        }
+      }
+    }
+
+    // Explicit switch trigger from CTA buttons
+    function toggleView(view) {
+      setViewState(view, true);
+    }
+
+    // Default initialization based on Django URL path
+    const defaultState = "{% if request.path == '/register/' %}register{% else %}login{% endif %}";
+    setViewState(defaultState, false);
+
+    // Synchronize card view state on browser back/forward navigation
+    window.addEventListener('popstate', (e) => {
+      if (e.state && e.state.view) {
+        setViewState(e.state.view, false);
+      } else {
+        const path = window.location.pathname;
+        if (path.includes('register')) {
+          setViewState('register', false);
+        } else {
+          setViewState('login', false);
+        }
+      }
+    });
+
+    // Replace current state so back navigation works predictably
+    window.history.replaceState({ view: defaultState }, '', window.location.pathname);
+
+    // =========================================
+    // SIGN IN VALIDATION & ACTION
+    // =========================================
+    const loginForm = document.getElementById('loginForm');
+    const loginUsername = document.getElementById('login_username');
+    const loginPassword = document.getElementById('login_password');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+    const loginBtnContent = document.getElementById('loginBtnContent');
+
+    function setInputShellState(shellId, state) {
       const el = document.getElementById(shellId);
+      if (!el) return;
       el.classList.remove('input-error', 'input-success');
       if (state === 'error') el.classList.add('input-error');
       if (state === 'success') el.classList.add('input-success');
     }
 
-    // Show / hide password toggle
-    const togglePasswordBtn = document.getElementById('togglePassword');
-    togglePasswordBtn.addEventListener('click', () => {
-      const isHidden = passwordInput.type === 'password';
-      passwordInput.type = isHidden ? 'text' : 'password';
-      togglePasswordBtn.innerHTML = isHidden
+    // Toggle Login Password Visibility
+    const toggleLoginPasswordBtn = document.getElementById('toggleLoginPassword');
+    toggleLoginPasswordBtn.addEventListener('click', () => {
+      const isHidden = loginPassword.type === 'password';
+      loginPassword.type = isHidden ? 'text' : 'password';
+      toggleLoginPasswordBtn.innerHTML = isHidden
         ? '<i data-lucide="eye-off" class="w-[18px] h-[18px]"></i>'
         : '<i data-lucide="eye" class="w-[18px] h-[18px]"></i>';
-      togglePasswordBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+      toggleLoginPasswordBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
       lucide.createIcons();
     });
 
-    usernameInput.addEventListener('input', () => {
-      const val = usernameInput.value.trim();
-      setShellState('usernameShell', val.length > 0 ? 'success' : 'default');
+    loginUsername.addEventListener('input', () => {
+      const val = loginUsername.value.trim();
+      setInputShellState('loginUsernameShell', val.length > 0 ? 'success' : 'default');
     });
 
-    passwordInput.addEventListener('input', () => {
-      const val = passwordInput.value;
-      setShellState('passwordShell', val.length > 0 ? 'success' : 'default');
+    loginPassword.addEventListener('input', () => {
+      const val = loginPassword.value;
+      setInputShellState('loginPasswordShell', val.length > 0 ? 'success' : 'default');
     });
 
-    form.addEventListener('submit', function (e) {
-      if (!usernameInput.value.trim() || !passwordInput.value) {
+    loginForm.addEventListener('submit', function (e) {
+      if (!loginUsername.value.trim() || !loginPassword.value) {
         e.preventDefault();
-        if (!usernameInput.value.trim()) setShellState('usernameShell', 'error');
-        if (!passwordInput.value) setShellState('passwordShell', 'error');
+        if (!loginUsername.value.trim()) setInputShellState('loginUsernameShell', 'error');
+        if (!loginPassword.value) setInputShellState('loginPasswordShell', 'error');
         return;
       }
-      submitBtn.disabled = true;
-      btnContent.innerHTML = '<span class="spinner"></span><span>Signing In...</span>';
+      loginSubmitBtn.disabled = true;
+      loginBtnContent.innerHTML = '<span class="spinner"></span><span>Signing In...</span>';
     });
+
+    // =========================================
+    // REGISTER VALIDATION & ACTION
+    // =========================================
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+      const regUsername = document.getElementById('reg_username');
+      const regEmail = document.getElementById('reg_email');
+      const regPhone = document.getElementById('reg_phone');
+      const regPassword = document.getElementById('reg_password');
+      const regConfirm = document.getElementById('reg_confirm_password');
+      const termsInput = document.getElementById('terms');
+      const regSubmitBtn = document.getElementById('regSubmitBtn');
+      const regBtnContent = document.getElementById('regBtnContent');
+
+      function showError(id, show) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('show', show);
+      }
+
+      // Password visibility toggles
+      function wireToggle(btnId, inputId) {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        if (!btn || !input) return;
+        btn.addEventListener('click', () => {
+          const isHidden = input.type === 'password';
+          input.type = isHidden ? 'text' : 'password';
+          btn.innerHTML = isHidden
+            ? '<i data-lucide="eye-off" class="w-[18px] h-[18px]"></i>'
+            : '<i data-lucide="eye" class="w-[18px] h-[18px]"></i>';
+          btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+          lucide.createIcons();
+        });
+      }
+      wireToggle('toggleRegPassword', 'reg_password');
+      wireToggle('toggleRegConfirm', 'reg_confirm_password');
+
+      // Username validate
+      function validateUsername() {
+        const val = regUsername.value.trim();
+        const valid = val.length >= 3;
+        setInputShellState('regUsernameShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('usernameError', val.length > 0 && !valid);
+        return valid;
+      }
+      regUsername.addEventListener('input', validateUsername);
+
+      // Email validate
+      function validateEmail() {
+        const val = regEmail.value.trim();
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const valid = re.test(val);
+        setInputShellState('regEmailShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('emailError', val.length > 0 && !valid);
+        return valid;
+      }
+      regEmail.addEventListener('input', validateEmail);
+
+      // Phone validate
+      function validatePhone() {
+        const val = regPhone.value.trim();
+        const re = /^[\d\s\-\+\(\)]{7,20}$/;
+        const valid = re.test(val);
+        setInputShellState('regPhoneShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('phoneError', val.length > 0 && !valid);
+        return valid;
+      }
+      regPhone.addEventListener('input', validatePhone);
+
+      // Password strength
+      function getStrength(val) {
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/\d/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+        return score;
+      }
+      const segColors = ['#f87171', '#fb923c', '#facc15', '#34d399'];
+      const labels = ['Very weak', 'Weak', 'Good', 'Strong'];
+
+      function validatePassword() {
+        const val = regPassword.value;
+        const score = getStrength(val);
+        const segs = document.querySelectorAll('.strength-seg');
+        segs.forEach((seg, i) => {
+          seg.style.background = i < score ? segColors[Math.max(score - 1, 0)] : 'var(--checkbox-border)';
+        });
+        const label = document.getElementById('strengthLabel');
+        if (val.length === 0) {
+          label.textContent = 'Use 8+ characters with mixed letters, numbers & symbols.';
+          label.style.color = '';
+          setInputShellState('regPasswordShell', 'default');
+        } else {
+          label.textContent = labels[Math.max(score - 1, 0)] + ' password';
+          label.style.color = segColors[Math.max(score - 1, 0)];
+          setInputShellState('regPasswordShell', score >= 2 ? 'success' : 'error');
+        }
+        validateConfirm();
+        return val.length >= 8 && score >= 2;
+      }
+      regPassword.addEventListener('input', validatePassword);
+
+      // Confirm validate
+      function validateConfirm() {
+        const val = regConfirm.value;
+        const match = val.length > 0 && val === regPassword.value;
+        const mismatch = val.length > 0 && val !== regPassword.value;
+        setInputShellState('regConfirmShell', val.length === 0 ? 'default' : (match ? 'success' : 'error'));
+        showError('confirmError', mismatch);
+        const icon = document.getElementById('confirmIcon');
+        if (icon) {
+          icon.setAttribute('data-lucide', match ? 'check-circle-2' : 'lock-keyhole');
+          icon.className = 'w-[18px] h-[18px] flex-shrink-0 ' + (match ? 'text-emerald-500' : 'text-[var(--text-muted)]');
+        }
+        lucide.createIcons();
+        return match;
+      }
+      regConfirm.addEventListener('input', validateConfirm);
+
+      // Enable/disable submit button on terms state
+      function refreshSubmitState() {
+        regSubmitBtn.disabled = !termsInput.checked;
+      }
+      termsInput.addEventListener('change', refreshSubmitState);
+      refreshSubmitState();
+
+      // Submit handling
+      registerForm.addEventListener('submit', function (e) {
+        const validUsername = validateUsername();
+        const validEmail = validateEmail();
+        const validPhone = validatePhone();
+        const validPassword = validatePassword();
+        const validConfirm = validateConfirm();
+        const termsOk = termsInput.checked;
+
+        if (!validUsername || !validEmail || !validPhone || !validPassword || !validConfirm || !termsOk) {
+          e.preventDefault();
+          return;
+        }
+
+        regSubmitBtn.disabled = true;
+        regBtnContent.innerHTML = '<span class="spinner"></span><span>Creating Account...</span>';
+      });
+    }
   </script>
 </body>
 
