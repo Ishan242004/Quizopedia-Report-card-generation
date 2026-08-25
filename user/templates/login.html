@@ -922,10 +922,10 @@
         } else {
           label.textContent = labels[Math.max(score - 1, 0)] + ' password';
           label.style.color = segColors[Math.max(score - 1, 0)];
-          setInputShellState('regPasswordShell', score >= 2 ? 'success' : 'error');
+          setInputShellState('regPasswordShell', 'success');
         }
         validateConfirm();
-        return val.length >= 8 && score >= 2;
+        return val.length > 0;
       }
       regPassword.addEventListener('input', validatePassword);
 

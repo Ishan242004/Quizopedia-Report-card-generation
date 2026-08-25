@@ -237,3 +237,16 @@ class IntegrationFlowTests(TestCase):
         from django.contrib.auth.hashers import check_password
         self.assertTrue(check_password('newpassword123', self.admin_user.password))
 
+    def test_login_unregistered_redirect(self):
+        response = self.client.post(reverse('login'), {
+            'username': 'non_existent_user',
+            'password': 'somepassword'
+        })
+        self.assertRedirects(response, reverse('register') + '?unregistered=1')
+
+    def test_register_page_unregistered_msg(self):
+        response = self.client.get(reverse('register') + '?unregistered=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'You have not registered. Please register first.')
+
+

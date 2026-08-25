@@ -15,6 +15,9 @@ def register(request):
     errors = []
     student = None
 
+    if request.method == 'GET' and request.GET.get('unregistered') == '1':
+        errors.append("You have not registered. Please register first.")
+
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
@@ -72,15 +75,22 @@ def login_view(request):
         else:
             # Handle email/username login by resolving to the correct username (case-insensitive)
             auth_username = username_or_email
+            user_exists = False
+            
             if '@' in username_or_email:
                 user_by_email = User.objects.filter(email__iexact=username_or_email).first()
                 if user_by_email:
                     auth_username = user_by_email.username
+                    user_exists = True
             else:
                 user_by_username = User.objects.filter(username__iexact=username_or_email).first()
                 if user_by_username:
                     auth_username = user_by_username.username
+                    user_exists = True
             
+            if not user_exists:
+                return redirect('/register/?unregistered=1')
+                
             user = authenticate(request, username=auth_username, password=password)
             if user is not None:
                 login(request, user)
