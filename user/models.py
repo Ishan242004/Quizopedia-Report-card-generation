@@ -14,8 +14,26 @@ class Student(models.Model):
         return self.user.username if self.user else ""
 
     @property
+    def name(self):
+        return self.user.first_name if self.user else ""
+
+    @name.setter
+    def name(self, value):
+        if self.user:
+            self.user.first_name = value
+            if not self.user._state.adding:
+                self.user.save()
+
+    @property
     def email(self):
         return self.user.email if self.user else ""
+
+    @email.setter
+    def email(self, value):
+        if self.user:
+            self.user.email = value
+            if not self.user._state.adding:
+                self.user.save()
 
     def delete(self, *args, **kwargs):
         user = self.user
@@ -41,5 +59,21 @@ class ProfileUpdateRequest(models.Model):
 
     def __str__(self):
         return f"Update for {self.student.user.username} - {self.status}"
+
+
+class Subject(models.Model):
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Question(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.TextField()
+
+    def __str__(self):
+        return f"{self.subject.name}: {self.question_text[:50]}"
 
 

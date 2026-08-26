@@ -323,4 +323,48 @@ class IntegrationFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You have not registered. Please register first.')
 
+    def test_student_model_properties(self):
+        # Verify Student has name, email, and phone
+        self.assertEqual(self.student.name, '')
+        self.assertEqual(self.student.email, 'student@example.com')
+        self.assertEqual(self.student.phone, '1234567890')
+        
+        # Test setter properties
+        self.student.name = 'New Student Name'
+        self.student.email = 'new_student@example.com'
+        
+        self.assertEqual(self.student.name, 'New Student Name')
+        self.assertEqual(self.student.email, 'new_student@example.com')
+        
+        self.student_user.refresh_from_db()
+        self.assertEqual(self.student_user.first_name, 'New Student Name')
+        self.assertEqual(self.student_user.email, 'new_student@example.com')
+
+    def test_subject_and_question_models(self):
+        from .models import Subject, Question
+        
+        # Create Subject
+        subj = Subject.objects.create(name='Python Programming', description='Core Python concepts.')
+        self.assertEqual(str(subj), 'Python Programming')
+        self.assertEqual(subj.name, 'Python Programming')
+        self.assertEqual(subj.description, 'Core Python concepts.')
+        
+        # Create Question
+        q1 = Question.objects.create(subject=subj, question_text='What is a list comprehension in Python?')
+        self.assertEqual(q1.subject, subj)
+        self.assertEqual(q1.question_text, 'What is a list comprehension in Python?')
+        self.assertEqual(str(q1), 'Python Programming: What is a list comprehension in Python?')
+        
+        # Verify Subject to Question relationship (Subject 1 --- * Question)
+        q2 = Question.objects.create(subject=subj, question_text='How to declare a generator in Python?')
+        self.assertEqual(subj.questions.count(), 2)
+        
+        # Verify Cascade delete behavior
+        subj_id = subj.id
+        q1_id = q1.id
+        subj.delete()
+        
+        self.assertFalse(Subject.objects.filter(id=subj_id).exists())
+        self.assertFalse(Question.objects.filter(id=q1_id).exists())
+
 
