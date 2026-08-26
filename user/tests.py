@@ -191,22 +191,96 @@ class IntegrationFlowTests(TestCase):
     def test_student_profile_post_update(self):
         self.client.login(username='student_test', password='password123')
         response = self.client.post(reverse('profile'), {
-            'username': 'student_updated',
+            'name': 'John Doe',
             'email': 'updated@example.com',
             'phone': '0987654321',
             'password': 'newpassword123'
         })
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Profile updated successfully.')
+        self.assertContains(response, 'Profile update submitted successfully. Pending Admin Approval.')
         
-        # Verify db updates
+        # Verify db updates: password updated immediately, but name, email, phone not updated in User/Student
         self.student_user.refresh_from_db()
         self.student.refresh_from_db()
-        self.assertEqual(self.student_user.username, 'student_updated')
-        self.assertEqual(self.student_user.email, 'updated@example.com')
-        self.assertEqual(self.student.phone, '0987654321')
+        self.assertEqual(self.student_user.first_name, '')
+        self.assertEqual(self.student_user.email, 'student@example.com')
+        self.assertEqual(self.student.phone, '1234567890')
         from django.contrib.auth.hashers import check_password
         self.assertTrue(check_password('newpassword123', self.student_user.password))
+        
+        # Verify ProfileUpdateRequest created
+        from .models import ProfileUpdateRequest
+        self.assertEqual(ProfileUpdateRequest.objects.count(), 1)
+        req = ProfileUpdateRequest.objects.first()
+        self.assertEqual(req.name, 'John Doe')
+        self.assertEqual(req.email, 'updated@example.com')
+        self.assertEqual(req.phone, '0987654321')
+        self.assertEqual(req.status, 'pending')
+
+    def test_admin_approves_profile_update(self):
+        from .models import ProfileUpdateRequest
+        req = ProfileUpdateRequest.objects.create(
+            student=self.student,
+            name='Approved Name',
+            email='approved@example.com',
+            phone='0987654321',
+            status='pending'
+        )
+        # Login as admin
+        self.client.login(username='admin_test', password='password123')
+        response = self.client.post(reverse('admin_profile_approvals'), {
+            'action': 'approve',
+            'request_id': req.id
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'approved')
+        
+        # Verify request updated
+        req.refresh_from_db()
+        self.assertEqual(req.status, 'approved')
+        
+        # Verify profile updated
+        self.student_user.refresh_from_db()
+        self.student.refresh_from_db()
+        self.assertEqual(self.student_user.first_name, 'Approved Name')
+        self.assertEqual(self.student_user.email, 'approved@example.com')
+        self.assertEqual(self.student.phone, '0987654321')
+
+    def test_admin_rejects_profile_update(self):
+        from .models import ProfileUpdateRequest
+        req = ProfileUpdateRequest.objects.create(
+            student=self.student,
+            name='Rejected Name',
+            email='rejected@example.com',
+            phone='0987654321',
+            status='pending'
+        )
+        # Login as admin
+        self.client.login(username='admin_test', password='password123')
+        response = self.client.post(reverse('admin_profile_approvals'), {
+            'action': 'reject',
+            'request_id': req.id
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'rejected')
+        
+        # Verify request rejected
+        req.refresh_from_db()
+        self.assertEqual(req.status, 'rejected')
+        
+        # Verify profile NOT updated
+        self.student_user.refresh_from_db()
+        self.student.refresh_from_db()
+        self.assertEqual(self.student_user.first_name, '')
+        self.assertEqual(self.student_user.email, 'student@example.com')
+        self.assertEqual(self.student.phone, '1234567890')
+
+    def test_student_cannot_access_approvals_view(self):
+        self.client.login(username='student_test', password='password123')
+        response = self.client.get(reverse('admin_profile_approvals'))
+        # Should redirect to student dashboard
+        self.assertRedirects(response, reverse('dashboard'))
+
 
     def test_admin_profile_get_unauthenticated(self):
         response = self.client.get(reverse('admin_profile'))

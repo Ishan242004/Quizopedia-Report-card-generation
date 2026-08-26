@@ -147,10 +147,101 @@
       transform: translateY(-1px);
       box-shadow: 0 12px 30px -8px rgba(var(--accent-primary-rgb), 0.6);
     }
+
+    /* Page Transitions & Premium Preloader */
+    .page-transition-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-base);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+    }
+    .page-transition-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .preloader-content {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preloader-glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(var(--accent-primary-rgb), 0.15) 0%, transparent 70%);
+      animation: preloaderPulse 1.5s ease-in-out infinite alternate;
+    }
+
+    .preloader-spinner {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border: 3px solid transparent;
+      border-top-color: var(--accent-primary);
+      border-right-color: var(--accent-secondary);
+      border-radius: 50%;
+      animation: preloaderSpin 0.8s linear infinite;
+    }
+
+    .preloader-logo {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(var(--accent-primary-rgb), 0.3);
+      z-index: 2;
+    }
+
+    @keyframes preloaderSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes preloaderPulse {
+      from { transform: scale(0.9); opacity: 0.5; }
+      to { transform: scale(1.15); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
 
 <body class="relative min-h-screen w-full flex overflow-x-hidden">
+  <!-- Page Transition Overlay & Preloader -->
+  <div class="page-transition-overlay" id="pageOverlay">
+    <div class="preloader-content">
+      <div class="preloader-glow"></div>
+      <div class="preloader-spinner"></div>
+      <div class="preloader-logo">
+        <i data-lucide="award" class="w-5 h-5 text-white"></i>
+      </div>
+    </div>
+  </div>
   <!-- Ambient blobs background -->
   <div class="fixed inset-0 -z-10 overflow-hidden">
     <div class="blob blob-1"></div>
@@ -175,6 +266,10 @@
       </a>
       <a href="{% url 'admin_students' %}" class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="users" class="w-4 h-4"></i> Student Accounts
+      </a>
+      <a href="{% url 'admin_profile_approvals' %}" class="sidebar-link {% block active_approvals %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+        <i data-lucide="check-square" class="w-4 h-4"></i> 
+        <span>Profile Approvals</span>
       </a>
       <a href="{% url 'admin_profile' %}" class="sidebar-link {% block active_profile %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="user-cog" class="w-4 h-4"></i> Profile Settings
@@ -220,11 +315,12 @@
     <div class="lg:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
       <a href="{% url 'admin_dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
       <a href="{% url 'admin_students' %}" class="hover:text-[var(--text-main)]">Students</a>
+      <a href="{% url 'admin_profile_approvals' %}" class="hover:text-[var(--text-main)]">Approvals</a>
       <a href="{% url 'admin_profile' %}" class="hover:text-[var(--text-main)]">Profile</a>
     </div>
 
     <!-- Main Container -->
-    <main class="flex-1 p-6 md:p-10 max-w-6xl w-full mx-auto">
+    <main class="flex-1 p-6 md:p-10 max-w-6xl w-full mx-auto animate-fade-in">
       {% block content %}
       {% endblock %}
     </main>
@@ -262,6 +358,42 @@
 
     const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
+
+    // Page Transition Handlers
+    window.addEventListener('DOMContentLoaded', () => {
+      const overlay = document.getElementById('pageOverlay');
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 400);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && link.href && !link.target && !link.href.startsWith('#') && !link.href.startsWith('javascript:')) {
+        // Only transition internal relative links or links matching current domain
+        try {
+          const currentHost = window.location.host;
+          const linkUrl = new URL(link.href);
+          if (currentHost === linkUrl.host && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            e.preventDefault();
+            const overlay = document.getElementById('pageOverlay');
+            if (overlay) {
+              overlay.style.display = 'flex';
+              overlay.offsetHeight; // force reflow
+              overlay.classList.remove('fade-out');
+            }
+            setTimeout(() => {
+              window.location.href = link.href;
+            }, 300);
+          }
+        } catch(err) {
+          // ignore invalid URLs
+        }
+      }
+    });
   </script>
 </body>
 

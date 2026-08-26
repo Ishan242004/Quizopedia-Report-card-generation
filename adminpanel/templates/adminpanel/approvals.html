@@ -1,0 +1,202 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Profile Approvals - Quizopedia Admin{% endblock %}
+
+{% block active_approvals %}active{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <h1 class="text-3xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Profile Change Approvals</h1>
+  <p class="text-[var(--text-muted)] text-sm">Review, approve, or reject student requests to change their names, email
+    addresses, and phone numbers.</p>
+</div>
+
+<!-- Errors & Success Messages -->
+{% if errors %}
+<div class="mb-6 space-y-2">
+  {% for error in errors %}
+  <div
+    class="flex items-start gap-2.5 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300 animate-fade-in">
+    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-red-400"></i>
+    <span>{{ error }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if success %}
+<div
+  class="mb-6 flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 animate-fade-in">
+  <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-400"></i>
+  <span>{{ success }}</span>
+</div>
+{% endif %}
+
+<div class="space-y-8">
+  <!-- Pending Requests Card -->
+  <div class="glass-card rounded-[28px] p-6 relative overflow-hidden">
+    <div class="flex items-center gap-2 mb-6 border-b border-[var(--sidebar-border)] pb-4">
+      <i data-lucide="clock" class="w-5 h-5 text-amber-400"></i>
+      <h2 class="text-lg font-bold text-[var(--text-main)]">Pending Requests ({{ pending_requests|length }})</h2>
+    </div>
+
+    {% if pending_requests %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse min-w-[700px]">
+        <thead>
+          <tr
+            class="border-b border-[var(--sidebar-border)] bg-[var(--table-header-bg)] text-[var(--text-muted)] font-bold uppercase tracking-wider text-[10px]">
+            <th class="px-6 py-4">Student</th>
+            <th class="px-6 py-4">Current Information</th>
+            <th class="px-6 py-4">Requested/New Information</th>
+            <th class="px-6 py-4">Submitted At</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--sidebar-border)] text-[var(--text-main)]">
+          {% for req in pending_requests %}
+          <tr class="hover:bg-[var(--sidebar-link-hover)]/30 transition">
+            <!-- Student -->
+            <td class="px-6 py-4 valign-top">
+              <span class="font-bold block text-[var(--text-main)]">{{ req.student.user.username }}</span>
+              <span class="text-xs text-[var(--text-muted)] block mt-0.5">ID: #{{ req.student.id }}</span>
+            </td>
+
+            <!-- Current Info -->
+            <td class="px-6 py-4">
+              <div class="space-y-1 text-xs">
+                <p><span class="text-[var(--text-muted)] font-semibold">Name:</span> {{ req.student.user.first_name|default:'[Not set]' }}</p>
+                <p><span class="text-[var(--text-muted)] font-semibold">Email:</span> {{ req.student.user.email }}</p>
+                <p><span class="text-[var(--text-muted)] font-semibold">Phone:</span> {{ req.student.phone }}</p>
+              </div>
+            </td>
+
+            <!-- Requested Info -->
+            <td class="px-6 py-4">
+              <div class="space-y-1 text-xs bg-amber-500/5 border border-amber-500/15 p-2 rounded-xl">
+                <p>
+                  <span class="text-amber-300/80 font-semibold">Name:</span>
+                  <span class="font-bold {% if req.name != req.student.user.first_name %}text-amber-400{% endif %}">{{ req.name }}</span>
+                </p>
+                <p>
+                  <span class="text-amber-300/80 font-semibold">Email:</span>
+                  <span class="font-bold {% if req.email != req.student.user.email %}text-amber-400{% endif %}">{{ req.email }}</span>
+                </p>
+                <p>
+                  <span class="text-amber-300/80 font-semibold">Phone:</span>
+                  <span class="font-bold {% if req.phone != req.student.phone %}text-amber-400{% endif %}">{{ req.phone }}</span>
+                </p>
+              </div>
+            </td>
+
+            <!-- Timestamp -->
+            <td class="px-6 py-4 text-[var(--text-muted)] text-xs">
+              {{ req.created_at|date:"M d, Y" }}<br>
+              <span class="opacity-60">{{ req.created_at|date:"H:i" }}</span>
+            </td>
+
+            <!-- Action buttons -->
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <!-- Approve form -->
+                <form method="POST" class="inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="approve">
+                  <input type="hidden" name="request_id" value="{{ req.id }}">
+                  <button type="submit"
+                    class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 border border-emerald-400/20 text-white font-bold text-xs flex items-center gap-1 transition-all"
+                    title="Approve Request">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Approve
+                  </button>
+                </form>
+
+                <!-- Reject form -->
+                <form method="POST" class="inline"
+                  onsubmit="return confirm('Are you sure you want to reject this profile update request?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="reject">
+                  <input type="hidden" name="request_id" value="{{ req.id }}">
+                  <button type="submit"
+                    class="px-3.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 font-bold text-xs flex items-center gap-1 transition-all"
+                    title="Reject Request">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i> Reject
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Past Approvals History Card -->
+  <div class="glass-card rounded-[28px] p-6 relative overflow-hidden">
+    <div class="flex items-center gap-2 mb-6 border-b border-[var(--sidebar-border)] pb-4">
+      <i data-lucide="history" class="w-5 h-5 text-indigo-400"></i>
+      <h2 class="text-lg font-bold text-[var(--text-main)]">Approval History (Recent)</h2>
+    </div>
+
+    {% if past_requests %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse min-w-[700px]">
+        <thead>
+          <tr
+            class="border-b border-[var(--sidebar-border)] bg-[var(--table-header-bg)] text-[var(--text-muted)] font-bold uppercase tracking-wider text-[10px]">
+            <th class="px-6 py-4">Student</th>
+            <th class="px-6 py-4">Requested Details</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">Processed Date</th>
+            <th class="px-6 py-4">Details/Reason</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--sidebar-border)] text-[var(--text-muted)]">
+          {% for req in past_requests %}
+          <tr class="hover:bg-[var(--sidebar-link-hover)]/10 transition">
+            <td class="px-6 py-4">
+              <span class="font-bold text-[var(--text-main)] block">{{ req.student.user.username }}</span>
+            </td>
+            <td class="px-6 py-4 text-xs">
+              <span class="block">Name: {{ req.name }}</span>
+              <span class="block">Email: {{ req.email }}</span>
+              <span class="block">Phone: {{ req.phone }}</span>
+            </td>
+            <td class="px-6 py-4 text-xs font-bold">
+              {% if req.status == 'approved' %}
+              <span
+                class="inline-flex items-center gap-1 text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
+              </span>
+              {% else %}
+              <span
+                class="inline-flex items-center gap-1 text-rose-400 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Rejected
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 text-xs">
+              {{ req.updated_at|date:"M d, Y H:i" }}
+            </td>
+            <td class="px-6 py-4 text-xs italic text-[var(--text-muted)]">
+              {% if req.status == 'rejected' %}
+              Changes rejected
+              {% elif req.status == 'approved' %}
+              Applied to profile successfully
+              {% else %}
+              --
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-xs text-[var(--text-muted)] text-center py-6">No historical records found.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

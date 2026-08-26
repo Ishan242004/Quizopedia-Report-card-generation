@@ -174,10 +174,134 @@
     body.light-mode #portalSub {
       color: var(--accent-primary);
     }
+
+    /* Page Transitions & Premium Preloader */
+    .page-transition-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-base);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+    }
+    .page-transition-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .preloader-content {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preloader-glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(var(--accent-primary-rgb), 0.15) 0%, transparent 70%);
+      animation: preloaderPulse 1.5s ease-in-out infinite alternate;
+    }
+
+    .preloader-spinner {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border: 3px solid transparent;
+      border-top-color: var(--accent-primary);
+      border-right-color: var(--accent-secondary);
+      border-radius: 50%;
+      animation: preloaderSpin 0.8s linear infinite;
+    }
+
+    .preloader-logo {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(var(--accent-primary-rgb), 0.3);
+      z-index: 2;
+    }
+
+    @keyframes preloaderSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes preloaderPulse {
+      from { transform: scale(0.9); opacity: 0.5; }
+      to { transform: scale(1.15); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .input-shell.input-error {
+      border-color: #f87171;
+      background: rgba(248, 113, 113, 0.05);
+      box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+    }
+
+    body.light-mode .input-shell.input-error {
+      background: #fef2f2;
+    }
+
+    .input-shell.input-success {
+      border-color: #34d399;
+      background: rgba(52, 211, 153, 0.05);
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
+    }
+
+    body.light-mode .input-shell.input-success {
+      background: #f0fdf4;
+    }
+
+    .field-error-msg {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height .25s ease, opacity .2s ease, margin .25s ease;
+    }
+
+    .field-error-msg.show {
+      max-height: 40px;
+      opacity: 1;
+      margin-top: 6px;
+    }
   </style>
 </head>
 
 <body class="relative min-h-screen w-full pb-16">
+  <!-- Page Transition Overlay & Preloader -->
+  <div class="page-transition-overlay" id="pageOverlay">
+    <div class="preloader-content">
+      <div class="preloader-glow"></div>
+      <div class="preloader-spinner"></div>
+      <div class="preloader-logo">
+        <i data-lucide="award" class="w-5 h-5 text-white"></i>
+      </div>
+    </div>
+  </div>
   <!-- Background blobs -->
   <div class="fixed inset-0 -z-10 overflow-hidden">
     <div class="blob blob-1"></div>
@@ -226,7 +350,7 @@
   </div>
 
   <!-- Main Container -->
-  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10">
+  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10 animate-fade-in">
     <!-- Header -->
     <div class="mb-10">
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Profile Settings</h1>
@@ -262,12 +386,49 @@
                 </span>
               </div>
               <div>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Name</span>
+                <span class="font-medium text-[var(--text-main)]">{{ request.user.first_name|default:'Not provided' }}</span>
+              </div>
+              <div>
                 <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Email Associated</span>
-                <span class="font-medium text-[var(--text-main)] break-all">{{ student.email|default:request.user.email }}</span>
+                <span class="font-medium text-[var(--text-main)] break-all">{{ request.user.email }}</span>
               </div>
               <div>
                 <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Phone Associated</span>
                 <span class="font-medium text-[var(--text-main)]">{{ student.phone|default:'Not provided' }}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Update Request Status</span>
+                {% if latest_request %}
+                  {% if latest_request.status == 'pending' %}
+                    <span class="font-bold text-amber-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit text-xs">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Pending Approval
+                    </span>
+                    <div class="mt-2 text-[11px] text-[var(--text-muted)] bg-white/5 rounded-lg p-2.5 border border-[var(--border-soft)]">
+                      <p class="font-semibold text-white mb-1 text-xs">Requested Changes:</p>
+                      <ul class="space-y-0.5">
+                        <li>Name: <span class="text-white">{{ latest_request.name }}</span></li>
+                        <li>Email: <span class="text-white">{{ latest_request.email }}</span></li>
+                        <li>Phone: <span class="text-white">{{ latest_request.phone }}</span></li>
+                      </ul>
+                    </div>
+                  {% elif latest_request.status == 'approved' %}
+                    <span class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
+                    </span>
+                  {% elif latest_request.status == 'rejected' %}
+                    <span class="font-bold text-rose-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit text-xs" title="Reason: {{ latest_request.rejection_reason|default:'No reason provided' }}">
+                      <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Rejected
+                    </span>
+                    {% if latest_request.rejection_reason %}
+                      <span class="text-[11px] text-rose-300 block mt-1 italic">Reason: {{ latest_request.rejection_reason }}</span>
+                    {% endif %}
+                  {% endif %}
+                {% else %}
+                  <span class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
+                  </span>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -300,13 +461,14 @@
             {% csrf_token %}
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <!-- Username input -->
+              <!-- Name input -->
               <div class="space-y-2">
-                <label for="username" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Username</label>
-                <div class="input-shell" id="usernameShell">
+                <label for="name" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Name</label>
+                <div class="input-shell" id="nameShell">
                   <i data-lucide="user" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="text" name="username" id="username" value="{{ student.username|default:request.user.username }}" class="input-field" placeholder="Username" required>
+                  <input type="text" name="name" id="name" value="{{ form_name }}" class="input-field" placeholder="Name" required>
                 </div>
+                <p class="field-error-msg text-xs text-red-500 ml-1" id="nameError">Name is required.</p>
               </div>
 
               <!-- Phone input -->
@@ -314,8 +476,9 @@
                 <label for="phone" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Phone Number</label>
                 <div class="input-shell" id="phoneShell">
                   <i data-lucide="phone" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="text" name="phone" id="phone" value="{{ student.phone }}" class="input-field" placeholder="10 Digit Number" required>
+                  <input type="text" name="phone" id="phone" value="{{ form_phone }}" class="input-field" placeholder="10 Digit Number" required>
                 </div>
+                <p class="field-error-msg text-xs text-red-500 ml-1" id="phoneError">Enter a valid phone number.</p>
               </div>
             </div>
 
@@ -325,8 +488,9 @@
                 <label for="email" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Email Address</label>
                 <div class="input-shell" id="emailShell">
                   <i data-lucide="mail" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="email" name="email" id="email" value="{{ student.email|default:request.user.email }}" class="input-field" placeholder="you@example.com" required>
+                  <input type="email" name="email" id="email" value="{{ form_email }}" class="input-field" placeholder="you@example.com" required>
                 </div>
+                <p class="field-error-msg text-xs text-red-500 ml-1" id="emailError">Enter a valid email address.</p>
               </div>
 
               <!-- Password input (optional) -->
@@ -387,6 +551,99 @@
 
     const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
+
+    // Page Transition Handlers
+    window.addEventListener('DOMContentLoaded', () => {
+      const overlay = document.getElementById('pageOverlay');
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 400);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && link.href && !link.target && !link.href.startsWith('#') && !link.href.startsWith('javascript:')) {
+        try {
+          const currentHost = window.location.host;
+          const linkUrl = new URL(link.href);
+          if (currentHost === linkUrl.host && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            e.preventDefault();
+            const overlay = document.getElementById('pageOverlay');
+            if (overlay) {
+              overlay.style.display = 'flex';
+              overlay.offsetHeight;
+              overlay.classList.remove('fade-out');
+            }
+            setTimeout(() => {
+              window.location.href = link.href;
+            }, 300);
+          }
+        } catch(err) {}
+      }
+    });
+
+    // Real-time Validation for Settings Form
+    const profileForm = document.querySelector('form');
+    if (profileForm) {
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      const phoneInput = document.getElementById('phone');
+
+      function setInputShellState(shellId, state) {
+        const el = document.getElementById(shellId);
+        if (!el) return;
+        el.classList.remove('input-error', 'input-success');
+        if (state === 'error') el.classList.add('input-error');
+        if (state === 'success') el.classList.add('input-success');
+      }
+
+      function showError(id, show) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('show', show);
+      }
+
+      function validateName() {
+        const val = nameInput.value.strip ? nameInput.value.strip() : nameInput.value.trim();
+        const valid = val.length > 0;
+        setInputShellState('nameShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('nameError', val.length > 0 && !valid);
+        return valid;
+      }
+      if (nameInput) nameInput.addEventListener('input', validateName);
+
+      function validateEmail() {
+        const val = emailInput.value.trim();
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const valid = re.test(val);
+        setInputShellState('emailShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('emailError', val.length > 0 && !valid);
+        return valid;
+      }
+      if (emailInput) emailInput.addEventListener('input', validateEmail);
+
+      function validatePhone() {
+        const val = phoneInput.value.trim();
+        const re = /^[\d\s\-\+\(\)]{7,20}$/;
+        const valid = re.test(val);
+        setInputShellState('phoneShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+        showError('phoneError', val.length > 0 && !valid);
+        return valid;
+      }
+      if (phoneInput) phoneInput.addEventListener('input', validatePhone);
+
+      profileForm.addEventListener('submit', function (e) {
+        const validName = validateName();
+        const validEmail = validateEmail();
+        const validPhone = validatePhone();
+
+        if (!validName || !validEmail || !validPhone) {
+          e.preventDefault();
+        }
+      });
+    }
   </script>
 </body>
 

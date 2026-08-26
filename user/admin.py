@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student
+from .models import Student, ProfileUpdateRequest
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -13,4 +13,12 @@ class StudentAdmin(admin.ModelAdmin):
     def get_email(self, obj):
         return obj.user.email if obj.user else ""
     get_email.short_description = 'Email'
+
+
+@admin.register(ProfileUpdateRequest)
+class ProfileUpdateRequestAdmin(admin.ModelAdmin):
+    list_display = ('student', 'name', 'email', 'phone', 'status', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('student__user__username', 'name', 'email', 'phone')
+
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from user.models import Student
+from user.models import Student, ProfileUpdateRequest
 from user.decorators import admin_required
 
 @admin_required
@@ -104,6 +104,51 @@ def admin_profile(request):
         'errors': errors,
         'success': success_msg
     })
+
+
+@admin_required
+def profile_approvals(request):
+    errors = []
+    success_msg = None
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        request_id = request.POST.get('request_id')
+        req = get_object_or_404(ProfileUpdateRequest, id=request_id)
+        
+        if action == 'approve':
+            user = req.student.user
+            # Ensure email uniqueness again at approval time
+            if User.objects.exclude(id=user.id).filter(email__iexact=req.email).exists():
+                errors.append(f"Cannot approve request. Email '{req.email}' is already in use by another user.")
+            else:
+                user.first_name = req.name
+                user.email = req.email
+                user.save()
+                
+                student = req.student
+                student.phone = req.phone
+                student.save()
+                
+                req.status = 'approved'
+                req.save()
+                success_msg = f"Profile update request for '{user.username}' has been approved."
+                
+        elif action == 'reject':
+            req.status = 'rejected'
+            req.save()
+            success_msg = f"Profile update request for '{req.student.user.username}' has been rejected."
+            
+    pending_requests = ProfileUpdateRequest.objects.filter(status='pending').order_by('-created_at')
+    past_requests = ProfileUpdateRequest.objects.exclude(status='pending').order_by('-updated_at')[:15]
+    
+    return render(request, 'adminpanel/approvals.html', {
+        'pending_requests': pending_requests,
+        'past_requests': past_requests,
+        'errors': errors,
+        'success': success_msg
+    })
+
 
 
 

@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .models import Student
+from .models import Student, ProfileUpdateRequest
 from .decorators import student_required
+import re
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 def home_view(request):
     if request.user.is_authenticated:
@@ -122,41 +125,88 @@ def profile_view(request):
     student = getattr(request.user, 'student', None)
     
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
+        name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
         password = request.POST.get('password', '')
         
-        if not username or not email or not phone:
-            errors.append("Username, Email, and Phone are required.")
+        if not name or not email or not phone:
+            errors.append("Name, Email, and Phone are required.")
         else:
-            # Unique checks
-            if User.objects.exclude(id=request.user.id).filter(username__iexact=username).exists():
-                errors.append("Username already exists.")
-            elif User.objects.exclude(id=request.user.id).filter(email__iexact=email).exists():
-                errors.append("Email already in use.")
-            else:
-                request.user.username = username
-                request.user.email = email
-                request.user.save()
+            # Validate email
+            try:
+                validate_email(email)
+            except ValidationError:
+                errors.append("Enter a valid email address.")
                 
-                if student:
-                    student.phone = phone
-                    student.save()
-                    
+            # Validate phone
+            if not re.match(r'^[\d\s\-\+\(\)]{7,20}$', phone):
+                errors.append("Enter a valid phone number.")
+                
+            # Email uniqueness check
+            if not errors:
+                if User.objects.exclude(id=request.user.id).filter(email__iexact=email).exists():
+                    errors.append("Email already in use.")
+            
+            if not errors:
+                password_updated = False
                 if password:
                     request.user.set_password(password)
                     request.user.save()
                     from django.contrib.auth import update_session_auth_hash
                     update_session_auth_hash(request, request.user)
-                    
-                success_msg = "Profile updated successfully."
+                    password_updated = True
+                    success_msg = "Password updated successfully. "
                 
+                # Check for changes in profile fields
+                is_changed = (
+                    name != request.user.first_name or
+                    email != request.user.email or
+                    phone != student.phone
+                )
+                
+                if is_changed:
+                    # Get or create pending update request
+                    update_req, created = ProfileUpdateRequest.objects.get_or_create(
+                        student=student,
+                        status='pending',
+                        defaults={'name': name, 'email': email, 'phone': phone}
+                    )
+                    if not created:
+                        update_req.name = name
+                        update_req.email = email
+                        update_req.phone = phone
+                        update_req.save()
+                    
+                    req_msg = "Profile update submitted successfully. Pending Admin Approval."
+                    success_msg = (success_msg + req_msg) if success_msg else req_msg
+                else:
+                    if not password_updated:
+                        success_msg = "No changes were made."
+                        
+    # Fetch latest update request to show status and pre-populate form
+    latest_request = None
+    if student:
+        latest_request = student.profile_updates.order_by('-updated_at').first()
+        
+    form_name = request.user.first_name
+    form_email = request.user.email
+    form_phone = student.phone if student else ''
+    
+    if latest_request and latest_request.status == 'pending':
+        form_name = latest_request.name
+        form_email = latest_request.email
+        form_phone = latest_request.phone
+        
     return render(request, 'profile.html', {
         'student': student,
         'user': request.user,
         'errors': errors,
-        'success': success_msg
+        'success': success_msg,
+        'latest_request': latest_request,
+        'form_name': form_name,
+        'form_email': form_email,
+        'form_phone': form_phone,
     })
 
 
