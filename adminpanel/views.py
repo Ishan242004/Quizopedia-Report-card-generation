@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from user.models import Student, ProfileUpdateRequest
+from django.contrib import messages
+from user.models import Student, ProfileUpdateRequest, Subject, Question
 from user.decorators import admin_required
+from .forms import QuestionForm
 
 @admin_required
 def admin_dashboard(request):
@@ -148,6 +150,133 @@ def profile_approvals(request):
         'errors': errors,
         'success': success_msg
     })
+
+
+@admin_required
+def question_list(request):
+    questions = Question.objects.select_related('subject').all().order_by('id')
+    for q in questions:
+        lines = [line.strip() for line in q.question_text.split('\n') if line.strip()]
+        if len(lines) > 1:
+            q.display_text = f"{lines[0]} ... ({len(lines)} questions)"
+        elif lines:
+            q.display_text = lines[0]
+        else:
+            q.display_text = ""
+    return render(request, 'adminpanel/question_list.html', {
+        'questions': questions
+    })
+
+
+@admin_required
+def question_add(request):
+    errors = []
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            subject_input = form.cleaned_data['subject'].strip()
+            question_input = form.cleaned_data['question_text'].strip()
+            
+            # Resolve subject (ID or name)
+            if subject_input.isdigit():
+                subject = Subject.objects.filter(id=int(subject_input)).first()
+                if not subject:
+                    subject, created = Subject.objects.get_or_create(
+                        name__iexact=subject_input,
+                        defaults={'name': subject_input}
+                    )
+            else:
+                subject, created = Subject.objects.get_or_create(
+                    name__iexact=subject_input,
+                    defaults={'name': subject_input}
+                )
+                
+            # Save the entire question input as a single Question record (preserving newlines)
+            Question.objects.create(subject=subject, question_text=question_input)
+            messages.success(request, "Question added successfully.")
+            return redirect('question_list')
+        else:
+            for field, errs in form.errors.items():
+                for err in errs:
+                    errors.append(err)
+    else:
+        form = QuestionForm()
+    return render(request, 'adminpanel/question_form.html', {
+        'form': form,
+        'title': 'Add Question',
+        'submit_text': 'Save Question',
+        'errors': errors
+    })
+
+
+@admin_required
+def question_edit(request, pk):
+    question = get_object_or_404(Question, id=pk)
+    errors = []
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            subject_input = form.cleaned_data['subject'].strip()
+            question_input = form.cleaned_data['question_text'].strip()
+            
+            # Resolve subject (ID or name)
+            if subject_input.isdigit():
+                subject = Subject.objects.filter(id=int(subject_input)).first()
+                if not subject:
+                    subject, created = Subject.objects.get_or_create(
+                        name__iexact=subject_input,
+                        defaults={'name': subject_input}
+                    )
+            else:
+                subject, created = Subject.objects.get_or_create(
+                    name__iexact=subject_input,
+                    defaults={'name': subject_input}
+                )
+                
+            # Update single question details
+            question.subject = subject
+            question.question_text = question_input
+            question.save()
+            
+            messages.success(request, "Question updated successfully.")
+            return redirect('question_detail', pk=question.id)
+        else:
+            for field, errs in form.errors.items():
+                for err in errs:
+                    errors.append(err)
+    else:
+        form = QuestionForm(initial={
+            'subject': question.subject.name,
+            'question_text': question.question_text
+        })
+    return render(request, 'adminpanel/question_form.html', {
+        'form': form,
+        'title': 'Edit Question',
+        'submit_text': 'Save Question',
+        'errors': errors
+    })
+
+
+
+@admin_required
+def question_delete(request, pk):
+    if request.method == 'POST':
+        question = get_object_or_404(Question, id=pk)
+        question.delete()
+        messages.success(request, "Question deleted successfully.")
+    return redirect('question_list')
+
+
+@admin_required
+def question_detail(request, pk):
+    question = get_object_or_404(Question, id=pk)
+    # Split the multi-line question text into a list of non-empty questions
+    question_lines = [line.strip() for line in question.question_text.split('\n') if line.strip()]
+    return render(request, 'adminpanel/question_detail.html', {
+        'question': question,
+        'question_lines': question_lines
+    })
+
 
 
 
