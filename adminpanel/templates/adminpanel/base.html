@@ -274,6 +274,9 @@
       <a href="{% url 'question_list' %}" class="sidebar-link {% block active_questions %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="help-circle" class="w-4 h-4"></i> Question Management
       </a>
+      <a href="{% url 'admin_report_cards' %}" class="sidebar-link {% block active_report_cards %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+        <i data-lucide="file-text" class="w-4 h-4"></i> Report Cards
+      </a>
       <a href="{% url 'admin_profile' %}" class="sidebar-link {% block active_profile %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
         <i data-lucide="user-cog" class="w-4 h-4"></i> Profile Settings
       </a>
@@ -320,6 +323,7 @@
       <a href="{% url 'admin_students' %}" class="hover:text-[var(--text-main)]">Students</a>
       <a href="{% url 'admin_profile_approvals' %}" class="hover:text-[var(--text-main)]">Approvals</a>
       <a href="{% url 'question_list' %}" class="hover:text-[var(--text-main)]">Questions</a>
+      <a href="{% url 'admin_report_cards' %}" class="hover:text-[var(--text-main)]">Report Cards</a>
       <a href="{% url 'admin_profile' %}" class="hover:text-[var(--text-main)]">Profile</a>
     </div>
 

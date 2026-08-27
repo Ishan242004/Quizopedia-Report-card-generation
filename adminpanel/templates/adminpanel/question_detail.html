@@ -1,25 +1,27 @@
 {% extends 'adminpanel/base.html' %}
 
-{% block title %}View Questions - Quizopedia Admin{% endblock %}
+{% block title %}Question Detail - Quizopedia Admin{% endblock %}
 
 {% block active_questions %}active{% endblock %}
 
 {% block content %}
-<div class="mb-8 max-w-4xl mx-auto">
+<div class="mb-8 max-w-2xl mx-auto">
   <div class="flex items-center gap-3 mb-2">
     <a href="{% url 'question_list' %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to Questions">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
     </a>
-    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Subject: <span class="text-[var(--accent-primary)] font-black">{{ question.subject.name }}</span></h1>
+    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">
+      Question Detail
+    </h1>
   </div>
-  <p class="text-[var(--text-muted)] text-sm">Reviewing questions listed under this subject category.</p>
+  <p class="text-[var(--text-muted)] text-sm">Subject: <span class="text-[var(--accent-primary)] font-semibold">{{ question.subject.name }}</span></p>
 </div>
 
-<!-- Success Message Alert -->
+<!-- Success Message -->
 {% if messages %}
-<div class="mb-6 space-y-2 max-w-4xl mx-auto">
+<div class="mb-6 space-y-2 max-w-2xl mx-auto">
   {% for message in messages %}
-  <div class="flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300 animate-fade-in">
+  <div class="flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
     <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-400"></i>
     <span>{{ message }}</span>
   </div>
@@ -27,51 +29,82 @@
 </div>
 {% endif %}
 
-<!-- Questions Ordered List Full Width Card -->
-<div class="max-w-4xl mx-auto">
-  <div class="glass-card rounded-[28px] p-6 sm:p-8">
-    <div class="flex items-center gap-2 mb-6 border-b border-[var(--sidebar-border)] pb-4">
-      <i data-lucide="list-ordered" class="w-4 h-4 text-[var(--accent-primary)]"></i>
-      <h2 class="text-md font-bold text-[var(--text-main)]">Questions List</h2>
+<!-- Detail Card -->
+<div class="max-w-2xl mx-auto">
+  <div class="glass-card rounded-[28px] p-6 sm:p-8 space-y-6">
+
+    <!-- Question Text -->
+    <div>
+      <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider font-bold mb-2">Question Text</p>
+      <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+        <p class="text-sm font-medium text-[var(--text-main)] leading-relaxed">{{ question.question_text }}</p>
+      </div>
     </div>
 
-    {% if question_lines %}
-    <ol class="space-y-4">
-      {% for line in question_lines %}
-      <li class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition duration-200">
-        <!-- Numeric badge -->
-        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0">
-          {{ forloop.counter }}
+    <!-- Answer Section -->
+    <div>
+      <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider font-bold mb-3">Answer</p>
+      <div class="space-y-2">
+
+        {% if question.option_a %}
+        <div class="flex items-center justify-between p-4 rounded-xl border
+          {% if question.correct_option == 'A' %}bg-emerald-500/10 border-emerald-500/30{% else %}bg-white/5 border-white/5{% endif %}">
+          <span class="text-sm font-semibold {% if question.correct_option == 'A' %}text-emerald-300{% else %}text-[var(--text-main)]{% endif %}">{{ question.option_a }}</span>
+          {% if question.correct_option == 'A' %}
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ Correct</span>
+          {% endif %}
         </div>
-        <!-- Question text -->
-        <span class="text-sm font-medium text-[var(--text-main)] leading-relaxed break-words">{{ line }}</span>
-      </li>
-      {% endfor %}
-    </ol>
-    {% else %}
-    <p class="text-[var(--text-muted)] text-sm">No questions found in this block.</p>
-    {% endif %}
+        {% endif %}
 
-    <!-- Actions Row at the Bottom of the List Card -->
-    <div class="mt-8 pt-6 border-t border-[var(--sidebar-border)] flex flex-col sm:flex-row gap-3">
-      <!-- Edit Questions -->
+        {% if question.option_b %}
+        <div class="flex items-center justify-between p-4 rounded-xl border
+          {% if question.correct_option == 'B' %}bg-emerald-500/10 border-emerald-500/30{% else %}bg-white/5 border-white/5{% endif %}">
+          <span class="text-sm font-semibold {% if question.correct_option == 'B' %}text-emerald-300{% else %}text-[var(--text-main)]{% endif %}">{{ question.option_b }}</span>
+          {% if question.correct_option == 'B' %}
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ Correct</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% if question.option_c %}
+        <div class="flex items-center justify-between p-4 rounded-xl border
+          {% if question.correct_option == 'C' %}bg-emerald-500/10 border-emerald-500/30{% else %}bg-white/5 border-white/5{% endif %}">
+          <span class="text-sm font-semibold {% if question.correct_option == 'C' %}text-emerald-300{% else %}text-[var(--text-main)]{% endif %}">{{ question.option_c }}</span>
+          {% if question.correct_option == 'C' %}
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ Correct</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% if question.option_d %}
+        <div class="flex items-center justify-between p-4 rounded-xl border
+          {% if question.correct_option == 'D' %}bg-emerald-500/10 border-emerald-500/30{% else %}bg-white/5 border-white/5{% endif %}">
+          <span class="text-sm font-semibold {% if question.correct_option == 'D' %}text-emerald-300{% else %}text-[var(--text-main)]{% endif %}">{{ question.option_d }}</span>
+          {% if question.correct_option == 'D' %}
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ Correct</span>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="pt-4 border-t border-[var(--sidebar-border)] flex flex-col sm:flex-row gap-3">
       <a href="{% url 'question_edit' question.id %}" class="cta-btn px-6 h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 shadow-md flex-1 sm:flex-none">
-        <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Questions
+        <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Question
       </a>
-
-      <!-- Delete Question -->
-      <form method="POST" action="{% url 'question_delete' question.id %}" onsubmit="return confirm('Are you sure you want to delete all questions under this subject row?');" class="inline flex-1 sm:flex-none">
+      <form method="POST" action="{% url 'question_delete' question.id %}" onsubmit="return confirm('Are you sure?');" class="inline flex-1 sm:flex-none">
         {% csrf_token %}
         <button type="submit" class="w-full h-11 px-6 rounded-xl font-semibold text-sm border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-rose-400 flex items-center justify-center gap-1.5 transition">
-          <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Entire Block
+          <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Question
         </button>
       </form>
-
-      <!-- Back to List -->
       <a href="{% url 'question_list' %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white flex items-center justify-center transition flex-1 sm:flex-none sm:ml-auto">
         Back to List
       </a>
     </div>
+
   </div>
 </div>
 {% endblock %}

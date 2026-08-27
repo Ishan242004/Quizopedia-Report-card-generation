@@ -352,7 +352,7 @@
       <!-- Quick Metrics & Activity (Right / 2 Columns) -->
       <div class="lg:col-span-2 space-y-8">
         
-        <!-- Mock statistics container to feel like a "proper dashboard" -->
+        <!-- Statistics container -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <!-- Quiz Completed Card -->
           <div class="glass-card rounded-[22px] p-5 relative overflow-hidden">
@@ -362,9 +362,9 @@
                 <i data-lucide="award" class="w-4 h-4"></i>
               </span>
             </div>
-            <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">12</span>
-            <span class="text-xs text-emerald-400 flex items-center gap-1 mt-2 font-semibold">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +3 this week
+            <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ completed_quizzes }}</span>
+            <span class="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-2">
+              <i data-lucide="activity" class="w-3.5 h-3.5"></i> Total attempts
             </span>
           </div>
 
@@ -372,29 +372,57 @@
           <div class="glass-card rounded-[22px] p-5 relative overflow-hidden">
             <div class="flex items-center justify-between mb-4">
               <span class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Average Score</span>
-              <span class="p-2 rounded-lg bg-pink-500/10 text-pink-400">
+              <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
                 <i data-lucide="percent" class="w-4 h-4"></i>
               </span>
             </div>
-            <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">84%</span>
-            <span class="text-xs text-emerald-400 flex items-center gap-1 mt-2 font-semibold">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Above average
+            <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ avg_score }}</span>
+            <span class="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-2 font-semibold">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Score average
             </span>
           </div>
 
-          <!-- Time Invested Card -->
+          <!-- Available Quizzes Card -->
           <div class="glass-card rounded-[22px] p-5 relative overflow-hidden">
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Hours Studied</span>
+              <span class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Available Quizzes</span>
               <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400">
-                <i data-lucide="clock" class="w-4 h-4"></i>
+                <i data-lucide="book-open" class="w-4 h-4"></i>
               </span>
             </div>
-            <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">8.5h</span>
+            <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ subjects_count }}</span>
             <span class="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-2">
-              <i data-lucide="activity" class="w-3.5 h-3.5"></i> Steady progress
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i> Quiz categories
             </span>
           </div>
+        </div>
+
+        <!-- Available Quizzes Section -->
+        <div class="glass-card rounded-[28px] p-6">
+          <h3 class="text-lg font-bold tracking-tight mb-4 flex items-center gap-2 text-[var(--text-main)]">
+            <i data-lucide="book-open" class="w-5 h-5 text-[var(--accent-primary)]"></i>
+            Available Quizzes
+          </h3>
+          {% if available_subjects %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for subject in available_subjects %}
+            <div class="p-4 rounded-xl bg-white/[0.01] border border-[var(--border-soft)] hover:border-[var(--accent-primary)]/20 transition flex flex-col justify-between h-40">
+              <div>
+                <h4 class="text-sm font-bold text-[var(--text-main)]">{{ subject.name }}</h4>
+                <p class="text-xs text-[var(--text-muted)] mt-1.5 line-clamp-2">{{ subject.description|default:"No description available." }}</p>
+              </div>
+              <div class="flex items-center justify-between mt-4">
+                <span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">{{ subject.total_questions }} Questions</span>
+                <a href="{% url 'quiz_attempt' subject.id %}" class="cta-btn px-4 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1">
+                  Start Quiz <i data-lucide="play" class="w-3 h-3"></i>
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-[var(--text-muted)] text-sm">No quizzes are currently available.</p>
+          {% endif %}
         </div>
 
         <!-- Recent Activities Card -->
@@ -403,59 +431,29 @@
             <i data-lucide="history" class="w-5 h-5 text-[var(--accent-primary)]"></i>
             Recent Learning Progress
           </h3>
+          {% if recent_progress %}
           <div class="space-y-4">
-            <!-- Item 1 -->
-            <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.01] border border-[var(--border-soft)]">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                  <i data-lucide="help-circle" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <p class="text-sm font-bold text-[var(--text-main)]">Science &amp; Nature Quiz</p>
-                  <p class="text-xs text-[var(--text-muted)]">Completed: 15 Questions</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-sm font-bold text-emerald-400">90%</span>
-                <p class="text-[10px] text-[var(--text-muted)]">2 hours ago</p>
-              </div>
-            </div>
-
-            <!-- Item 2 -->
+            {% for card in recent_progress %}
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.01] border border-[var(--border-soft)]">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                  <i data-lucide="help-circle" class="w-4 h-4"></i>
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
                 </div>
                 <div>
-                  <p class="text-sm font-bold text-[var(--text-main)]">World History Quiz</p>
-                  <p class="text-xs text-[var(--text-muted)]">Completed: 10 Questions</p>
+                  <p class="text-sm font-bold text-[var(--text-main)]">{{ card.subject.name }}</p>
+                  <p class="text-xs text-[var(--text-muted)]">Score: {{ card.correct_answers }}/{{ card.total_questions }} ({{ card.attempted_questions }} attempted)</p>
                 </div>
               </div>
-              <div class="text-right">
-                <span class="text-sm font-bold text-emerald-400">80%</span>
-                <p class="text-[10px] text-[var(--text-muted)]">Yesterday</p>
+              <div class="text-right flex flex-col items-end gap-1">
+                <span class="text-sm font-bold text-emerald-400">{{ card.percentage }}%</span>
+                <a href="{% url 'report_card_view' card.id %}" class="text-[10px] text-[var(--accent-primary)] hover:underline font-bold">View Report Card</a>
               </div>
             </div>
-
-            <!-- Item 3 -->
-            <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.01] border border-[var(--border-soft)]">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400">
-                  <i data-lucide="user-check" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <p class="text-sm font-bold text-[var(--text-main)]">Account Registration</p>
-                  <p class="text-xs text-[var(--text-muted)]">Profile setup completed successfully</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-xs font-bold text-[var(--text-muted)]">Success</span>
-                <p class="text-[10px] text-[var(--text-muted)]">Recently</p>
-              </div>
-            </div>
-
+            {% endfor %}
           </div>
+          {% else %}
+          <p class="text-[var(--text-muted)] text-sm">You haven't completed any quizzes yet. Start one above!</p>
+          {% endif %}
         </div>
 
       </div>

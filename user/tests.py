@@ -430,7 +430,7 @@ class QuestionManagementFlowTests(TestCase):
         # POST request
         response_post = self.client.post(reverse('question_add'), {
             'subject': self.science_subj.id,
-            'question_text': 'What is H2O?'
+            'question_text': 'What is H2O?\nA) Water *\nB) Hydrogen\nC) Oxygen\nD) Helium'
         }, follow=True)
         self.assertRedirects(response_post, reverse('question_list'))
         self.assertContains(response_post, 'Question added successfully.')
@@ -473,7 +473,12 @@ class QuestionManagementFlowTests(TestCase):
         # POST request
         response_post = self.client.post(reverse('question_edit', args=[self.question.id]), {
             'subject': self.science_subj.id,
-            'question_text': 'What is gravity?'
+            'question_text': 'What is gravity?',
+            'option_a': 'Option A',
+            'option_b': 'Option B',
+            'option_c': 'Option C',
+            'option_d': 'Option D',
+            'correct_option': 'A'
         }, follow=True)
         self.assertRedirects(response_post, reverse('question_detail', args=[self.question.id]))
         self.assertContains(response_post, 'Question updated successfully.')
@@ -499,7 +504,7 @@ class QuestionManagementFlowTests(TestCase):
         # Post request with subject name string
         response = self.client.post(reverse('question_add'), {
             'subject': 'Science',
-            'question_text': 'What is the speed of light?'
+            'question_text': 'What is the speed of light?\nA) Fast *\nB) Slow\nC) Zero\nD) Static'
         }, follow=True)
         self.assertRedirects(response, reverse('question_list'))
         
@@ -514,7 +519,7 @@ class QuestionManagementFlowTests(TestCase):
         # Post request with new subject name
         response = self.client.post(reverse('question_add'), {
             'subject': 'Geography',
-            'question_text': 'What is the capital of France?'
+            'question_text': 'What is the capital of France?\nA) Paris *\nB) Berlin\nC) Rome\nD) London'
         }, follow=True)
         self.assertRedirects(response, reverse('question_list'))
         
@@ -528,8 +533,8 @@ class QuestionManagementFlowTests(TestCase):
     def test_admin_can_add_multiple_questions_at_once(self):
         self.client.login(username='admin_test', password='password123')
         
-        # Post request with multiple lines
-        questions_input = "Question One?\nQuestion Two?\nQuestion Three?"
+        # Post request with multiple MCQ questions
+        questions_input = "Question One?\nA) Option A1 *\nB) Option B1\nC) Option C1\nD) Option D1\n\nQuestion Two?\nA) Option A2 *\nB) Option B2\nC) Option C2\nD) Option D2"
         response = self.client.post(reverse('question_add'), {
             'subject': 'Mathematics',
             'question_text': questions_input
@@ -538,8 +543,9 @@ class QuestionManagementFlowTests(TestCase):
         
         # Check database
         from .models import Question
-        self.assertTrue(Question.objects.filter(question_text=questions_input).exists())
-        self.assertEqual(Question.objects.filter(subject=self.math_subj).count(), 2) # 1 original + 1 multi-line question
+        self.assertTrue(Question.objects.filter(question_text='Question One?').exists())
+        self.assertTrue(Question.objects.filter(question_text='Question Two?').exists())
+        self.assertEqual(Question.objects.filter(subject=self.math_subj).count(), 3)
 
     def test_admin_can_view_question_detail(self):
         self.client.login(username='admin_test', password='password123')

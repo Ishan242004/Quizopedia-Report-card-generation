@@ -1,0 +1,150 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Report Card Details - Quizopedia Admin{% endblock %}
+
+{% block active_report_cards %}active{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex items-center gap-3">
+  <a href="{% url 'admin_report_cards' %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to Report Cards">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+  </a>
+  <div>
+    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Report Card Details</h1>
+    <p class="text-[var(--text-muted)] text-sm">Reviewing quiz results for student <span class="text-[var(--accent-primary)] font-bold">{{ report_card.student.user.username }}</span>.</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- Left Column: Certificate styling display -->
+  <div class="lg:col-span-2">
+    <div class="glass-card rounded-[32px] p-8 sm:p-12 relative overflow-hidden border border-white/10 shadow-2xl">
+      <!-- Certificate decorations -->
+      <div class="absolute -top-16 -right-16 w-40 h-40 bg-[var(--accent-primary)] opacity-20 blur-2xl rounded-full"></div>
+      <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-[var(--accent-secondary)] opacity-10 blur-2xl rounded-full"></div>
+      <div class="absolute inset-4 rounded-[24px] border border-[var(--accent-primary)]/15 pointer-events-none"></div>
+
+      <div class="relative z-10">
+        <!-- Top Title -->
+        <div class="text-center mb-8 border-b border-[var(--sidebar-border)] pb-6">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg shadow-[rgba(16,185,129,0.25)] mx-auto mb-4">
+            <i data-lucide="shield-check" class="w-9 h-9 text-white"></i>
+          </div>
+          <h2 class="brand-font text-2xl sm:text-3xl font-extrabold text-[var(--text-main)]">Academic Report Card</h2>
+          <p class="text-xs text-[var(--accent-primary)] font-bold tracking-widest uppercase mt-1">Quizopedia Certification</p>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm mb-8">
+          <div class="space-y-4">
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Student Name</span>
+              <span class="font-bold text-[var(--text-main)] text-base">{{ report_card.student.user.first_name|default:report_card.student.user.username }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Registered Username</span>
+              <span class="font-semibold text-[var(--text-main)]">{{ report_card.student.user.username }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Email Address</span>
+              <span class="font-medium text-[var(--text-main)]">{{ report_card.student.email }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Phone Number</span>
+              <span class="font-medium text-[var(--text-main)]">{{ report_card.student.phone }}</span>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Subject / Category</span>
+              <span class="font-bold text-[var(--accent-primary)] text-base">{{ report_card.subject.name }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Attempt Timestamp</span>
+              <span class="font-medium text-[var(--text-main)]">{{ report_card.created_at|date:"F d, Y @ h:i A" }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Verification Status</span>
+              <span class="inline-flex items-center gap-1.5 font-bold text-emerald-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Certified Attempt
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade Display Banner Card -->
+        <div class="p-6 rounded-2xl bg-white/[0.02] border border-[var(--sidebar-border)] grid grid-cols-3 gap-4 text-center mb-4">
+          <div>
+            <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold mb-1">Percentage</span>
+            <span class="text-3xl font-extrabold text-[var(--text-main)] tracking-tight">{{ report_card.percentage }}%</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold mb-1">Grade</span>
+            <span class="text-3xl font-extrabold text-[var(--accent-primary)] tracking-tight">{{ report_card.result_grade }}</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold mb-1">Total Marks</span>
+            <span class="text-3xl font-extrabold text-[var(--text-main)] tracking-tight">{{ report_card.obtained_marks }}<span class="text-xs text-[var(--text-muted)]">/{{ report_card.total_marks }}</span></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Performance metrics & administrative actions -->
+  <div class="lg:col-span-1 space-y-6">
+    <!-- Performance breakdown card -->
+    <div class="glass-card rounded-[24px] p-6 border border-white/5 shadow-md">
+      <div class="flex items-center gap-2 border-b border-[var(--sidebar-border)] pb-3 mb-4">
+        <i data-lucide="bar-chart-2" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">Performance Stats</h3>
+      </div>
+
+      <div class="space-y-4 text-xs font-medium text-[var(--text-muted)]">
+        <div class="flex justify-between items-center py-1.5 border-b border-[var(--sidebar-border)]">
+          <span>Total Questions:</span>
+          <span class="font-bold text-[var(--text-main)]">{{ report_card.total_questions }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-[var(--sidebar-border)]">
+          <span>Questions Attempted:</span>
+          <span class="font-bold text-indigo-400">{{ report_card.attempted_questions }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-[var(--sidebar-border)]">
+          <span>Correct Answers:</span>
+          <span class="font-bold text-emerald-400">{{ report_card.correct_answers }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-[var(--sidebar-border)]">
+          <span>Wrong Answers:</span>
+          <span class="font-bold text-rose-400">{{ report_card.wrong_answers }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin actions card -->
+    <div class="glass-card rounded-[24px] p-6 border border-white/5 shadow-md space-y-4">
+      <div class="flex items-center gap-2 border-b border-[var(--sidebar-border)] pb-3">
+        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-500"></i>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">Admin Controls</h3>
+      </div>
+
+      <p class="text-xs text-[var(--text-muted)] leading-relaxed">
+        Deleting this report card will permanently remove it from the system. This action cannot be undone.
+      </p>
+
+      <form method="POST" action="{% url 'admin_report_card_delete' report_card.id %}"
+        onsubmit="return confirm('Are you sure you want to permanently delete this report card?');">
+        {% csrf_token %}
+        <button type="submit" class="w-full h-11 px-4 rounded-xl font-bold text-sm border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-rose-400 flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Report Card
+        </button>
+      </form>
+
+      <a href="{% url 'admin_report_cards' %}" class="w-full h-11 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white flex items-center justify-center transition text-xs font-bold">
+        Back to List
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

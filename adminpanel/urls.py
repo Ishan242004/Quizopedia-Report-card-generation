@@ -10,5 +10,9 @@ urlpatterns = [
     path('questions/add/', views.question_add, name='question_add'),
     path('questions/edit/<int:pk>/', views.question_edit, name='question_edit'),
     path('questions/delete/<int:pk>/', views.question_delete, name='question_delete'),
+    path('questions/subject/<int:pk>/', views.subject_questions, name='subject_questions'),
     path('questions/view/<int:pk>/', views.question_detail, name='question_detail'),
+    path('admin-dashboard/report-cards/', views.admin_report_cards, name='admin_report_cards'),
+    path('admin-dashboard/report-card/<int:pk>/', views.admin_report_card_detail, name='admin_report_card_detail'),
+    path('admin-dashboard/report-card/<int:pk>/delete/', views.admin_report_card_delete, name='admin_report_card_delete'),
 ]

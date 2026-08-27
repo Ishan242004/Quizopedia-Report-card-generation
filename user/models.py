@@ -72,8 +72,35 @@ class Subject(models.Model):
 class Question(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='questions')
     question_text = models.TextField()
+    option_a = models.CharField(max_length=255, default="")
+    option_b = models.CharField(max_length=255, default="")
+    option_c = models.CharField(max_length=255, default="")
+    option_d = models.CharField(max_length=255, default="")
+    correct_option = models.CharField(
+        max_length=1,
+        choices=[('A', 'Option A'), ('B', 'Option B'), ('C', 'Option C'), ('D', 'Option D')],
+        default='A'
+    )
 
     def __str__(self):
         return f"{self.subject.name}: {self.question_text[:50]}"
+
+
+class ReportCard(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='report_cards')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='report_cards')
+    total_questions = models.IntegerField()
+    attempted_questions = models.IntegerField()
+    correct_answers = models.IntegerField()
+    wrong_answers = models.IntegerField()
+    total_marks = models.IntegerField()
+    obtained_marks = models.IntegerField()
+    percentage = models.FloatField()
+    result_grade = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Report Card: {self.student.user.username} - {self.subject.name}"
+
 
 
