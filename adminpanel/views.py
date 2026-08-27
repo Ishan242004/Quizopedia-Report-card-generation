@@ -12,11 +12,8 @@ def admin_dashboard(request):
     subject_count = Subject.objects.filter(questions__isnull=False).distinct().count()
     report_card_count = ReportCard.objects.count()
     
-    # Calculate the total individual questions by splitting all Question blocks by newlines
-    question_count = sum(
-        len([line.strip() for line in q.question_text.split('\n') if line.strip()])
-        for q in Question.objects.all()
-    )
+    # Total questions = total Question rows in DB (each row is one question)
+    question_count = Question.objects.count()
     
     context = {
         'total_students': total_students,
@@ -25,6 +22,7 @@ def admin_dashboard(request):
         'report_card_count': report_card_count,
     }
     return render(request, 'adminpanel/dashboard.html', context)
+
 
 @admin_required
 def student_list(request):

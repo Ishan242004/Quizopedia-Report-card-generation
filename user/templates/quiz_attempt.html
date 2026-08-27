@@ -231,7 +231,7 @@
             </div>
             <div class="flex justify-between">
               <span>Format:</span>
-              <span class="font-bold text-[var(--text-main)]">Multiple Choice</span>
+              <span class="font-bold text-[var(--text-main)]">Text Answer</span>
             </div>
           </div>
 
@@ -249,7 +249,7 @@
           <div class="mb-6 pb-4 border-b border-[var(--border-soft)]">
             <span class="text-xs text-[var(--accent-secondary)] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)]">Active Quiz Attempt</span>
             <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-main)] mt-3">{{ subject.name }}</h1>
-            <p class="text-[var(--text-muted)] text-sm mt-1.5">{{ subject.description|default:"Select the correct option for each question below." }}</p>
+            <p class="text-[var(--text-muted)] text-sm mt-1.5">{{ subject.description|default:"Type your answer for each question below." }}</p>
           </div>
 
           <form method="POST" id="quizForm">
@@ -267,35 +267,18 @@
                   </h3>
                 </div>
                 
-                <!-- MCQ Radio Options -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-10">
-                  <!-- Option A -->
-                  <label class="flex items-center gap-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/15 transition cursor-pointer select-none">
-                    <input type="radio" name="question_{{ question.id }}" value="A" class="w-4 h-4 text-[var(--accent-primary)] bg-transparent border-[var(--input-border)] focus:ring-[var(--accent-primary)] focus:ring-offset-0">
-                    <span class="w-6 h-6 rounded bg-white/10 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">A</span>
-                    <span class="text-sm font-medium text-[var(--text-main)]">{{ question.option_a }}</span>
-                  </label>
-
-                  <!-- Option B -->
-                  <label class="flex items-center gap-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/15 transition cursor-pointer select-none">
-                    <input type="radio" name="question_{{ question.id }}" value="B" class="w-4 h-4 text-[var(--accent-primary)] bg-transparent border-[var(--input-border)] focus:ring-[var(--accent-primary)] focus:ring-offset-0">
-                    <span class="w-6 h-6 rounded bg-white/10 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">B</span>
-                    <span class="text-sm font-medium text-[var(--text-main)]">{{ question.option_b }}</span>
-                  </label>
-
-                  <!-- Option C -->
-                  <label class="flex items-center gap-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/15 transition cursor-pointer select-none">
-                    <input type="radio" name="question_{{ question.id }}" value="C" class="w-4 h-4 text-[var(--accent-primary)] bg-transparent border-[var(--input-border)] focus:ring-[var(--accent-primary)] focus:ring-offset-0">
-                    <span class="w-6 h-6 rounded bg-white/10 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">C</span>
-                    <span class="text-sm font-medium text-[var(--text-main)]">{{ question.option_c }}</span>
-                  </label>
-
-                  <!-- Option D -->
-                  <label class="flex items-center gap-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/15 transition cursor-pointer select-none">
-                    <input type="radio" name="question_{{ question.id }}" value="D" class="w-4 h-4 text-[var(--accent-primary)] bg-transparent border-[var(--input-border)] focus:ring-[var(--accent-primary)] focus:ring-offset-0">
-                    <span class="w-6 h-6 rounded bg-white/10 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">D</span>
-                    <span class="text-sm font-medium text-[var(--text-main)]">{{ question.option_d }}</span>
-                  </label>
+                <!-- Text Answer Input -->
+                <div class="pl-10">
+                  <div class="input-shell rounded-xl overflow-hidden">
+                    <input
+                      type="text"
+                      name="question_{{ question.id }}"
+                      id="q_{{ question.id }}"
+                      placeholder="Type your answer here..."
+                      autocomplete="off"
+                      class="w-full px-4 py-3 bg-transparent text-sm text-[var(--text-main)] placeholder:text-[var(--input-placeholder)] outline-none"
+                    >
+                  </div>
                 </div>
               </div>
               {% endfor %}

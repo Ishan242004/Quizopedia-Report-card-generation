@@ -253,11 +253,20 @@ def quiz_attempt(request, subject_id):
         
         for q in questions:
             ans_key = f"question_{q.id}"
-            selected_option = request.POST.get(ans_key, '').strip()
+            student_answer = request.POST.get(ans_key, '').strip()
             
-            if selected_option:
+            if student_answer:
                 attempted_count += 1
-                if selected_option == q.correct_option:
+                # Get the correct answer text based on correct_option
+                correct_map = {
+                    'A': q.option_a,
+                    'B': q.option_b,
+                    'C': q.option_c,
+                    'D': q.option_d,
+                }
+                correct_text = correct_map.get(q.correct_option, '').strip()
+                # Case-insensitive exact match
+                if student_answer.lower() == correct_text.lower():
                     correct_count += 1
                     
         total_questions = questions.count()
