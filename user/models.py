@@ -102,8 +102,44 @@ class Question(models.Model):
         answer_map = {'A': self.option_a, 'B': self.option_b, 'C': self.option_c, 'D': self.option_d}
         return answer_map.get(self.correct_option, self.option_a)
 
+    def sync_options(self):
+        """Syncs legacy options fields (option_a..d) with Option model instances."""
+        if self.question_type == 'mcq' and (self.option_a or self.option_b):
+            options_data = [
+                (self.option_a, self.correct_option == 'A'),
+                (self.option_b, self.correct_option == 'B'),
+                (self.option_c, self.correct_option == 'C'),
+                (self.option_d, self.correct_option == 'D'),
+            ]
+            existing_options = list(self.options.order_by('id'))
+            if len(existing_options) == 4:
+                for opt, (text, is_ans) in zip(existing_options, options_data):
+                    if opt.option_text != text or opt.is_answer != is_ans:
+                        opt.option_text = text
+                        opt.is_answer = is_ans
+                        opt.save()
+            else:
+                self.options.all().delete()
+                for text, is_ans in options_data:
+                    if text:
+                        self.options.create(option_text=text, is_answer=is_ans)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.question_type == 'mcq' and (self.option_a or self.option_b):
+            self.sync_options()
+
     def __str__(self):
         return f"[{self.get_question_type_display()}] {self.subject.name}: {self.question_text[:50]}"
+
+
+class Option(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    option_text = models.CharField(max_length=255)
+    is_answer = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.option_text} ({'Correct' if self.is_answer else 'Incorrect'})"
 
 
 class ReportCard(models.Model):

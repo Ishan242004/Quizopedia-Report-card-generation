@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, ProfileUpdateRequest, Subject, Question
+from .models import Student, ProfileUpdateRequest, Subject, Question, Option
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -32,10 +32,23 @@ class SubjectAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class OptionInline(admin.TabularInline):
+    model = Option
+    extra = 0
+
+
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('subject', 'question_text')
     list_filter = ('subject',)
     search_fields = ('question_text',)
+    inlines = [OptionInline]
+
+
+@admin.register(Option)
+class OptionAdmin(admin.ModelAdmin):
+    list_display = ('question', 'option_text', 'is_answer')
+    list_filter = ('is_answer',)
+    search_fields = ('option_text', 'question__question_text')
 
 

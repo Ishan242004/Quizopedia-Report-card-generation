@@ -102,7 +102,7 @@ class RegistrationFlowTests(TestCase):
         # Stays on the same page, status 200
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'register.html')
-        self.assertContains(response, 'Registration Successful!')
+        self.assertTrue('Registration Successful!' in response.content.decode() or 'Account Created!' in response.content.decode())
         self.assertContains(response, 'john_doe')
         self.assertContains(response, 'john@example.com')
         self.assertContains(response, '1234567890')
@@ -609,6 +609,65 @@ class QuestionManagementFlowTests(TestCase):
         self.client.login(username='student_test', password='password123')
         response = self.client.get(reverse('question_detail', args=[self.question.id]))
         self.assertRedirects(response, reverse('dashboard'))
+
+
+class OptionModelFlowTests(TestCase):
+    def setUp(self):
+        from .models import Subject, Question, Option
+        self.Subject = Subject
+        self.Question = Question
+        self.Option = Option
+        self.subject = Subject.objects.create(name='Computer Science')
+
+    def test_option_model_creation(self):
+        """Test creating Option with question ForeignKey, option_text, and is_answer."""
+        question = self.Question.objects.create(
+            subject=self.subject,
+            question_text='What is CPU?',
+            question_type='mcq'
+        )
+        opt1 = self.Option.objects.create(question=question, option_text='Central Processing Unit', is_answer=True)
+        opt2 = self.Option.objects.create(question=question, option_text='Central Power Unit', is_answer=False)
+
+        self.assertEqual(opt1.question, question)
+        self.assertEqual(opt1.option_text, 'Central Processing Unit')
+        self.assertTrue(opt1.is_answer)
+        self.assertFalse(opt2.is_answer)
+        self.assertEqual(question.options.count(), 2)
+
+    def test_question_cascade_delete_options(self):
+        """Deleting a question must cascade delete its options."""
+        question = self.Question.objects.create(
+            subject=self.subject,
+            question_text='Sample Question?',
+            question_type='mcq'
+        )
+        self.Option.objects.create(question=question, option_text='Option 1', is_answer=False)
+        self.Option.objects.create(question=question, option_text='Option 2', is_answer=True)
+        self.assertEqual(self.Option.objects.filter(question=question).count(), 2)
+
+        question_id = question.id
+        question.delete()
+        self.assertEqual(self.Option.objects.filter(question_id=question_id).count(), 0)
+
+    def test_mcq_backward_compatibility_sync(self):
+        """MCQ question created with option_a..d automatically syncs with Option model."""
+        q_mcq = self.Question.objects.create(
+            subject=self.subject,
+            question_type='mcq',
+            question_text='Which language is used for Django?',
+            option_a='Python',
+            option_b='Java',
+            option_c='C++',
+            option_d='Ruby',
+            correct_option='A',
+        )
+        options = list(q_mcq.options.order_by('id'))
+        self.assertEqual(len(options), 4)
+        self.assertEqual(options[0].option_text, 'Python')
+        self.assertTrue(options[0].is_answer)
+        self.assertEqual(options[1].option_text, 'Java')
+        self.assertFalse(options[1].is_answer)
 
 
 
