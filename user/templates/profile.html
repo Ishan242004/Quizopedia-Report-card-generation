@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,45 +9,39 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
     :root {
-      /* Dark Theme (Default) */
-      --bg-base: #020617; /* Slate 950 */
-      --header-bg: rgba(11, 15, 25, 0.4);
-      --header-border: rgba(255, 255, 255, 0.05);
-      --card-bg: #0b0f19;
-      --card-border: rgba(255, 255, 255, 0.06);
-      --text-main: #ffffff;
-      --text-muted: #94a3b8; /* Slate 400 */
-      --border-soft: rgba(255, 255, 255, 0.06);
-
-      --accent-primary: #10b981;
-      --accent-secondary: #6ee7b7;
-      --accent-primary-rgb: 16, 185, 129;
-      --accent-secondary-rgb: 110, 231, 183;
-
-      --input-bg: rgba(255, 255, 255, 0.03);
-      --input-border: rgba(255, 255, 255, 0.08);
-      --input-text: #ffffff;
-      --input-placeholder: rgba(255, 255, 255, 0.4);
-    }
-
-    body.light-mode {
-      /* Light Theme */
-      --bg-base: #f1f5f9; /* Slate 100 */
-      --header-bg: rgba(255, 255, 255, 0.6);
-      --header-border: rgba(15, 23, 42, 0.06);
+      --primary: #7c5cf5;
+      --primary-light: #a78bfa;
+      --primary-dark: #6d42e8;
+      --primary-gradient: linear-gradient(135deg, #7c5cf5 0%, #a78bfa 50%, #8b6cf7 100%);
+      --bg-base: #f5f3ff;
+      --header-bg: rgba(255, 255, 255, 0.8);
+      --header-border: rgba(124, 92, 245, 0.15);
       --card-bg: #ffffff;
-      --card-border: rgba(15, 23, 42, 0.08);
-      --text-main: #0f172a; /* Slate 900 */
-      --text-muted: #64748b; /* Slate 500 */
-      --border-soft: rgba(15, 23, 42, 0.06);
+      --card-border: rgba(124, 92, 245, 0.15);
+      --text-main: #1a1a2e;
+      --text-muted: #6b7280;
+      --text-light-muted: #9ca3af;
+      --border-soft: rgba(124, 92, 245, 0.15);
 
-      --input-bg: #f8fafc;
-      --input-border: #cbd5e1;
-      --input-text: #0f172a;
-      --input-placeholder: #94a3b8;
+      --accent-primary: #7c5cf5;
+      --accent-secondary: #a78bfa;
+      --accent-primary-rgb: 124, 92, 245;
+      --accent-secondary-rgb: 167, 139, 250;
+
+      --sidebar-bg: rgba(255, 255, 255, 0.7);
+      --sidebar-border: rgba(124, 92, 245, 0.15);
+      --sidebar-link: rgba(26, 26, 46, 0.6);
+      --sidebar-link-hover: rgba(124, 92, 245, 0.08);
+      --sidebar-link-active: #7c5cf5;
+      --panel: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #e5e7eb;
+      --input-text: #1a1a2e;
+      --input-placeholder: #9ca3af;
+      --table-header-bg: rgba(124, 92, 245, 0.05);
     }
 
     * {
@@ -54,8 +49,12 @@
       box-sizing: border-box;
     }
 
-    h1, h2, h3, h4, .brand-font {
-      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    h1,
+    h2,
+    h3,
+    h4,
+    .brand-font {
+      font-family: 'DM Sans', 'Inter', sans-serif;
     }
 
     body {
@@ -114,7 +113,7 @@
 
     .cta-btn {
       position: relative;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, #34d399 50%, var(--accent-secondary) 100%);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
       transition: transform .18s ease, box-shadow .25s ease;
       box-shadow: 0 8px 20px -6px rgba(var(--accent-primary-rgb), 0.4);
     }
@@ -171,6 +170,7 @@
     #portalSub {
       color: var(--accent-secondary);
     }
+
     body.light-mode #portalSub {
       color: var(--accent-primary);
     }
@@ -188,6 +188,7 @@
       transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: auto;
     }
+
     .page-transition-overlay.fade-out {
       opacity: 0;
       pointer-events: none;
@@ -234,12 +235,21 @@
     }
 
     @keyframes preloaderSpin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes preloaderPulse {
-      from { transform: scale(0.9); opacity: 0.5; }
-      to { transform: scale(1.15); opacity: 1; }
+      from {
+        transform: scale(0.9);
+        opacity: 0.5;
+      }
+
+      to {
+        transform: scale(1.15);
+        opacity: 1;
+      }
     }
 
     @keyframes fadeInUp {
@@ -247,11 +257,13 @@
         opacity: 0;
         transform: translateY(12px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
+
     .animate-fade-in {
       animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -297,9 +309,6 @@
     <div class="preloader-content">
       <div class="preloader-glow"></div>
       <div class="preloader-spinner"></div>
-      <div class="preloader-logo">
-        <i data-lucide="award" class="w-5 h-5 text-white"></i>
-      </div>
     </div>
   </div>
   <!-- Background blobs -->
@@ -312,31 +321,32 @@
   <!-- =========================================
        HEADER NAVIGATION BAR
        ========================================= -->
-  <header class="w-full h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md">
+  <header
+    class="w-full h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md">
     <div class="flex items-center gap-3">
       <!-- Logo Badge matching reference image structure -->
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(16,185,129,0.25)] flex-shrink-0">
+      <div
+        class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(16,185,129,0.25)] flex-shrink-0">
         <i data-lucide="award" class="w-5 h-5 text-white"></i>
       </div>
       <div>
         <span class="brand-font text-md font-bold tracking-tight block text-[var(--text-main)]">Quizopedia</span>
-        <span class="text-[9px] font-bold tracking-widest uppercase block leading-none mt-0.5" id="portalSub">Student Portal</span>
+        <span class="text-[9px] font-bold tracking-widest uppercase block leading-none mt-0.5" id="portalSub">Student
+          Portal</span>
       </div>
     </div>
 
     <div class="flex items-center gap-4">
-      <a href="{% url 'dashboard' %}" class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)]">
+      <a href="{% url 'dashboard' %}"
+        class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)]">
         <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
         <span>Dashboard</span>
       </a>
-      
-      <!-- Theme Switch Button -->
-      <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
-        <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
-        <span id="themeBtnText">Dark</span>
-      </button>
 
-      <a href="{% url 'logout' %}" class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)] hover:text-red-400">
+
+
+      <a href="{% url 'logout' %}"
+        class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)] hover:text-red-400">
         <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
         <span>Logout</span>
       </a>
@@ -344,9 +354,11 @@
   </header>
 
   <!-- Mobile Navigation Bar -->
-  <div class="md:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">
+  <div
+    class="md:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">
     <a href="{% url 'dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
-    <a href="{% url 'profile' %}" class="text-[var(--text-main)] border-b border-[var(--accent-primary)] pb-1">Profile</a>
+    <a href="{% url 'profile' %}"
+      class="text-[var(--text-main)] border-b border-[var(--accent-primary)] pb-1">Profile</a>
   </div>
 
   <!-- Main Container -->
@@ -354,33 +366,39 @@
     <!-- Header -->
     <div class="mb-10">
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Profile Settings</h1>
-      <p class="text-[var(--text-muted)] text-sm">View and customize your account parameters, contact info, and credentials.</p>
+      <p class="text-[var(--text-muted)] text-sm">View and customize your account parameters, contact info, and
+        credentials.</p>
     </div>
 
     <!-- Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Left Profile Details Column -->
       <div class="lg:col-span-1">
-        <div class="glass-card rounded-[28px] p-6 relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[380px]">
+        <div
+          class="glass-card rounded-[28px] p-6 relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[380px]">
           <!-- Card Decorative Blob -->
-          <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-[var(--accent-primary)] opacity-20 blur-xl"></div>
-          
+          <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-[var(--accent-primary)] opacity-20 blur-xl">
+          </div>
+
           <div class="relative z-10 flex flex-col items-center">
             <!-- Profile Avatar Badge -->
-            <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-xl shadow-[rgba(16,185,129,0.3)] mb-5">
+            <div
+              class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-xl shadow-[rgba(16,185,129,0.3)] mb-5">
               <i data-lucide="user" class="w-10 h-10 text-white"></i>
             </div>
-            
+
             <h2 class="text-xl font-extrabold text-[var(--text-main)] tracking-tight leading-tight mb-1">
               {{ student.username|default:request.user.username }}
             </h2>
-            <span class="text-xs text-[var(--accent-secondary)] font-bold tracking-wide uppercase px-3 py-1 rounded-full bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] mb-6">
+            <span
+              class="text-xs text-[var(--accent-secondary)] font-bold tracking-wide uppercase px-3 py-1 rounded-full bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] mb-6">
               Student Subscriber
             </span>
 
             <div class="space-y-4 w-full text-left border-t border-[var(--border-soft)] pt-6 text-sm">
               <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Registration Status</span>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Registration
+                  Status</span>
                 <span class="font-medium text-emerald-400 flex items-center gap-1.5 mt-0.5">
                   <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Verified Account
                 </span>
@@ -390,44 +408,53 @@
                 <span class="font-medium text-[var(--text-main)]">{{ request.user.first_name|default:'Not provided' }}</span>
               </div>
               <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Email Associated</span>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Email
+                  Associated</span>
                 <span class="font-medium text-[var(--text-main)] break-all">{{ request.user.email }}</span>
               </div>
               <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Phone Associated</span>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Phone
+                  Associated</span>
                 <span class="font-medium text-[var(--text-main)]">{{ student.phone|default:'Not provided' }}</span>
               </div>
               <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Update Request Status</span>
+                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Update
+                  Request Status</span>
                 {% if latest_request %}
-                  {% if latest_request.status == 'pending' %}
-                    <span class="font-bold text-amber-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit text-xs">
-                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Pending Approval
-                    </span>
-                    <div class="mt-2 text-[11px] text-[var(--text-muted)] bg-white/5 rounded-lg p-2.5 border border-[var(--border-soft)]">
-                      <p class="font-semibold text-white mb-1 text-xs">Requested Changes:</p>
-                      <ul class="space-y-0.5">
-                        <li>Name: <span class="text-white">{{ latest_request.name }}</span></li>
-                        <li>Email: <span class="text-white">{{ latest_request.email }}</span></li>
-                        <li>Phone: <span class="text-white">{{ latest_request.phone }}</span></li>
-                      </ul>
-                    </div>
-                  {% elif latest_request.status == 'approved' %}
-                    <span class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
-                    </span>
-                  {% elif latest_request.status == 'rejected' %}
-                    <span class="font-bold text-rose-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit text-xs" title="Reason: {{ latest_request.rejection_reason|default:'No reason provided' }}">
-                      <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Rejected
-                    </span>
-                    {% if latest_request.rejection_reason %}
-                      <span class="text-[11px] text-rose-300 block mt-1 italic">Reason: {{ latest_request.rejection_reason }}</span>
-                    {% endif %}
-                  {% endif %}
+                {% if latest_request.status == 'pending' %}
+                <span
+                  class="font-bold text-amber-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit text-xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Pending Approval
+                </span>
+                <div
+                  class="mt-2 text-[11px] text-[var(--text-muted)] bg-white/5 rounded-lg p-2.5 border border-[var(--border-soft)]">
+                  <p class="font-semibold text-white mb-1 text-xs">Requested Changes:</p>
+                  <ul class="space-y-0.5">
+                    <li>Name: <span class="text-white">{{ latest_request.name }}</span></li>
+                    <li>Email: <span class="text-white">{{ latest_request.email }}</span></li>
+                    <li>Phone: <span class="text-white">{{ latest_request.phone }}</span></li>
+                  </ul>
+                </div>
+                {% elif latest_request.status == 'approved' %}
+                <span
+                  class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
+                </span>
+                {% elif latest_request.status == 'rejected' %}
+                <span
+                  class="font-bold text-rose-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit text-xs"
+                  title="Reason: {{ latest_request.rejection_reason|default:'No reason provided' }}">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Rejected
+                </span>
+                {% if latest_request.rejection_reason %}
+                <span class="text-[11px] text-rose-300 block mt-1 italic">Reason: {{ latest_request.rejection_reason }}</span>
+                {% endif %}
+                {% endif %}
                 {% else %}
-                  <span class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
-                  </span>
+                <span
+                  class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
+                </span>
                 {% endif %}
               </div>
             </div>
@@ -444,7 +471,8 @@
 
           <!-- Notifications -->
           {% if errors %}
-          <div class="mb-6 p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-semibold space-y-1">
+          <div
+            class="mb-6 p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-semibold space-y-1">
             {% for error in errors %}
             <p class="flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> {{ error }}</p>
             {% endfor %}
@@ -452,7 +480,8 @@
           {% endif %}
 
           {% if success %}
-          <div class="mb-6 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+          <div
+            class="mb-6 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
             <i data-lucide="check-circle" class="w-4 h-4"></i> {{ success }}
           </div>
           {% endif %}
@@ -466,17 +495,20 @@
                 <label for="name" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Name</label>
                 <div class="input-shell" id="nameShell">
                   <i data-lucide="user" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="text" name="name" id="name" value="{{ form_name }}" class="input-field" placeholder="Name" required>
+                  <input type="text" name="name" id="name" value="{{ form_name }}" class="input-field"
+                    placeholder="Name" required>
                 </div>
                 <p class="field-error-msg text-xs text-red-500 ml-1" id="nameError">Name is required.</p>
               </div>
 
               <!-- Phone input -->
               <div class="space-y-2">
-                <label for="phone" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Phone Number</label>
+                <label for="phone" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Phone
+                  Number</label>
                 <div class="input-shell" id="phoneShell">
                   <i data-lucide="phone" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="text" name="phone" id="phone" value="{{ form_phone }}" class="input-field" placeholder="10 Digit Number" required>
+                  <input type="text" name="phone" id="phone" value="{{ form_phone }}" class="input-field"
+                    placeholder="10 Digit Number" required>
                 </div>
                 <p class="field-error-msg text-xs text-red-500 ml-1" id="phoneError">Enter a valid phone number.</p>
               </div>
@@ -485,31 +517,37 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <!-- Email input -->
               <div class="space-y-2">
-                <label for="email" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Email Address</label>
+                <label for="email" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Email
+                  Address</label>
                 <div class="input-shell" id="emailShell">
                   <i data-lucide="mail" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="email" name="email" id="email" value="{{ form_email }}" class="input-field" placeholder="you@example.com" required>
+                  <input type="email" name="email" id="email" value="{{ form_email }}" class="input-field"
+                    placeholder="you@example.com" required>
                 </div>
                 <p class="field-error-msg text-xs text-red-500 ml-1" id="emailError">Enter a valid email address.</p>
               </div>
 
               <!-- Password input (optional) -->
               <div class="space-y-2">
-                <label for="password" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">New Password</label>
+                <label for="password" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">New
+                  Password</label>
                 <div class="input-shell" id="passwordShell">
                   <i data-lucide="lock" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="password" name="password" id="password" class="input-field" placeholder="Leave blank to keep unchanged">
+                  <input type="password" name="password" id="password" class="input-field"
+                    placeholder="Leave blank to keep unchanged">
                 </div>
               </div>
             </div>
 
             <!-- Submit buttons -->
             <div class="flex items-center justify-between border-t border-[var(--border-soft)] pt-6 mt-8">
-              <a href="{% url 'dashboard' %}" class="px-5 py-2.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1 text-[var(--text-main)]">
+              <a href="{% url 'dashboard' %}"
+                class="px-5 py-2.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1 text-[var(--text-main)]">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
               </a>
 
-              <button type="submit" class="cta-btn px-6 py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center gap-1.5 shadow-md">
+              <button type="submit"
+                class="cta-btn px-6 py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center gap-1.5 shadow-md">
                 <i data-lucide="save" class="w-4 h-4"></i> Save Settings
               </button>
             </div>
@@ -522,35 +560,7 @@
   <script>
     lucide.createIcons();
 
-    // =========================================
-    // THEME CONTROLLER & INITIALIZATION
-    // =========================================
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const themeBtnText = document.getElementById('themeBtnText');
-    const themeBtnIcon = document.getElementById('themeBtnIcon');
 
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Light';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
-      } else {
-        document.body.classList.remove('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Dark';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
-      }
-      lucide.createIcons();
-    }
-
-    themeToggleBtn.addEventListener('click', () => {
-      const isLight = document.body.classList.contains('light-mode');
-      const targetTheme = isLight ? 'dark' : 'light';
-      localStorage.setItem('theme', targetTheme);
-      applyTheme(targetTheme);
-    });
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(savedTheme);
 
     // Page Transition Handlers
     window.addEventListener('DOMContentLoaded', () => {
@@ -581,7 +591,7 @@
               window.location.href = link.href;
             }, 300);
           }
-        } catch(err) {}
+        } catch (err) { }
       }
     });
 

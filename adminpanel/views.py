@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.db import transaction
 from user.models import Student, ProfileUpdateRequest, Subject, Question, ReportCard
 from user.decorators import admin_required
-from .forms import QuestionForm, QuestionEditForm
+from .forms import (
+    QuestionForm, QuestionEditForm,
+    QnAAddForm, QnAEditForm,
+    MCQBulkForm, MCQEditForm,
+)
 import re
 
 @admin_required
@@ -188,198 +193,435 @@ def subject_questions(request, pk):
     })
 
 
-def parse_mcq_text(text):
-    blocks = [b.strip() for b in re.split(r'\n\s*\n', text) if b.strip()]
-    parsed_questions = []
+# =============================================================================
+# HELPER: Resolve subject name/ID to Subject object
+# =============================================================================
 
-    for block in blocks:
+def _resolve_subject(subject_input):
+    """Resolve a subject input (name or ID string) to a Subject object."""
+    subject_input = subject_input.strip()
+    if subject_input.isdigit():
+        subject = Subject.objects.filter(id=int(subject_input)).first()
+        if not subject:
+            subject, created = Subject.objects.get_or_create(
+                name__iexact=subject_input,
+                defaults={'name': subject_input}
+            )
+    else:
+        subject, created = Subject.objects.get_or_create(
+            name__iexact=subject_input,
+            defaults={'name': subject_input}
+        )
+    return subject
+
+
+# =============================================================================
+# QUESTION TYPE SELECTION
+# =============================================================================
+
+@admin_required
+def question_type_select(request):
+    """Show question type selection page: Q&A or MCQ."""
+    subject = request.GET.get('subject', '').strip()
+    return render(request, 'adminpanel/question_type_select.html', {'subject': subject})
+
+
+# =============================================================================
+# QUESTION & ANSWER — ADD (Bulk / Single with Preview & Validation)
+# =============================================================================
+
+def parse_qna_bulk(text):
+    """
+    Parse bulk Q&A text into a list of question dicts.
+    Returns (parsed_questions, errors).
+    
+    Each parsed question is a dict with:
+        question_text, answer
+    """
+    if not text or not text.strip():
+        return [], ["Question text is required."]
+    
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    
+    # Remove format introductory lines (e.g. "Format 1 – Simple Q&A...") and convert "---" lines
+    cleaned_lines = []
+    for line in text.split('\n'):
+        stripped = line.strip()
+        if re.match(r'^Format\s*\d+\b', stripped, re.IGNORECASE):
+            continue
+        if re.match(r'^[-=_*]{3,}$', stripped):
+            cleaned_lines.append('')
+            continue
+        cleaned_lines.append(line)
+    
+    normalized_text = '\n'.join(cleaned_lines)
+    raw_blocks = re.split(r'\n\s*\n', normalized_text)
+    
+    blocks = []
+    for raw_block in raw_blocks:
+        raw_block = raw_block.strip()
+        if not raw_block:
+            continue
+        # Split blocks that contain multiple question markers like "Q1.", "Q2.", "Question 1:", etc.
+        parts = re.split(r'(?=^(?:Q\d+|Question\s*\d+|\d+\.)[.\s):])', raw_block, flags=re.MULTILINE)
+        for part in parts:
+            part = part.strip()
+            if part:
+                blocks.append(part)
+    
+    if not blocks:
+        return [], ["Could not find any questions in the input. Please follow the format shown in the placeholder."]
+    
+    parsed_questions = []
+    errors = []
+    
+    ans_pattern = re.compile(
+        r'^(?:(?:Correct\s+)?Answer|Ans|Correct\s*Option)\s*[:\-]\s*(.+)$',
+        re.IGNORECASE
+    )
+    
+    for idx, block in enumerate(blocks):
+        q_num = idx + 1
         lines = [line.strip() for line in block.split('\n') if line.strip()]
         if not lines:
             continue
+        
+        q_lines = []
+        answer = ""
+        
+        for line in lines:
+            m_ans = ans_pattern.match(line)
+            if m_ans:
+                answer = m_ans.group(1).strip()
+            else:
+                q_lines.append(line)
+        
+        q_text_raw = " ".join(q_lines).strip()
+        q_text = re.sub(r'^(?:Question\s*\d+|Q\d+|Q|\d+)[.\s):\-]+\s*', '', q_text_raw, flags=re.IGNORECASE).strip()
+        
+        if not q_text and not answer:
+            continue
             
+        q_errors = []
+        if not q_text:
+            q_errors.append(f"Question {q_num}: Question text is missing.")
+        if not answer:
+            q_errors.append(f"Question {q_num}: Correct Answer is missing. (Format: Correct Answer: your answer)")
+            
+        if q_errors:
+            errors.extend(q_errors)
+        else:
+            parsed_questions.append({
+                'question_text': q_text,
+                'answer': answer,
+            })
+            
+    return parsed_questions, errors
+
+
+@admin_required
+def question_add_qna(request):
+    """Add Question & Answer (supports single or bulk format)."""
+    errors = []
+    
+    # Check for pre-selected subject via GET parameter
+    subject_param = (request.GET.get('subject') or request.GET.get('subject_id') or '').strip()
+    initial_subject = ''
+    selected_subject = None
+    if subject_param:
+        if subject_param.isdigit():
+            selected_subject = Subject.objects.filter(id=int(subject_param)).first()
+            initial_subject = selected_subject.name if selected_subject else subject_param
+        else:
+            initial_subject = subject_param
+            selected_subject = Subject.objects.filter(name__iexact=subject_param).first()
+
+    if request.method == 'POST':
+        form = QnAAddForm(request.POST)
+        if form.is_valid():
+            subject = _resolve_subject(form.cleaned_data['subject'])
+            q_text_input = form.cleaned_data['question_text'].strip()
+            ans_input = form.cleaned_data.get('answer', '').strip() if form.cleaned_data.get('answer') else ''
+            
+            # Check if answer was provided in a separate field (backward compatibility for direct POST/tests)
+            # and question_text doesn't contain answer keyword
+            if ans_input and not re.search(r'(?:(?:Correct\s+)?Answer|Ans)\s*:', q_text_input, re.IGNORECASE):
+                Question.objects.create(
+                    subject=subject,
+                    question_type='qna',
+                    question_text=q_text_input,
+                    option_a=ans_input,
+                    option_b='',
+                    option_c='',
+                    option_d='',
+                    correct_option='A',
+                )
+                messages.success(request, "Question added successfully.")
+                return redirect('subject_questions', pk=subject.id)
+            
+            # Otherwise parse Q&A text (bulk or single format with Correct Answer:)
+            parsed_questions, parse_errors = parse_qna_bulk(q_text_input)
+            
+            if parse_errors:
+                errors = ["Could not import questions."] + parse_errors
+            elif not parsed_questions:
+                errors = ["Could not find any valid questions in the input. Please follow the format shown in the placeholder."]
+            else:
+                try:
+                    with transaction.atomic():
+                        for pq in parsed_questions:
+                            Question.objects.create(
+                                subject=subject,
+                                question_type='qna',
+                                question_text=pq['question_text'],
+                                option_a=pq['answer'],
+                                option_b='',
+                                option_c='',
+                                option_d='',
+                                correct_option='A',
+                            )
+                    count = len(parsed_questions)
+                    messages.success(request, f"{count} question{'s' if count > 1 else ''} added successfully.")
+                    return redirect('subject_questions', pk=subject.id)
+                except Exception as e:
+                    errors.append(f"An error occurred while saving questions: {str(e)}")
+        else:
+            for field, errs in form.errors.items():
+                for err in errs:
+                    errors.append(err)
+    else:
+        form = QnAAddForm(initial={'subject': initial_subject} if initial_subject else None)
+        
+    return render(request, 'adminpanel/question_add_qna.html', {
+        'form': form,
+        'errors': errors,
+        'selected_subject': selected_subject,
+    })
+
+
+# =============================================================================
+# 4 OPTION MCQ — BULK ADD with validation & atomic save
+# =============================================================================
+
+def parse_mcq_bulk(text):
+    """
+    Parse bulk MCQ text into a list of question dicts.
+    Returns (parsed_questions, errors).
+    
+    Each parsed question is a dict with:
+        question_text, option_a, option_b, option_c, option_d, correct_option
+    
+    errors is a list of strings describing per-question validation failures.
+    """
+    # First normalize line endings
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    
+    # Remove format introductory lines (e.g. "Format 2 – MCQ...") and convert "---" lines
+    cleaned_lines = []
+    for line in text.split('\n'):
+        stripped = line.strip()
+        if re.match(r'^Format\s*\d+\b', stripped, re.IGNORECASE):
+            continue
+        if re.match(r'^[-=_*]{3,}$', stripped):
+            cleaned_lines.append('')
+            continue
+        cleaned_lines.append(line)
+    
+    normalized_text = '\n'.join(cleaned_lines)
+    raw_blocks = re.split(r'\n\s*\n', normalized_text)
+    
+    # Further split blocks that contain multiple questions (Q1... Q2... in same block)
+    blocks = []
+    for raw_block in raw_blocks:
+        raw_block = raw_block.strip()
+        if not raw_block:
+            continue
+        # Check if block contains multiple question markers
+        parts = re.split(r'(?=^(?:Q\d+|Question\s*\d+|\d+\.)[.\s):])', raw_block, flags=re.MULTILINE)
+        for part in parts:
+            part = part.strip()
+            if part:
+                blocks.append(part)
+    
+    if not blocks:
+        return [], ["Could not find any questions in the input. Please follow the format shown in the placeholder."]
+    
+    parsed_questions = []
+    errors = []
+    
+    for idx, block in enumerate(blocks):
+        q_num = idx + 1
+        lines = [line.strip() for line in block.split('\n') if line.strip()]
+        if not lines:
+            continue
+        
         question_text = ""
         option_a = ""
         option_b = ""
         option_c = ""
         option_d = ""
-        correct_option = "A"
+        correct_option = ""
         
-        opt_a_re = re.compile(r'^[aA][).:\s]\s*(.*)$')
-        opt_b_re = re.compile(r'^[bB][).:\s]\s*(.*)$')
-        opt_c_re = re.compile(r'^[cC][).:\s]\s*(.*)$')
-        opt_d_re = re.compile(r'^[dD][).:\s]\s*(.*)$')
-        
-        correct_ans_re = re.compile(r'^(?:correct\s+)?answer\s*:\s*([a-dA-D])(?:\s*|[).:].*)$', re.IGNORECASE)
-        correct_ans_full_re = re.compile(r'^(?:correct\s+)?answer\s*:\s*([a-dA-D])\s*[).:\s]\s*(.*)$', re.IGNORECASE)
-        # New: plain text answer format — "Correct Answer: Object Oriented Programming"
-        correct_ans_text_re = re.compile(r'^(?:correct\s+)?answer\s*:\s*(.+)$', re.IGNORECASE)
+        # Regex patterns for options
+        opt_a_re = re.compile(r'^[Aa]\s*[).:\-]\s*(.+)$')
+        opt_b_re = re.compile(r'^[Bb]\s*[).:\-]\s*(.+)$')
+        opt_c_re = re.compile(r'^[Cc]\s*[).:\-]\s*(.+)$')
+        opt_d_re = re.compile(r'^[Dd]\s*[).:\-]\s*(.+)$')
+        correct_re = re.compile(r'^[Cc]orrect\s+[Aa]nswer\s*:\s*([A-Da-d])\s*$', re.IGNORECASE)
         
         question_lines = []
-        plain_answer = None   # For simple Q&A format (no A/B/C/D)
         
         for line in lines:
             ma = opt_a_re.match(line)
             mb = opt_b_re.match(line)
             mc = opt_c_re.match(line)
             md = opt_d_re.match(line)
+            mcorr = correct_re.match(line)
             
-            if ma:
-                val = ma.group(1)
-                if '*' in val:
-                    correct_option = "A"
-                    val = val.replace('*', '')
-                option_a = val.strip()
+            if mcorr:
+                correct_option = mcorr.group(1).upper()
+            elif ma:
+                option_a = ma.group(1).strip()
             elif mb:
-                val = mb.group(1)
-                if '*' in val:
-                    correct_option = "B"
-                    val = val.replace('*', '')
-                option_b = val.strip()
+                option_b = mb.group(1).strip()
             elif mc:
-                val = mc.group(1)
-                if '*' in val:
-                    correct_option = "C"
-                    val = val.replace('*', '')
-                option_c = val.strip()
+                option_c = mc.group(1).strip()
             elif md:
-                val = md.group(1)
-                if '*' in val:
-                    correct_option = "D"
-                    val = val.replace('*', '')
-                option_d = val.strip()
+                option_d = md.group(1).strip()
             else:
-                m_ans = correct_ans_re.match(line)
-                m_ans_full = correct_ans_full_re.match(line)
-                m_ans_text = correct_ans_text_re.match(line)
-                if m_ans:
-                    correct_option = m_ans.group(1).upper()
-                elif m_ans_full:
-                    correct_option = m_ans_full.group(1).upper()
-                elif line.lower().startswith('correct answer'):
-                    # Check if it's a letter-based answer
-                    found_letter = False
-                    for letter in ['A', 'B', 'C', 'D']:
-                        if f"{letter})" in line or f"{letter}." in line or f" {letter} " in line or line.rstrip().endswith(letter):
-                            correct_option = letter
-                            found_letter = True
-                            break
-                    if not found_letter and m_ans_text:
-                        # Plain text answer like "Correct Answer: Object Oriented Programming"
-                        plain_answer = m_ans_text.group(1).strip()
-                else:
-                    question_lines.append(line)
-                    
-        question_raw = " ".join(question_lines).strip()
-        question_clean = re.sub(r'^\d+[\s.)-]+\s*', '', question_raw)
+                question_lines.append(line)
         
-        # --- MCQ format (has A/B options) ---
-        if question_clean and option_a and option_b:
+        # Clean question text — remove leading Q number prefix
+        question_raw = " ".join(question_lines).strip()
+        question_text = re.sub(r'^(?:Question\s*\d+|Q\d+|Q|\d+)[.\s):\-]+\s*', '', question_raw, flags=re.IGNORECASE).strip()
+        
+        # --- Validation ---
+        q_errors = []
+        
+        if not question_text:
+            q_errors.append(f"Question {q_num}: Question text is missing.")
+        if not option_a:
+            q_errors.append(f"Question {q_num}: Option A is missing.")
+        if not option_b:
+            q_errors.append(f"Question {q_num}: Option B is missing.")
+        if not option_c:
+            q_errors.append(f"Question {q_num}: Option C is missing.")
+        if not option_d:
+            q_errors.append(f"Question {q_num}: Option D is missing.")
+        if not correct_option:
+            q_errors.append(f"Question {q_num}: Correct Answer is missing.")
+        elif correct_option not in ('A', 'B', 'C', 'D'):
+            q_errors.append(f"Question {q_num}: Correct Answer must be A, B, C or D.")
+        
+        if q_errors:
+            errors.extend(q_errors)
+        else:
             parsed_questions.append({
-                'question_text': question_clean,
+                'question_text': question_text,
                 'option_a': option_a,
                 'option_b': option_b,
                 'option_c': option_c,
                 'option_d': option_d,
-                'correct_option': correct_option
+                'correct_option': correct_option,
             })
-        # --- Simple Q&A format (no options, just Correct Answer: text) ---
-        elif question_clean and plain_answer:
-            parsed_questions.append({
-                'question_text': question_clean,
-                'option_a': plain_answer,
-                'option_b': '',
-                'option_c': '',
-                'option_d': '',
-                'correct_option': 'A'
-            })
-            
-    return parsed_questions
+    
+    return parsed_questions, errors
 
 
 @admin_required
-def question_add(request):
+def question_add_mcq(request):
+    """Bulk add MCQ questions with validation and atomic save."""
     errors = []
+    preview_questions = None
+    
+    # Check for pre-selected subject via GET parameter
+    subject_param = (request.GET.get('subject') or request.GET.get('subject_id') or '').strip()
+    initial_subject = ''
+    selected_subject = None
+    if subject_param:
+        if subject_param.isdigit():
+            selected_subject = Subject.objects.filter(id=int(subject_param)).first()
+            initial_subject = selected_subject.name if selected_subject else subject_param
+        else:
+            initial_subject = subject_param
+            selected_subject = Subject.objects.filter(name__iexact=subject_param).first()
+    
     if request.method == 'POST':
-        form = QuestionForm(request.POST)
+        form = MCQBulkForm(request.POST)
         if form.is_valid():
-            subject_input = form.cleaned_data['subject'].strip()
-            question_text = form.cleaned_data['question_text'].strip()
+            subject = _resolve_subject(form.cleaned_data['subject'])
+            mcq_text = form.cleaned_data['mcq_text']
             
-            # Resolve subject (ID or name)
-            if subject_input.isdigit():
-                subject = Subject.objects.filter(id=int(subject_input)).first()
-                if not subject:
-                    subject, created = Subject.objects.get_or_create(
-                        name__iexact=subject_input,
-                        defaults={'name': subject_input}
-                    )
+            parsed_questions, parse_errors = parse_mcq_bulk(mcq_text)
+            
+            if parse_errors:
+                errors = ["Could not import questions."] + parse_errors
+            elif not parsed_questions:
+                errors = ["Could not find any valid MCQ questions in the input. Please follow the format shown in the placeholder."]
             else:
-                subject, created = Subject.objects.get_or_create(
-                    name__iexact=subject_input,
-                    defaults={'name': subject_input}
-                )
-                
-            # Parse pasted MCQ text
-            parsed_questions = parse_mcq_text(question_text)
-            if not parsed_questions:
-                errors.append("Could not parse any valid MCQ questions from the input. Please follow the format shown in placeholder.")
-            else:
-                for pq in parsed_questions:
-                    Question.objects.create(
-                        subject=subject,
-                        question_text=pq['question_text'],
-                        option_a=pq['option_a'],
-                        option_b=pq['option_b'],
-                        option_c=pq['option_c'],
-                        option_d=pq['option_d'],
-                        correct_option=pq['correct_option']
-                    )
-                if len(parsed_questions) == 1:
-                    messages.success(request, "Question added successfully.")
-                else:
-                    messages.success(request, f"Successfully parsed and added {len(parsed_questions)} questions.")
-                return redirect('question_list')
+                # Atomic save — all or nothing
+                try:
+                    with transaction.atomic():
+                        for pq in parsed_questions:
+                            Question.objects.create(
+                                subject=subject,
+                                question_type='mcq',
+                                question_text=pq['question_text'],
+                                option_a=pq['option_a'],
+                                option_b=pq['option_b'],
+                                option_c=pq['option_c'],
+                                option_d=pq['option_d'],
+                                correct_option=pq['correct_option'],
+                            )
+                    count = len(parsed_questions)
+                    messages.success(request, f"{count} question{'s' if count > 1 else ''} added successfully.")
+                    return redirect('subject_questions', pk=subject.id)
+                except Exception as e:
+                    errors.append(f"An error occurred while saving questions: {str(e)}")
         else:
             for field, errs in form.errors.items():
                 for err in errs:
                     errors.append(err)
     else:
-        form = QuestionForm()
-    return render(request, 'adminpanel/question_form.html', {
+        form = MCQBulkForm(initial={'subject': initial_subject} if initial_subject else None)
+    
+    return render(request, 'adminpanel/question_add_mcq.html', {
         'form': form,
-        'title': 'Add Question',
-        'submit_text': 'Save Question',
-        'errors': errors
+        'errors': errors,
+        'selected_subject': selected_subject,
     })
 
+
+# =============================================================================
+# QUESTION EDIT — Routes to Q&A or MCQ edit based on question_type
+# =============================================================================
 
 @admin_required
 def question_edit(request, pk):
     question = get_object_or_404(Question, id=pk)
     errors = []
+    
+    if question.is_mcq:
+        return _edit_mcq(request, question, errors)
+    else:
+        return _edit_qna(request, question, errors)
+
+
+def _edit_qna(request, question, errors):
+    """Edit a Q&A question."""
     if request.method == 'POST':
-        form = QuestionEditForm(request.POST, instance=question)
+        form = QnAEditForm(request.POST)
         if form.is_valid():
-            subject_input = form.cleaned_data['subject'].strip()
-            
-            # Resolve subject (ID or name)
-            if subject_input.isdigit():
-                subject = Subject.objects.filter(id=int(subject_input)).first()
-                if not subject:
-                    subject, created = Subject.objects.get_or_create(
-                        name__iexact=subject_input,
-                        defaults={'name': subject_input}
-                    )
-            else:
-                subject, created = Subject.objects.get_or_create(
-                    name__iexact=subject_input,
-                    defaults={'name': subject_input}
-                )
-                
-            question = form.save(commit=False)
+            subject = _resolve_subject(form.cleaned_data['subject'])
             question.subject = subject
+            question.question_text = form.cleaned_data['question_text'].strip()
+            question.option_a = form.cleaned_data['answer'].strip()
+            question.option_b = ''
+            question.option_c = ''
+            question.option_d = ''
+            question.correct_option = 'A'
+            question.question_type = 'qna'
             question.save()
-            
             messages.success(request, "Question updated successfully.")
             return redirect('question_detail', pk=question.id)
         else:
@@ -387,25 +629,84 @@ def question_edit(request, pk):
                 for err in errs:
                     errors.append(err)
     else:
-        form = QuestionEditForm(instance=question, initial={
-            'subject': question.subject.name
+        form = QnAEditForm(initial={
+            'subject': question.subject.name,
+            'question_text': question.question_text,
+            'answer': question.option_a,
         })
-    return render(request, 'adminpanel/question_form.html', {
+    
+    return render(request, 'adminpanel/question_edit_qna.html', {
         'form': form,
-        'title': 'Edit Question',
-        'submit_text': 'Save Question',
-        'errors': errors
+        'question': question,
+        'errors': errors,
     })
 
+
+def _edit_mcq(request, question, errors):
+    """Edit an MCQ question."""
+    if request.method == 'POST':
+        form = MCQEditForm(request.POST, instance=question)
+        subject_input = request.POST.get('subject', '').strip()
+        if form.is_valid() and subject_input:
+            subject = _resolve_subject(subject_input)
+            question = form.save(commit=False)
+            question.subject = subject
+            question.question_type = 'mcq'
+            question.save()
+            messages.success(request, "Question updated successfully.")
+            return redirect('question_detail', pk=question.id)
+        else:
+            if not subject_input:
+                errors.append("Subject is required.")
+            for field, errs in form.errors.items():
+                for err in errs:
+                    errors.append(err)
+    else:
+        form = MCQEditForm(instance=question, initial={
+            'subject': question.subject.name,
+        })
+    
+    return render(request, 'adminpanel/question_edit_mcq.html', {
+        'form': form,
+        'question': question,
+        'errors': errors,
+    })
+
+
+# =============================================================================
+# QUESTION DELETE (unchanged)
+# =============================================================================
 
 @admin_required
 def question_delete(request, pk):
     if request.method == 'POST':
         question = get_object_or_404(Question, id=pk)
+        subject_id = question.subject.id
         question.delete()
         messages.success(request, "Question deleted successfully.")
+        return redirect('subject_questions', pk=subject_id)
     return redirect('question_list')
 
+
+# =============================================================================
+# QUIZ / SUBJECT DELETE — Delete entire quiz and all its questions
+# =============================================================================
+
+@admin_required
+def subject_delete(request, pk):
+    """Delete an entire quiz/subject and all its associated questions."""
+    if request.method == 'POST':
+        subject = get_object_or_404(Subject, id=pk)
+        subject_name = subject.name
+        with transaction.atomic():
+            subject.delete()
+        messages.success(request, f"Quiz '{subject_name}' and all its questions deleted successfully.")
+    return redirect('question_list')
+
+
+# =============================================================================
+# QUESTION DETAIL (unchanged)
+# =============================================================================
 
 @admin_required
 def question_detail(request, pk):
@@ -414,6 +715,20 @@ def question_detail(request, pk):
         'question': question
     })
 
+
+# =============================================================================
+# LEGACY: Original question_add (kept as fallback, now redirects to type select)
+# =============================================================================
+
+@admin_required
+def question_add(request):
+    """Legacy add — now redirects to type selection."""
+    return redirect('question_type_select')
+
+
+# =============================================================================
+# REPORT CARDS (unchanged)
+# =============================================================================
 
 @admin_required
 def admin_report_cards(request):
@@ -438,8 +753,3 @@ def admin_report_card_delete(request, pk):
         report_card.delete()
         messages.success(request, "Report card deleted successfully.")
     return redirect('admin_report_cards')
-
-
-
-
-

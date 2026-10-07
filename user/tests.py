@@ -349,15 +349,29 @@ class IntegrationFlowTests(TestCase):
         self.assertEqual(subj.name, 'Python Programming')
         self.assertEqual(subj.description, 'Core Python concepts.')
         
-        # Create Question
+        # Create Question (default type is 'qna')
         q1 = Question.objects.create(subject=subj, question_text='What is a list comprehension in Python?')
         self.assertEqual(q1.subject, subj)
         self.assertEqual(q1.question_text, 'What is a list comprehension in Python?')
-        self.assertEqual(str(q1), 'Python Programming: What is a list comprehension in Python?')
+        self.assertEqual(q1.question_type, 'qna')
+        self.assertEqual(str(q1), '[Question & Answer] Python Programming: What is a list comprehension in Python?')
+        
+        # Create MCQ Question
+        q_mcq = Question.objects.create(
+            subject=subj,
+            question_type='mcq',
+            question_text='Which is a list?',
+            option_a='[]', option_b='{}', option_c='()', option_d='<>',
+            correct_option='A'
+        )
+        self.assertEqual(q_mcq.question_type, 'mcq')
+        self.assertTrue(q_mcq.is_mcq)
+        self.assertFalse(q_mcq.is_qna)
+        self.assertEqual(q_mcq.correct_answer_text, '[]')
         
         # Verify Subject to Question relationship (Subject 1 --- * Question)
         q2 = Question.objects.create(subject=subj, question_text='How to declare a generator in Python?')
-        self.assertEqual(subj.questions.count(), 2)
+        self.assertEqual(subj.questions.count(), 3)
         
         # Verify Cascade delete behavior
         subj_id = subj.id
@@ -415,70 +429,72 @@ class QuestionManagementFlowTests(TestCase):
         response = self.client.get(reverse('question_list'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'adminpanel/question_list.html')
+        # Question list now shows subjects as cards, not individual question text
         self.assertContains(response, 'Mathematics')
-        self.assertContains(response, 'What is 2 + 2?')
 
     def test_admin_can_add_question_valid(self):
         self.client.login(username='admin_test', password='password123')
         
-        # GET request
+        # GET request — now shows type selection page
         response_get = self.client.get(reverse('question_add'))
         self.assertEqual(response_get.status_code, 200)
-        self.assertTemplateUsed(response_get, 'adminpanel/question_form.html')
+        self.assertTemplateUsed(response_get, 'adminpanel/question_type_select.html')
         self.assertContains(response_get, 'Add Question')
         
-        # POST request
-        response_post = self.client.post(reverse('question_add'), {
-            'subject': self.science_subj.id,
-            'question_text': 'What is H2O?\nA) Water *\nB) Hydrogen\nC) Oxygen\nD) Helium'
+        # Add Q&A question via the new Q&A add form
+        response_qna = self.client.post(reverse('question_add_qna'), {
+            'subject': 'Science',
+            'question_text': 'What is H2O?',
+            'answer': 'Water'
         }, follow=True)
-        self.assertRedirects(response_post, reverse('question_list'))
-        self.assertContains(response_post, 'Question added successfully.')
+        self.assertEqual(response_qna.status_code, 200)
+        self.assertContains(response_qna, 'Question added successfully.')
         
         # Check database
         from .models import Question
-        self.assertTrue(Question.objects.filter(question_text='What is H2O?').exists())
+        q = Question.objects.get(question_text='What is H2O?')
+        self.assertEqual(q.question_type, 'qna')
+        self.assertEqual(q.option_a, 'Water')
+        self.assertEqual(q.subject, self.science_subj)
 
     def test_admin_add_question_invalid(self):
         self.client.login(username='admin_test', password='password123')
         
-        # Empty question text
-        response = self.client.post(reverse('question_add'), {
-            'subject': self.math_subj.id,
-            'question_text': ''
+        # Empty question text on Q&A add
+        response = self.client.post(reverse('question_add_qna'), {
+            'subject': 'Mathematics',
+            'question_text': '',
+            'answer': 'Some answer'
         })
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'adminpanel/question_form.html')
+        self.assertTemplateUsed(response, 'adminpanel/question_add_qna.html')
         self.assertContains(response, 'Question text is required.')
         
-        # Missing subject
-        response_sub = self.client.post(reverse('question_add'), {
+        # Missing subject on Q&A add
+        response_sub = self.client.post(reverse('question_add_qna'), {
             'subject': '',
-            'question_text': 'Valid question text?'
+            'question_text': 'Valid question text?',
+            'answer': 'Some answer'
         })
         self.assertEqual(response_sub.status_code, 200)
-        self.assertTemplateUsed(response_sub, 'adminpanel/question_form.html')
+        self.assertTemplateUsed(response_sub, 'adminpanel/question_add_qna.html')
         self.assertContains(response_sub, 'Subject is required.')
 
     def test_admin_can_edit_question_valid(self):
         self.client.login(username='admin_test', password='password123')
         
-        # GET request
+        # GET request — question is Q&A type (default), should show Q&A edit template
         response_get = self.client.get(reverse('question_edit', args=[self.question.id]))
         self.assertEqual(response_get.status_code, 200)
-        self.assertTemplateUsed(response_get, 'adminpanel/question_form.html')
+        self.assertTemplateUsed(response_get, 'adminpanel/question_edit_qna.html')
         self.assertContains(response_get, 'Edit Question')
         self.assertContains(response_get, 'What is 2 + 2?')
         
-        # POST request
+        # POST request — edit Q&A question
         response_post = self.client.post(reverse('question_edit', args=[self.question.id]), {
-            'subject': self.science_subj.id,
+            'subject': 'Science',
             'question_text': 'What is gravity?',
-            'option_a': 'Option A',
-            'option_b': 'Option B',
-            'option_c': 'Option C',
-            'option_d': 'Option D',
-            'correct_option': 'A'
+            'answer': 'A force',
         }, follow=True)
         self.assertRedirects(response_post, reverse('question_detail', args=[self.question.id]))
         self.assertContains(response_post, 'Question updated successfully.')
@@ -487,26 +503,52 @@ class QuestionManagementFlowTests(TestCase):
         self.question.refresh_from_db()
         self.assertEqual(self.question.subject, self.science_subj)
         self.assertEqual(self.question.question_text, 'What is gravity?')
+        self.assertEqual(self.question.option_a, 'A force')
+        self.assertEqual(self.question.question_type, 'qna')
 
     def test_admin_can_delete_question(self):
         self.client.login(username='admin_test', password='password123')
         
+        subject_id = self.question.subject.id
         response = self.client.post(reverse('question_delete', args=[self.question.id]), follow=True)
-        self.assertRedirects(response, reverse('question_list'))
+        # Delete now redirects to subject_questions instead of question_list
+        self.assertRedirects(response, reverse('subject_questions', args=[subject_id]))
         self.assertContains(response, 'Question deleted successfully.')
         
         from .models import Question
         self.assertFalse(Question.objects.filter(id=self.question.id).exists())
 
+    def test_admin_can_delete_entire_quiz(self):
+        self.client.login(username='admin_test', password='password123')
+        from .models import Subject, Question
+        
+        subj = Subject.objects.create(name='Temporary Subject')
+        q1 = Question.objects.create(subject=subj, question_text='Temp Q1')
+        q2 = Question.objects.create(subject=subj, question_text='Temp Q2')
+        
+        subj_id = subj.id
+        q1_id = q1.id
+        q2_id = q2.id
+        
+        response = self.client.post(reverse('subject_delete', args=[subj_id]), follow=True)
+        self.assertRedirects(response, reverse('question_list'))
+        self.assertContains(response, "Temporary Subject")
+        self.assertContains(response, "and all its questions deleted successfully.")
+        
+        self.assertFalse(Subject.objects.filter(id=subj_id).exists())
+        self.assertFalse(Question.objects.filter(id=q1_id).exists())
+        self.assertFalse(Question.objects.filter(id=q2_id).exists())
+
     def test_admin_can_add_question_by_subject_name(self):
         self.client.login(username='admin_test', password='password123')
         
-        # Post request with subject name string
-        response = self.client.post(reverse('question_add'), {
+        # Post request with subject name via Q&A add
+        response = self.client.post(reverse('question_add_qna'), {
             'subject': 'Science',
-            'question_text': 'What is the speed of light?\nA) Fast *\nB) Slow\nC) Zero\nD) Static'
+            'question_text': 'What is the speed of light?',
+            'answer': '3 x 10^8 m/s'
         }, follow=True)
-        self.assertRedirects(response, reverse('question_list'))
+        self.assertEqual(response.status_code, 200)
         
         # Check database
         from .models import Question
@@ -516,12 +558,13 @@ class QuestionManagementFlowTests(TestCase):
     def test_admin_can_add_new_subject_on_the_fly(self):
         self.client.login(username='admin_test', password='password123')
         
-        # Post request with new subject name
-        response = self.client.post(reverse('question_add'), {
+        # Post request with new subject name via Q&A add
+        response = self.client.post(reverse('question_add_qna'), {
             'subject': 'Geography',
-            'question_text': 'What is the capital of France?\nA) Paris *\nB) Berlin\nC) Rome\nD) London'
+            'question_text': 'What is the capital of France?',
+            'answer': 'Paris'
         }, follow=True)
-        self.assertRedirects(response, reverse('question_list'))
+        self.assertEqual(response.status_code, 200)
         
         # Check database for subject creation
         from .models import Subject, Question
@@ -529,23 +572,30 @@ class QuestionManagementFlowTests(TestCase):
         subj = Subject.objects.get(name='Geography')
         q = Question.objects.get(question_text='What is the capital of France?')
         self.assertEqual(q.subject, subj)
+        self.assertEqual(q.question_type, 'qna')
 
     def test_admin_can_add_multiple_questions_at_once(self):
         self.client.login(username='admin_test', password='password123')
         
-        # Post request with multiple MCQ questions
-        questions_input = "Question One?\nA) Option A1 *\nB) Option B1\nC) Option C1\nD) Option D1\n\nQuestion Two?\nA) Option A2 *\nB) Option B2\nC) Option C2\nD) Option D2"
-        response = self.client.post(reverse('question_add'), {
+        # Post request with multiple MCQ questions via MCQ bulk add
+        questions_input = "Q1. Question One?\nA) Option A1\nB) Option B1\nC) Option C1\nD) Option D1\nCorrect Answer: A\n\nQ2. Question Two?\nA) Option A2\nB) Option B2\nC) Option C2\nD) Option D2\nCorrect Answer: A"
+        response = self.client.post(reverse('question_add_mcq'), {
             'subject': 'Mathematics',
-            'question_text': questions_input
+            'mcq_text': questions_input
         }, follow=True)
-        self.assertRedirects(response, reverse('question_list'))
+        self.assertEqual(response.status_code, 200)
         
         # Check database
         from .models import Question
         self.assertTrue(Question.objects.filter(question_text='Question One?').exists())
         self.assertTrue(Question.objects.filter(question_text='Question Two?').exists())
+        # 1 existing + 2 new MCQ = 3 total for math subject
         self.assertEqual(Question.objects.filter(subject=self.math_subj).count(), 3)
+        # Verify they're MCQ type
+        q1 = Question.objects.get(question_text='Question One?')
+        self.assertEqual(q1.question_type, 'mcq')
+        self.assertEqual(q1.option_a, 'Option A1')
+        self.assertEqual(q1.correct_option, 'A')
 
     def test_admin_can_view_question_detail(self):
         self.client.login(username='admin_test', password='password123')

@@ -1,0 +1,230 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Add Question & Answer - Quizopedia Admin{% endblock %}
+
+{% block active_questions %}active{% endblock %}
+
+{% block breadcrumb %}Add Question & Answer{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <div class="flex items-center gap-3 mb-2">
+    {% if selected_subject %}
+    <a href="{% url 'subject_questions' selected_subject.id %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to {{ selected_subject.name }}">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+    {% else %}
+    <a href="{% url 'question_add' %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to Type Selection">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+    {% endif %}
+    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Add Question</h1>
+  </div>
+  <p class="text-[var(--text-muted)] text-sm">Categorize the question under a subject and provide the question text.</p>
+</div>
+
+<!-- Form validation errors -->
+{% if errors %}
+<div class="mb-6 space-y-2 max-w-2xl">
+  {% for error in errors %}
+  <div class="flex items-start gap-2.5 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500"></i>
+    <span>{{ error }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Form Container -->
+<div class="glass-card rounded-[28px] p-6 sm:p-8 max-w-2xl relative overflow-hidden">
+  <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-[var(--border-soft)]">
+    <div class="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+      <i data-lucide="message-square" class="w-4 h-4 text-emerald-500"></i>
+    </div>
+    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Question & Answer</span>
+  </div>
+
+  <form method="POST" novalidate id="qnaForm">
+    {% csrf_token %}
+    
+    <!-- Subject -->
+    <div class="mb-6">
+      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Subject</label>
+      {{ form.subject }}
+      {% if form.subject.errors %}
+      <p class="text-red-500 text-xs mt-1.5 ml-1">{{ form.subject.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Question Textarea -->
+    <div class="mb-6">
+      <label for="{{ form.question_text.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Question</label>
+      {{ form.question_text }}
+      {% if form.question_text.errors %}
+      <p class="text-red-500 text-xs mt-1.5 ml-1">{{ form.question_text.errors.0 }}</p>
+      {% endif %}
+      <p class="text-[10px] text-[var(--text-light-muted)] mt-2 ml-1">
+        💡 Tip: You can paste 1, 5, 10 or more questions at once. Each question must include the question and its correct answer (e.g. Correct Answer: ...).
+      </p>
+    </div>
+
+    <!-- Preview Section (JS-powered) -->
+    <div id="previewSection" class="mb-6 hidden">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Q&A Preview</p>
+        <span id="previewCount" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"></span>
+      </div>
+      <div id="previewContainer" class="space-y-4 max-h-[400px] overflow-y-auto pr-2"></div>
+    </div>
+
+    <!-- Submit & Cancel Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button type="button" id="previewBtn" class="px-6 h-11 rounded-xl font-bold text-sm border-2 border-emerald-500 text-emerald-600 flex items-center justify-center gap-1.5 hover:bg-emerald-500/10 transition flex-1 sm:flex-none">
+        <i data-lucide="eye" class="w-4 h-4"></i> Preview
+      </button>
+      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none"
+        style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); box-shadow: 0 8px 25px -8px rgba(16, 185, 129, 0.4);">
+        <i data-lucide="save" class="w-4 h-4"></i> Save Question
+      </button>
+      {% if selected_subject %}
+      <a href="{% url 'subject_questions' selected_subject.id %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-main)] flex items-center justify-center transition flex-1 sm:flex-none">
+        Cancel
+      </a>
+      {% else %}
+      <a href="{% url 'question_add' %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-main)] flex items-center justify-center transition flex-1 sm:flex-none">
+        Cancel
+      </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const textarea = document.getElementById('qna-textarea');
+  const previewBtn = document.getElementById('previewBtn');
+  const previewSection = document.getElementById('previewSection');
+  const previewContainer = document.getElementById('previewContainer');
+  const previewCount = document.getElementById('previewCount');
+
+  if (!textarea || !previewBtn) return;
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  previewBtn.addEventListener('click', function() {
+    let text = textarea.value.trim();
+    if (!text) {
+      previewSection.classList.add('hidden');
+      return;
+    }
+
+    // Normalize newlines
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    // Remove format header lines and '---'
+    const lines = text.split('\n');
+    const cleanedLines = [];
+    for (let line of lines) {
+      const trimmed = line.trim();
+      if (/^Format\s*\d+\b/i.test(trimmed)) continue;
+      if (/^[-=_*]{3,}$/.test(trimmed)) {
+        cleanedLines.push('');
+        continue;
+      }
+      cleanedLines.push(line);
+    }
+
+    const normalizedText = cleanedLines.join('\n');
+    const rawBlocks = normalizedText.split(/\n\s*\n/).filter(b => b.trim());
+    const blocks = [];
+
+    for (const rawBlock of rawBlocks) {
+      // Split blocks containing multiple questions (e.g. Q1... Q2...)
+      const parts = rawBlock.split(/(?=^(?:Q\d+|Question\s*\d+|\d+\.)[.\s):])/m).filter(p => p.trim());
+      for (const p of parts) {
+        blocks.push(p.trim());
+      }
+    }
+
+    if (blocks.length === 0) {
+      previewSection.classList.add('hidden');
+      return;
+    }
+
+    const questions = [];
+    const ansPattern = /^(?:(?:Correct\s+)?Answer|Ans|Correct\s*Option)\s*[:\-]\s*(.+)$/i;
+
+    for (const block of blocks) {
+      const bLines = block.split('\n').map(l => l.trim()).filter(l => l);
+      if (bLines.length === 0) continue;
+
+      let answer = '';
+      const qLines = [];
+
+      for (const line of bLines) {
+        const m = line.match(ansPattern);
+        if (m) {
+          answer = m[1].trim();
+        } else {
+          qLines.push(line);
+        }
+      }
+
+      let qText = qLines.join(' ').trim();
+      // Remove Q1. or 1. prefix
+      qText = qText.replace(/^(?:Question\s*\d+|Q\d+|Q|\d+)[.\s):\-]+\s*/i, '').trim();
+
+      if (qText || answer) {
+        questions.push({ qText, answer });
+      }
+    }
+
+    if (questions.length === 0) {
+      previewSection.classList.add('hidden');
+      return;
+    }
+
+    previewCount.textContent = questions.length + ' Question' + (questions.length > 1 ? 's' : '') + ' Found';
+    previewContainer.innerHTML = '';
+
+    questions.forEach((q, idx) => {
+      const card = document.createElement('div');
+      card.className = 'p-4 rounded-xl bg-white/5 border border-[var(--card-border)]';
+
+      const answerHtml = q.answer 
+        ? `<div class="flex items-center justify-between p-3 rounded-lg border bg-emerald-500/10 border-emerald-500/30">
+            <div class="flex items-start gap-2">
+              <span class="text-xs font-bold text-emerald-600 shrink-0">Answer:</span>
+              <span class="text-xs font-semibold text-[var(--text-main)]">${escapeHtml(q.answer)}</span>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 shrink-0 ml-2">✓ CORRECT</span>
+          </div>`
+        : `<div class="p-3 rounded-lg border bg-red-500/10 border-red-500/30 text-red-500 text-xs font-medium">
+            ⚠ Correct Answer is missing (e.g. Correct Answer: your answer)
+          </div>`;
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-bold">Question ${idx + 1}</p>
+        </div>
+        <p class="text-sm font-medium text-[var(--text-main)] mb-3">${q.qText ? escapeHtml(q.qText) : '<span class="text-red-500">Missing question text</span>'}</p>
+        <div class="space-y-1.5">
+          ${answerHtml}
+        </div>
+      `;
+      previewContainer.appendChild(card);
+    });
+
+    previewSection.classList.remove('hidden');
+    previewSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+});
+</script>
+{% endblock %}

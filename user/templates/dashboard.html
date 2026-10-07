@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,35 +9,39 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
     :root {
-      /* Dark Theme (Default) */
-      --bg-base: #020617; /* Slate 950 */
-      --header-bg: rgba(11, 15, 25, 0.4);
-      --header-border: rgba(255, 255, 255, 0.05);
-      --card-bg: #0b0f19;
-      --card-border: rgba(255, 255, 255, 0.06);
-      --text-main: #ffffff;
-      --text-muted: #94a3b8; /* Slate 400 */
-      --border-soft: rgba(255, 255, 255, 0.06);
-
-      --accent-primary: #10b981;
-      --accent-secondary: #6ee7b7;
-      --accent-primary-rgb: 16, 185, 129;
-      --accent-secondary-rgb: 110, 231, 183;
-    }
-
-    body.light-mode {
-      /* Light Theme */
-      --bg-base: #f1f5f9; /* Slate 100 */
-      --header-bg: rgba(255, 255, 255, 0.6);
-      --header-border: rgba(15, 23, 42, 0.06);
+      --primary: #7c5cf5;
+      --primary-light: #a78bfa;
+      --primary-dark: #6d42e8;
+      --primary-gradient: linear-gradient(135deg, #7c5cf5 0%, #a78bfa 50%, #8b6cf7 100%);
+      --bg-base: #f5f3ff;
+      --header-bg: rgba(255, 255, 255, 0.8);
+      --header-border: rgba(124, 92, 245, 0.15);
       --card-bg: #ffffff;
-      --card-border: rgba(15, 23, 42, 0.08);
-      --text-main: #0f172a; /* Slate 900 */
-      --text-muted: #64748b; /* Slate 500 */
-      --border-soft: rgba(15, 23, 42, 0.06);
+      --card-border: rgba(124, 92, 245, 0.15);
+      --text-main: #1a1a2e;
+      --text-muted: #6b7280;
+      --text-light-muted: #9ca3af;
+      --border-soft: rgba(124, 92, 245, 0.15);
+
+      --accent-primary: #7c5cf5;
+      --accent-secondary: #a78bfa;
+      --accent-primary-rgb: 124, 92, 245;
+      --accent-secondary-rgb: 167, 139, 250;
+
+      --sidebar-bg: rgba(255, 255, 255, 0.7);
+      --sidebar-border: rgba(124, 92, 245, 0.15);
+      --sidebar-link: rgba(26, 26, 46, 0.6);
+      --sidebar-link-hover: rgba(124, 92, 245, 0.08);
+      --sidebar-link-active: #7c5cf5;
+      --panel: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #e5e7eb;
+      --input-text: #1a1a2e;
+      --input-placeholder: #9ca3af;
+      --table-header-bg: rgba(124, 92, 245, 0.05);
     }
 
     * {
@@ -44,8 +49,12 @@
       box-sizing: border-box;
     }
 
-    h1, h2, h3, h4, .brand-font {
-      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    h1,
+    h2,
+    h3,
+    h4,
+    .brand-font {
+      font-family: 'DM Sans', 'Inter', sans-serif;
     }
 
     body {
@@ -67,19 +76,34 @@
     }
 
     .blob-1 {
-      background: var(--accent-primary);
-      width: 500px;
-      height: 500px;
-      top: -100px;
-      left: -100px;
+      background: #7c5cf5;
+      width: 600px;
+      height: 600px;
+      top: 10%;
+      left: -200px;
+      opacity: 0.15;
     }
 
     .blob-2 {
-      background: var(--accent-secondary);
-      width: 450px;
-      height: 450px;
-      bottom: -100px;
+      background: #f97316;
+      width: 300px;
+      height: 300px;
+      top: -50px;
+      right: -50px;
+      opacity: 0.12;
+    }
+
+    .blob-3 {
+      background: #10b981;
+      width: 500px;
+      height: 500px;
+      bottom: -150px;
       right: -100px;
+      opacity: 0.15;
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(100px);
+      pointer-events: none;
     }
 
     .noise-overlay {
@@ -100,7 +124,7 @@
 
     .cta-btn {
       position: relative;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, #34d399 50%, var(--accent-secondary) 100%);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
       transition: transform .18s ease, box-shadow .25s ease;
       box-shadow: 0 8px 20px -6px rgba(var(--accent-primary-rgb), 0.4);
     }
@@ -113,6 +137,7 @@
     #portalSub {
       color: var(--accent-secondary);
     }
+
     body.light-mode #portalSub {
       color: var(--accent-primary);
     }
@@ -136,6 +161,7 @@
       transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: auto;
     }
+
     .page-transition-overlay.fade-out {
       opacity: 0;
       pointer-events: none;
@@ -182,12 +208,21 @@
     }
 
     @keyframes preloaderSpin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes preloaderPulse {
-      from { transform: scale(0.9); opacity: 0.5; }
-      to { transform: scale(1.15); opacity: 1; }
+      from {
+        transform: scale(0.9);
+        opacity: 0.5;
+      }
+
+      to {
+        transform: scale(1.15);
+        opacity: 1;
+      }
     }
 
     @keyframes fadeInUp {
@@ -195,11 +230,13 @@
         opacity: 0;
         transform: translateY(12px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
+
     .animate-fade-in {
       animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -212,183 +249,196 @@
     <div class="preloader-content">
       <div class="preloader-glow"></div>
       <div class="preloader-spinner"></div>
-      <div class="preloader-logo">
-        <i data-lucide="award" class="w-5 h-5 text-white"></i>
-      </div>
     </div>
   </div>
   <!-- Background blobs -->
-  <div class="fixed inset-0 -z-10 overflow-hidden">
+  <div class="fixed inset-0 -z-10 overflow-hidden bg-[#f8f9fc]">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
     <div class="noise-overlay"></div>
   </div>
 
   <!-- =========================================
        HEADER NAVIGATION BAR
        ========================================= -->
-  <header class="w-full h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md">
+  <header
+    class="max-w-5xl mx-auto mt-6 mb-10 h-16 rounded-[20px] bg-white border border-[var(--border-soft)] flex items-center justify-between px-6 shadow-sm relative z-30">
     <div class="flex items-center gap-3">
-      <!-- Logo Badge matching reference image structure -->
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(16,185,129,0.25)] flex-shrink-0">
-        <i data-lucide="award" class="w-5 h-5 text-white"></i>
+      <div class="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+        <img src="{% static 'images/lo1.jpg' %}" alt="Logo" class="w-full h-full object-contain p-1">
       </div>
       <div>
-        <span class="brand-font text-md font-bold tracking-tight block text-[var(--text-main)]">Quizopedia</span>
-        <span class="text-[9px] font-bold tracking-widest uppercase block leading-none mt-0.5" id="portalSub">Student Portal</span>
+        <span class="brand-font text-lg font-bold tracking-tight block text-[var(--text-main)]">Quizopedia</span>
       </div>
     </div>
 
-    <div class="flex items-center gap-4">
-      <span class="hidden sm:inline text-xs text-[var(--text-muted)] font-medium">Hello, <strong class="text-[var(--text-main)]">{{ request.user.username }}</strong></span>
+    <div class="flex items-center gap-6">
+      <span class="hidden sm:inline text-xs text-[var(--text-main)] font-semibold">Hello, <strong>{{ user.username }}</strong></span>
 
-      <!-- Theme Switch Button -->
-      <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
-        <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
-        <span id="themeBtnText">Dark</span>
-      </button>
-
-      <a href="{% url 'logout' %}" class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)] hover:text-red-400">
-        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+      <a href="{% url 'logout' %}"
+        class="text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)] hover:text-red-500 transition">
         Logout
       </a>
     </div>
   </header>
 
-  <!-- Mobile Navigation Bar -->
-  <div class="md:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">
-    <a href="{% url 'dashboard' %}" class="text-[var(--text-main)] border-b border-[var(--accent-primary)] pb-1">Dashboard</a>
-    <a href="{% url 'profile' %}" class="hover:text-[var(--text-main)]">Profile</a>
-  </div>
-
   <!-- Main Container -->
-  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10 animate-fade-in">
+  <main class="relative z-10 max-w-5xl mx-auto px-4 pb-16 animate-fade-in">
     <!-- Dashboard Header -->
     <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Student Dashboard</h1>
-        <p class="text-[var(--text-muted)] text-sm">Welcome back to your workspace. Monitor your activities, quiz performance, and credentials.</p>
+        <h1 class="text-3xl font-bold tracking-tight mb-1 text-[var(--text-main)]">Student Dashboard</h1>
+        <p class="text-[var(--text-muted)] text-sm font-medium">Welcome back to your workspace. Monitor your activities,
+          quiz performance, and credentials.</p>
       </div>
-      
+
       <!-- Quick Action Buttons -->
-      <div class="flex items-center gap-3 self-start md:self-auto flex-wrap">
-        <a href="{% url 'profile' %}" class="px-5 py-2.5 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:bg-white/5 transition text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5 shadow-sm">
-          <i data-lucide="user-cog" class="w-4 h-4"></i> Profile Settings
+      <div class="flex items-center gap-3">
+        <a href="{% url 'profile' %}"
+          class="px-4 py-2 rounded-lg border border-[var(--border-soft)] bg-white hover:bg-gray-50 transition text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="user" class="w-4 h-4"></i> Profile Settings
         </a>
-        <button class="cta-btn px-5 py-2.5 rounded-xl font-bold text-xs text-white flex items-center gap-1.5 shadow-md">
-          <i data-lucide="plus" class="w-4 h-4"></i> Start New Quiz
-        </button>
+        {% if available_subjects %}
+        <a href="{% url 'quiz_attempt' available_subjects.0.id %}"
+          class="cta-btn px-4 py-2 rounded-lg font-bold text-xs text-white flex items-center gap-1.5 shadow-md">
+          Start New Quiz <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+        {% else %}
+        <a href="#available-quizzes"
+          class="cta-btn px-4 py-2 rounded-lg font-bold text-xs text-white flex items-center gap-1.5 shadow-md">
+          Start New Quiz <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+        {% endif %}
       </div>
     </div>
 
     <!-- Dashboard Content Grid -->
     <div class="space-y-8">
-      
 
-        
-        <!-- Statistics container -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <!-- Quiz Completed Card -->
-          <div class="glass-card rounded-[22px] p-5 relative overflow-hidden">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Completed Quizzes</span>
-              <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-                <i data-lucide="award" class="w-4 h-4"></i>
-              </span>
-            </div>
+
+
+      <!-- Statistics container -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <!-- Quiz Completed Card -->
+        <div class="bg-white rounded-[20px] p-5 shadow-sm border border-[var(--border-soft)] relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Completed
+              Quizzes</span>
+            <span class="w-7 h-7 rounded-md bg-[#eef2ff] text-[#6366f1] flex items-center justify-center">
+              <i data-lucide="award" class="w-4 h-4"></i>
+            </span>
+          </div>
+          <div class="mb-1">
             <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ completed_quizzes }}</span>
-            <span class="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-2">
-              <i data-lucide="activity" class="w-3.5 h-3.5"></i> Total attempts
+          </div>
+          <div class="text-[10px] text-[var(--text-muted)] flex items-center gap-1 font-medium">
+            <i data-lucide="activity" class="w-3 h-3"></i> Total attempts
+          </div>
+        </div>
+
+        <!-- Average Score Card -->
+        <div class="bg-white rounded-[20px] p-5 shadow-sm border border-[var(--border-soft)] relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Average Score</span>
+            <span class="w-7 h-7 rounded-md bg-[#ecfdf5] text-[#10b981] flex items-center justify-center">
+              <i data-lucide="percent" class="w-4 h-4"></i>
             </span>
           </div>
-
-          <!-- Average Score Card -->
-          <div class="glass-card rounded-[22px] p-5 relative overflow-hidden">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Average Score</span>
-              <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                <i data-lucide="percent" class="w-4 h-4"></i>
-              </span>
-            </div>
+          <div class="mb-1">
             <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ avg_score }}</span>
-            <span class="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-2 font-semibold">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Score average
+          </div>
+          <div class="text-[10px] text-[var(--text-muted)] flex items-center gap-1 font-medium">
+            <i data-lucide="trending-up" class="w-3 h-3"></i> Score average
+          </div>
+        </div>
+
+        <!-- Available Quizzes Card -->
+        <div class="bg-white rounded-[20px] p-5 shadow-sm border border-[var(--border-soft)] relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Available
+              Quizzes</span>
+            <span class="w-7 h-7 rounded-md bg-[#fff7ed] text-[#f59e0b] flex items-center justify-center">
+              <i data-lucide="layers" class="w-4 h-4"></i>
             </span>
           </div>
-
-          <!-- Available Quizzes Card -->
-          <div class="glass-card rounded-[22px] p-5 relative overflow-hidden">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Available Quizzes</span>
-              <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400">
-                <i data-lucide="book-open" class="w-4 h-4"></i>
-              </span>
-            </div>
+          <div class="mb-1">
             <span class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ subjects_count }}</span>
-            <span class="text-xs text-[var(--text-muted)] flex items-center gap-1 mt-2">
-              <i data-lucide="layers" class="w-3.5 h-3.5"></i> Quiz categories
-            </span>
+          </div>
+          <div class="text-[10px] text-[var(--text-muted)] flex items-center gap-1 font-medium">
+            <i data-lucide="book-open" class="w-3 h-3"></i> Quiz categories
           </div>
         </div>
+      </div>
 
-        <!-- Available Quizzes Section -->
-        <div class="glass-card rounded-[28px] p-6">
-          <h3 class="text-lg font-bold tracking-tight mb-4 flex items-center gap-2 text-[var(--text-main)]">
-            <i data-lucide="book-open" class="w-5 h-5 text-[var(--accent-primary)]"></i>
-            Available Quizzes
-          </h3>
-          {% if available_subjects %}
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% for subject in available_subjects %}
-            <div class="p-4 rounded-xl bg-white/[0.01] border border-[var(--border-soft)] hover:border-[var(--accent-primary)]/20 transition flex flex-col justify-between h-40">
-              <div>
-                <h4 class="text-sm font-bold text-[var(--text-main)]">{{ subject.name }}</h4>
-                <p class="text-xs text-[var(--text-muted)] mt-1.5 line-clamp-2">{{ subject.description|default:"No description available." }}</p>
-              </div>
-              <div class="flex items-center justify-between mt-4">
-                <span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">{{ subject.total_questions }} Questions</span>
-                <a href="{% url 'quiz_attempt' subject.id %}" class="cta-btn px-4 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1">
-                  Start Quiz <i data-lucide="play" class="w-3 h-3"></i>
-                </a>
-              </div>
+      <!-- Available Quizzes Section -->
+      <div id="available-quizzes">
+        <h3 class="text-lg font-bold tracking-tight mb-4 flex items-center gap-2 text-[var(--text-main)]">
+          Available Quizzes
+        </h3>
+        {% if available_subjects %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {% for subject in available_subjects %}
+          <div
+            class="p-5 rounded-[20px] bg-white border border-[var(--border-soft)] hover:border-[var(--primary)]/30 transition shadow-sm flex flex-col justify-between h-auto min-h-[140px] relative">
+            <div class="mb-6">
+              <h4 class="text-sm font-bold text-[var(--text-main)]">{{ subject.name }}</h4>
+              <p class="text-[11px] text-[var(--text-muted)] mt-1 line-clamp-2">{{ subject.description|default:"No description available." }}</p>
             </div>
-            {% endfor %}
+            <div class="flex items-center justify-between mt-auto">
+              <span class="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">{{ subject.total_questions }} QUESTIONS</span>
+              <a href="{% url 'quiz_attempt' subject.id %}"
+                class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-[#a78bfa] to-[#7c5cf5] hover:opacity-90 transition flex items-center gap-1 shadow-sm">
+                Start Quiz <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </a>
+            </div>
           </div>
-          {% else %}
-          <p class="text-[var(--text-muted)] text-sm">No quizzes are currently available.</p>
-          {% endif %}
+          {% endfor %}
         </div>
+        {% else %}
+        <p class="text-[var(--text-muted)] text-sm">No quizzes are currently available.</p>
+        {% endif %}
+      </div>
 
-        <!-- Recent Activities Card -->
-        <div class="glass-card rounded-[28px] p-6">
-          <h3 class="text-lg font-bold tracking-tight mb-4 flex items-center gap-2 text-[var(--text-main)]">
-            <i data-lucide="history" class="w-5 h-5 text-[var(--accent-primary)]"></i>
-            Recent Learning Progress
-          </h3>
-          {% if recent_progress %}
-          <div class="space-y-4">
-            {% for card in recent_progress %}
-            <div class="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.01] border border-[var(--border-soft)]">
+      <!-- Recent Activities Card -->
+      <div class="bg-white rounded-[24px] p-6 shadow-sm border border-[var(--border-soft)]">
+        <h3 class="text-sm font-bold tracking-tight mb-4 flex items-center gap-2 text-[var(--text-main)]">
+          <i data-lucide="history" class="w-4 h-4 text-[#64748b]"></i>
+          Recent Learning Progress
+        </h3>
+        {% if recent_progress %}
+        <div class="space-y-4">
+          {% for card in recent_progress %}
+          <div class="p-4 rounded-xl border border-[var(--border-soft)] bg-white relative">
+            <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                <div class="w-8 h-8 rounded-lg bg-[#ecfdf5] flex items-center justify-center text-[#10b981]">
                   <i data-lucide="file-text" class="w-4 h-4"></i>
                 </div>
                 <div>
-                  <p class="text-sm font-bold text-[var(--text-main)]">{{ card.subject.name }}</p>
-                  <p class="text-xs text-[var(--text-muted)]">Score: {{ card.correct_answers }}/{{ card.total_questions }} ({{ card.attempted_questions }} attempted)</p>
+                  <p class="text-xs font-bold text-[var(--text-main)]">{{ card.subject.name }}</p>
+                  <p class="text-[10px] text-[var(--text-muted)] mt-0.5">Score: {{ card.correct_answers }}/{{ card.total_questions }} ({{ card.attempted_questions }} attempted)</p>
                 </div>
               </div>
-              <div class="text-right flex flex-col items-end gap-1">
-                <span class="text-sm font-bold text-emerald-400">{{ card.percentage }}%</span>
-                <a href="{% url 'report_card_view' card.id %}" class="text-[10px] text-[var(--accent-primary)] hover:underline font-bold">View Report Card</a>
+              <div class="text-right flex flex-col items-end gap-0.5">
+                <span class="text-xs font-bold text-[#10b981]">{{ card.percentage }}%</span>
+                <a href="{% url 'report_card_view' card.id %}"
+                  class="text-[9px] text-[#10b981] hover:underline font-bold">View Report Card</a>
               </div>
             </div>
-            {% endfor %}
+            <!-- Progress Bar -->
+            <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-[#a78bfa] to-[#7c5cf5] rounded-full"
+                style="width: {{ card.percentage }}%;"></div>
+            </div>
           </div>
-          {% else %}
-          <p class="text-[var(--text-muted)] text-sm">You haven't completed any quizzes yet. Start one above!</p>
-          {% endif %}
+          {% endfor %}
         </div>
+        {% else %}
+        <p class="text-[var(--text-muted)] text-sm text-center py-4">You haven't completed any quizzes yet. Start one
+          above!</p>
+        {% endif %}
+      </div>
 
     </div>
   </main>
@@ -396,35 +446,7 @@
   <script>
     lucide.createIcons();
 
-    // =========================================
-    // THEME CONTROLLER & INITIALIZATION
-    // =========================================
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const themeBtnText = document.getElementById('themeBtnText');
-    const themeBtnIcon = document.getElementById('themeBtnIcon');
 
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Light';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
-      } else {
-        document.body.classList.remove('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Dark';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
-      }
-      lucide.createIcons();
-    }
-
-    themeToggleBtn.addEventListener('click', () => {
-      const isLight = document.body.classList.contains('light-mode');
-      const targetTheme = isLight ? 'dark' : 'light';
-      localStorage.setItem('theme', targetTheme);
-      applyTheme(targetTheme);
-    });
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(savedTheme);
 
     // Page Transition Handlers
     window.addEventListener('DOMContentLoaded', () => {
@@ -455,7 +477,7 @@
               window.location.href = link.href;
             }, 300);
           }
-        } catch(err) {}
+        } catch (err) { }
       }
     });
   </script>

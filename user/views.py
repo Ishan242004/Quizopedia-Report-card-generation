@@ -123,11 +123,7 @@ def dashboard(request):
     # Retrieve available quizzes (subjects) with question counts
     available_subjects = []
     for s in Subject.objects.filter(questions__isnull=False).distinct():
-        # Sum up individual questions in this subject's Question records
-        total_q = sum(
-            len([line.strip() for line in q.question_text.split('\n') if line.strip()])
-            for q in s.questions.all()
-        )
+        total_q = s.questions.count()
         available_subjects.append({
             'id': s.id,
             'name': s.name,
@@ -257,20 +253,19 @@ def quiz_attempt(request, subject_id):
             
             if student_answer:
                 attempted_count += 1
-                # Get the correct answer text based on correct_option
-                correct_map = {
-                    'A': q.option_a,
-                    'B': q.option_b,
-                    'C': q.option_c,
-                    'D': q.option_d,
-                }
-                correct_text = correct_map.get(q.correct_option, '').strip()
-                # Case-insensitive exact match
-                if student_answer.lower() == correct_text.lower():
-                    correct_count += 1
+                
+                if q.question_type == 'mcq':
+                    # MCQ: Compare selected option letter (A/B/C/D) with correct_option
+                    if student_answer.upper() == q.correct_option:
+                        correct_count += 1
+                else:
+                    # Q&A: Compare answer text with option_a (the stored answer)
+                    correct_text = q.option_a.strip()
+                    if student_answer.lower() == correct_text.lower():
+                        correct_count += 1
                     
         total_questions = questions.count()
-        wrong_answers = total_questions - correct_count
+        wrong_answers = attempted_count - correct_count
         total_marks = total_questions * 10
         obtained_marks = correct_count * 10
         percentage = round((obtained_marks / total_marks) * 100, 1) if total_questions > 0 else 0.0

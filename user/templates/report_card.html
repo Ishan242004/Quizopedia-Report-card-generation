@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,35 +9,39 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
     :root {
-      /* Midnight Emerald Theme */
-      --bg-base: #020617; /* Slate 950 */
-      --header-bg: rgba(11, 15, 25, 0.4);
-      --header-border: rgba(255, 255, 255, 0.05);
-      --card-bg: #0b0f19;
-      --card-border: rgba(255, 255, 255, 0.06);
-      --text-main: #ffffff;
-      --text-muted: #94a3b8; /* Slate 400 */
-
-      --accent-primary: #10b981;
-      --accent-secondary: #6ee7b7;
-      --accent-primary-rgb: 16, 185, 129;
-      --accent-secondary-rgb: 110, 231, 183;
-      --border-soft: rgba(255, 255, 255, 0.06);
-    }
-
-    body.light-mode {
-      /* Light Theme */
-      --bg-base: #f1f5f9; /* Slate 100 */
-      --header-bg: rgba(255, 255, 255, 0.6);
-      --header-border: rgba(15, 23, 42, 0.06);
+      --primary: #7c5cf5;
+      --primary-light: #a78bfa;
+      --primary-dark: #6d42e8;
+      --primary-gradient: linear-gradient(135deg, #7c5cf5 0%, #a78bfa 50%, #8b6cf7 100%);
+      --bg-base: #f5f3ff;
+      --header-bg: rgba(255, 255, 255, 0.8);
+      --header-border: rgba(124, 92, 245, 0.15);
       --card-bg: #ffffff;
-      --card-border: rgba(15, 23, 42, 0.08);
-      --text-main: #0f172a; /* Slate 900 */
-      --text-muted: #64748b; /* Slate 500 */
-      --border-soft: rgba(15, 23, 42, 0.06);
+      --card-border: rgba(124, 92, 245, 0.15);
+      --text-main: #1a1a2e;
+      --text-muted: #6b7280;
+      --text-light-muted: #9ca3af;
+      --border-soft: rgba(124, 92, 245, 0.15);
+
+      --accent-primary: #7c5cf5;
+      --accent-secondary: #a78bfa;
+      --accent-primary-rgb: 124, 92, 245;
+      --accent-secondary-rgb: 167, 139, 250;
+      
+      --sidebar-bg: rgba(255, 255, 255, 0.7);
+      --sidebar-border: rgba(124, 92, 245, 0.15);
+      --sidebar-link: rgba(26, 26, 46, 0.6);
+      --sidebar-link-hover: rgba(124, 92, 245, 0.08);
+      --sidebar-link-active: #7c5cf5;
+      --panel: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #e5e7eb;
+      --input-text: #1a1a2e;
+      --input-placeholder: #9ca3af;
+      --table-header-bg: rgba(124, 92, 245, 0.05);
     }
 
     * {
@@ -45,7 +50,7 @@
     }
 
     h1, h2, h3, .brand-font {
-      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      font-family: 'DM Sans', 'Inter', sans-serif;
     }
 
     body {
@@ -99,7 +104,7 @@
 
     .cta-btn {
       position: relative;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, #34d399 50%, var(--accent-secondary) 100%);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
       transition: transform .18s ease, box-shadow .25s ease, filter .2s ease;
       box-shadow: 0 8px 24px -6px rgba(var(--accent-primary-rgb), 0.5);
     }
@@ -164,8 +169,11 @@
 <body class="min-h-screen relative pb-16">
   <!-- Preloader -->
   <div class="preloader" id="pageOverlay">
-    <div class="relative">
+    <div class="relative flex items-center justify-center w-20 h-20">
       <div class="preloader-spinner"></div>
+      <div class="w-12 h-12 rounded-xl overflow-hidden shadow-lg z-10">
+        <img src="{% static 'images/lo1.jpg' %}" alt="Quizopedia Logo" class="w-full h-full object-cover">
+      </div>
     </div>
   </div>
 
@@ -189,10 +197,7 @@
     </div>
 
     <div class="flex items-center gap-4">
-      <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
-        <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
-        <span id="themeBtnText">Dark</span>
-      </button>
+      
       <a href="{% url 'dashboard' %}" class="px-4 h-9 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)]">
         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
       </a>
@@ -324,32 +329,7 @@
     lucide.createIcons();
 
     // Theme configuration
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const themeBtnText = document.getElementById('themeBtnText');
-    const themeBtnIcon = document.getElementById('themeBtnIcon');
-
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Light';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
-      } else {
-        document.body.classList.remove('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Dark';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
-      }
-      lucide.createIcons();
-    }
-
-    themeToggleBtn.addEventListener('click', () => {
-      const isLight = document.body.classList.contains('light-mode');
-      const targetTheme = isLight ? 'dark' : 'light';
-      localStorage.setItem('theme', targetTheme);
-      applyTheme(targetTheme);
-    });
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(savedTheme);
+    
 
     // Preloader fade-out
     window.addEventListener('DOMContentLoaded', () => {

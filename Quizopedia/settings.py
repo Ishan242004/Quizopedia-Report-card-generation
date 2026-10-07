@@ -133,3 +133,8 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
+
+# Username: admin1
+# Email: admin1@gmail.com
+# Password: admin123
+# Ishan

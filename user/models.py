@@ -70,7 +70,13 @@ class Subject(models.Model):
 
 
 class Question(models.Model):
+    QUESTION_TYPE_CHOICES = [
+        ('qna', 'Question & Answer'),
+        ('mcq', '4 Option MCQ'),
+    ]
+
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='questions')
+    question_type = models.CharField(max_length=3, choices=QUESTION_TYPE_CHOICES, default='qna')
     question_text = models.TextField()
     option_a = models.CharField(max_length=255, default="")
     option_b = models.CharField(max_length=255, default="")
@@ -82,8 +88,22 @@ class Question(models.Model):
         default='A'
     )
 
+    @property
+    def is_mcq(self):
+        return self.question_type == 'mcq'
+
+    @property
+    def is_qna(self):
+        return self.question_type == 'qna'
+
+    @property
+    def correct_answer_text(self):
+        """Returns the text of the correct answer."""
+        answer_map = {'A': self.option_a, 'B': self.option_b, 'C': self.option_c, 'D': self.option_d}
+        return answer_map.get(self.correct_option, self.option_a)
+
     def __str__(self):
-        return f"{self.subject.name}: {self.question_text[:50]}"
+        return f"[{self.get_question_type_display()}] {self.subject.name}: {self.question_text[:50]}"
 
 
 class ReportCard(models.Model):

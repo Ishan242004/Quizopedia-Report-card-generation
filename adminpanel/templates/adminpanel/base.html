@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,58 +9,39 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
     :root {
-      /* Dark Theme (Default) */
-      --bg-base: #020617; /* Slate 950 */
-      --panel: #0b0f19;
-      --accent-primary: #10b981;
-      --accent-secondary: #6ee7b7;
-      --accent-primary-rgb: 16, 185, 129;
-      --accent-secondary-rgb: 110, 231, 183;
-      --border-soft: rgba(255, 255, 255, 0.06);
-
-      --sidebar-bg: rgba(0, 0, 0, 0.3);
-      --sidebar-border: rgba(255, 255, 255, 0.05);
-      --sidebar-link: rgba(255, 255, 255, 0.6);
-      --sidebar-link-hover: rgba(255, 255, 255, 0.05);
-      --sidebar-link-active: #ffffff;
-      --header-bg: rgba(255, 255, 255, 0.02);
-      --header-border: rgba(255, 255, 255, 0.05);
-      --input-bg: rgba(255, 255, 255, 0.05);
-      --input-border: rgba(255, 255, 255, 0.1);
-      --input-text: #ffffff;
-      --input-placeholder: rgba(255, 255, 255, 0.4);
-      --table-header-bg: rgba(255, 255, 255, 0.03);
-      --text-main: #ffffff;
-      --text-muted: #94a3b8;
-      --card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-      --card-border: var(--border-soft);
-    }
-
-    body.light-mode {
-      /* Light Theme */
-      --bg-base: #f1f5f9; /* Slate 100 */
-      --panel: #ffffff;
-      --border-soft: rgba(15, 23, 42, 0.06);
-
-      --sidebar-bg: rgba(255, 255, 255, 0.4);
-      --sidebar-border: rgba(15, 23, 42, 0.08);
-      --sidebar-link: rgba(15, 23, 42, 0.6);
-      --sidebar-link-hover: rgba(15, 23, 42, 0.05);
-      --sidebar-link-active: #0f172a;
-      --header-bg: rgba(255, 255, 255, 0.6);
-      --header-border: rgba(15, 23, 42, 0.08);
-      --input-bg: #f8fafc;
-      --input-border: #cbd5e1;
-      --input-text: #0f172a;
-      --input-placeholder: #94a3b8;
-      --table-header-bg: rgba(15, 23, 42, 0.03);
-      --text-main: #0f172a; /* Slate 900 */
-      --text-muted: #64748b; /* Slate 500 */
+      --primary: #7c5cf5;
+      --primary-light: #a78bfa;
+      --primary-dark: #6d42e8;
+      --primary-gradient: linear-gradient(135deg, #7c5cf5 0%, #a78bfa 50%, #8b6cf7 100%);
+      --bg-base: #f5f3ff;
+      --header-bg: rgba(255, 255, 255, 0.8);
+      --header-border: rgba(124, 92, 245, 0.15);
       --card-bg: #ffffff;
-      --card-border: rgba(15, 23, 42, 0.08);
+      --card-border: rgba(124, 92, 245, 0.15);
+      --text-main: #1a1a2e;
+      --text-muted: #6b7280;
+      --text-light-muted: #9ca3af;
+      --border-soft: rgba(124, 92, 245, 0.15);
+
+      --accent-primary: #7c5cf5;
+      --accent-secondary: #a78bfa;
+      --accent-primary-rgb: 124, 92, 245;
+      --accent-secondary-rgb: 167, 139, 250;
+
+      --sidebar-bg: rgba(255, 255, 255, 0.7);
+      --sidebar-border: rgba(124, 92, 245, 0.15);
+      --sidebar-link: rgba(26, 26, 46, 0.6);
+      --sidebar-link-hover: rgba(124, 92, 245, 0.08);
+      --sidebar-link-active: #7c5cf5;
+      --panel: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #e5e7eb;
+      --input-text: #1a1a2e;
+      --input-placeholder: #9ca3af;
+      --table-header-bg: rgba(124, 92, 245, 0.05);
     }
 
     * {
@@ -67,8 +49,12 @@
       box-sizing: border-box;
     }
 
-    h1, h2, h3, h4, .brand-font {
-      font-family: 'Space Grotesk', 'Inter', sans-serif;
+    h1,
+    h2,
+    h3,
+    h4,
+    .brand-font {
+      font-family: 'DM Sans', 'Inter', sans-serif;
     }
 
     body {
@@ -126,19 +112,26 @@
     }
 
     .sidebar-link {
-      color: var(--sidebar-link);
+      color: #4b5563; /* gray-600 */
       transition: all 0.2s ease;
+      border-radius: 12px;
+      margin: 0 12px;
     }
 
-    .sidebar-link:hover, .sidebar-link.active {
-      background: var(--sidebar-link-hover);
-      color: var(--sidebar-link-active);
-      border-left: 3px solid var(--accent-primary);
+    .sidebar-link:hover {
+      background: #f3f4f6; /* gray-100 */
+      color: #1f2937; /* gray-800 */
+    }
+
+    .sidebar-link.active {
+      background: var(--accent-primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 92, 245, 0.3);
     }
 
     .cta-btn {
       position: relative;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, #34d399 50%, var(--accent-secondary) 100%);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
       transition: transform .18s ease, box-shadow .25s ease;
       box-shadow: 0 8px 25px -8px rgba(var(--accent-primary-rgb), 0.4);
     }
@@ -161,6 +154,7 @@
       transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: auto;
     }
+
     .page-transition-overlay.fade-out {
       opacity: 0;
       pointer-events: none;
@@ -207,12 +201,21 @@
     }
 
     @keyframes preloaderSpin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes preloaderPulse {
-      from { transform: scale(0.9); opacity: 0.5; }
-      to { transform: scale(1.15); opacity: 1; }
+      from {
+        transform: scale(0.9);
+        opacity: 0.5;
+      }
+
+      to {
+        transform: scale(1.15);
+        opacity: 1;
+      }
     }
 
     @keyframes fadeInUp {
@@ -220,11 +223,13 @@
         opacity: 0;
         transform: translateY(12px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
+
     .animate-fade-in {
       animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -237,9 +242,6 @@
     <div class="preloader-content">
       <div class="preloader-glow"></div>
       <div class="preloader-spinner"></div>
-      <div class="preloader-logo">
-        <i data-lucide="award" class="w-5 h-5 text-white"></i>
-      </div>
     </div>
   </div>
   <!-- Ambient blobs background -->
@@ -250,75 +252,88 @@
   </div>
 
   <!-- Sidebar -->
-  <aside class="hidden lg:flex flex-col w-64 bg-[var(--sidebar-bg)] border-r border-[var(--sidebar-border)] flex-shrink-0 h-screen sticky top-0 backdrop-blur-md transition-all duration-300">
+  <aside
+    class="hidden lg:flex flex-col w-[260px] bg-white text-gray-700 border-r border-gray-100 flex-shrink-0 h-screen sticky top-0 transition-all duration-300 z-50">
     <!-- Header -->
-    <div class="h-16 flex items-center gap-3 px-6 border-b border-[var(--sidebar-border)]">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg shadow-[rgba(16,185,129,0.25)]">
-        <i data-lucide="shield" class="w-4 h-4 text-white"></i>
+    <div class="h-[84px] flex items-center gap-3 px-6">
+      <div class="w-10 h-10 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100">
+        <img src="{% static 'images/lo1.jpg' %}" alt="Logo" class="w-full h-full object-contain p-0.5">
       </div>
-      <span class="brand-font text-md font-bold tracking-tight">Quizopedia Admin</span>
+      <div class="flex flex-col">
+        <span class="text-[17px] font-bold tracking-wide text-gray-800 leading-tight">Quizopedia</span>
+        <span class="text-[11px] text-gray-400 tracking-wider">Admin Panel</span>
+      </div>
     </div>
-    
+
     <!-- Navlinks -->
-    <nav class="flex-1 py-6 space-y-1">
-      <a href="{% url 'admin_dashboard' %}" class="sidebar-link {% block active_db %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+    <nav class="flex-1 py-4 space-y-1.5 flex flex-col">
+      <a href="{% url 'admin_dashboard' %}"
+        class="sidebar-link {% block active_db %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard Overview
       </a>
-      <a href="{% url 'admin_students' %}" class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+      <a href="{% url 'admin_students' %}"
+        class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
         <i data-lucide="users" class="w-4 h-4"></i> Student Accounts
       </a>
-      <a href="{% url 'admin_profile_approvals' %}" class="sidebar-link {% block active_approvals %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
-        <i data-lucide="check-square" class="w-4 h-4"></i> 
-        <span>Profile Approvals</span>
+      <a href="{% url 'admin_profile_approvals' %}"
+        class="sidebar-link {% block active_approvals %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="check-circle" class="w-4 h-4"></i> Profile Approvals
       </a>
-      <a href="{% url 'question_list' %}" class="sidebar-link {% block active_questions %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+      <a href="{% url 'question_list' %}"
+        class="sidebar-link {% block active_questions %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
         <i data-lucide="help-circle" class="w-4 h-4"></i> Question Management
       </a>
-      <a href="{% url 'admin_report_cards' %}" class="sidebar-link {% block active_report_cards %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
+      <a href="{% url 'admin_report_cards' %}"
+        class="sidebar-link {% block active_report_cards %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
         <i data-lucide="file-text" class="w-4 h-4"></i> Report Cards
       </a>
-      <a href="{% url 'admin_profile' %}" class="sidebar-link {% block active_profile %}{% endblock %} flex items-center gap-3 px-6 py-3 text-sm font-medium">
-        <i data-lucide="user-cog" class="w-4 h-4"></i> Profile Settings
+      <a href="{% url 'admin_profile' %}"
+        class="sidebar-link {% block active_profile %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="settings" class="w-4 h-4"></i> Profile Settings
       </a>
     </nav>
 
     <!-- Footer logout -->
-    <div class="p-4 border-t border-[var(--sidebar-border)] bg-black/10">
-      <a href="{% url 'logout' %}" class="w-full py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center justify-center gap-1.5 text-[var(--text-muted)] hover:text-red-400">
-        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
+    <div class="p-6 mt-auto border-t border-gray-50">
+      <a href="{% url 'logout' %}"
+        class="flex items-center gap-3 px-4 py-3 text-[13px] font-medium rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Logout
       </a>
     </div>
   </aside>
 
   <!-- Main Content Wrapper -->
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 bg-[#f4f7fe]">
     <!-- Top bar -->
-    <header class="h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300">
-      <div class="flex items-center gap-3 lg:hidden">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg">
-          <i data-lucide="shield" class="w-4 h-4 text-white"></i>
-        </div>
-        <span class="brand-font text-md font-bold tracking-tight">Quizopedia Admin</span>
-      </div>
-      
-      <span class="hidden sm:inline text-xs text-[var(--text-muted)] font-medium">Quizopedia Management Terminal v1.0</span>
-
+    <header class="h-[84px] bg-white flex items-center justify-between px-8 sticky top-0 z-30 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
       <div class="flex items-center gap-4">
-        <!-- Theme Switch Button -->
-        <button id="themeToggleBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-semibold text-[var(--text-main)]">
-          <i id="themeBtnIcon" data-lucide="moon" class="w-3.5 h-3.5"></i>
-          <span id="themeBtnText">Dark</span>
-        </button>
+        <div class="flex items-center gap-2 text-[13px]">
+          <i data-lucide="home" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+          <span class="text-gray-400">›</span>
+          <span class="text-gray-600 font-medium">{% block breadcrumb %}Dashboard Overview{% endblock %}</span>
+        </div>
+      </div>
 
-        <span class="text-xs text-[var(--text-muted)] font-semibold">Session: <strong class="text-[var(--text-main)]">{{ request.user.username }}</strong> (Admin)</span>
-        <a href="{% url 'logout' %}" class="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white">
-          <i data-lucide="log-out" class="w-4 h-4"></i>
-        </a>
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center border border-[var(--accent-primary)]/20 overflow-hidden">
+            {% if request.user.profile_picture %}
+              <img src="{{ request.user.profile_picture.url }}" alt="Profile" class="w-full h-full object-cover">
+            {% else %}
+              <i data-lucide="user" class="w-5 h-5"></i>
+            {% endif %}
+          </div>
+          <div class="hidden md:flex flex-col">
+            <span class="text-[13px] font-bold text-gray-800 leading-tight">{{ request.user.username }}</span>
+            <span class="text-[11px] text-gray-500">Admin</span>
+          </div>
+        </div>
       </div>
     </header>
 
     <!-- Mobile Nav Bar (Visible only on small screens) -->
-    <div class="lg:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+    <div
+      class="lg:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
       <a href="{% url 'admin_dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
       <a href="{% url 'admin_students' %}" class="hover:text-[var(--text-main)]">Students</a>
       <a href="{% url 'admin_profile_approvals' %}" class="hover:text-[var(--text-main)]">Approvals</a>
@@ -337,35 +352,7 @@
   <script>
     lucide.createIcons();
 
-    // =========================================
-    // THEME CONTROLLER & INITIALIZATION
-    // =========================================
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const themeBtnText = document.getElementById('themeBtnText');
-    const themeBtnIcon = document.getElementById('themeBtnIcon');
 
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Light';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'sun');
-      } else {
-        document.body.classList.remove('light-mode');
-        if (themeBtnText) themeBtnText.textContent = 'Dark';
-        if (themeBtnIcon) themeBtnIcon.setAttribute('data-lucide', 'moon');
-      }
-      lucide.createIcons();
-    }
-
-    themeToggleBtn.addEventListener('click', () => {
-      const isLight = document.body.classList.contains('light-mode');
-      const targetTheme = isLight ? 'dark' : 'light';
-      localStorage.setItem('theme', targetTheme);
-      applyTheme(targetTheme);
-    });
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(savedTheme);
 
     // Page Transition Handlers
     window.addEventListener('DOMContentLoaded', () => {
@@ -397,7 +384,7 @@
               window.location.href = link.href;
             }, 300);
           }
-        } catch(err) {
+        } catch (err) {
           // ignore invalid URLs
         }
       }
