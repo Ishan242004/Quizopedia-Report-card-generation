@@ -1,0 +1,111 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Dashboard Overview - Quizopedia Admin{% endblock %}
+
+{% block active_db %}active{% endblock %}
+{% block breadcrumb %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <div>
+    <h1 class="text-[22px] font-bold text-gray-800 mb-1">Dashboard Overview</h1>
+    <p class="text-gray-500 text-[13px]">Real-time statistics and recent activity from the database.</p>
+  </div>
+  <div>
+    <a href="{% url 'question_add' %}" class="bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-dark)] text-white px-5 py-2.5 rounded-lg text-[13px] font-semibold flex items-center gap-2 transition shadow-[0_4px_12px_rgba(124,92,245,0.2)]">
+      <i data-lucide="plus" class="w-4 h-4"></i> Add Question
+    </a>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <!-- Students Count -->
+  <div class="bg-[#f5f3ff] rounded-[18px] p-6 shadow-sm border border-[#ede9fe] relative overflow-hidden flex flex-col">
+    <i data-lucide="users" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#ede9fe] z-0 stroke-[1.5] fill-[#ede9fe]/50"></i>
+    
+    <div class="flex items-center gap-4 mb-8 z-10">
+      <div class="w-10 h-10 rounded-xl bg-[#ede9fe] text-[#6d28d9] flex items-center justify-center">
+        <i data-lucide="users" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[14px] font-semibold text-[#2e1065]">Total Students</span>
+    </div>
+    
+    <div class="flex items-end justify-between z-10 mt-auto">
+      <span class="text-[40px] leading-none font-bold text-[#2e1065]">{{ total_students }}</span>
+      <div class="flex flex-col items-end">
+        <span class="text-[11px] text-[#4c1d95] font-medium mb-1 tracking-wide">Registered</span>
+        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+          <i data-lucide="trending-up" class="w-3 h-3"></i> +0 this week
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions Count -->
+  <div class="bg-[#eff6ff] rounded-[18px] p-6 shadow-sm border border-[#dbeafe] relative overflow-hidden flex flex-col">
+    <i data-lucide="help-circle" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#dbeafe] z-0 stroke-[1.5] fill-[#dbeafe]/50"></i>
+    
+    <div class="flex items-center gap-4 mb-8 z-10">
+      <div class="w-10 h-10 rounded-xl bg-[#dbeafe] text-[#2563eb] flex items-center justify-center">
+        <i data-lucide="help-circle" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[14px] font-semibold text-[#1e3a8a]">Total Questions</span>
+    </div>
+    
+    <div class="flex items-end justify-between z-10 mt-auto">
+      <span class="text-[40px] leading-none font-bold text-[#1e3a8a]">{{ question_count }}</span>
+      <div class="flex flex-col items-end">
+        <span class="text-[11px] text-[#1e40af] font-medium mb-1 tracking-wide">Inserted</span>
+        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+          <i data-lucide="trending-up" class="w-3 h-3"></i> +2 this week
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subjects Count -->
+  <div class="bg-[#fdf4ff] rounded-[18px] p-6 shadow-sm border border-[#fae8ff] relative overflow-hidden flex flex-col">
+    <i data-lucide="book-open" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#fae8ff] z-0 stroke-[1.5] fill-[#fae8ff]/50"></i>
+    
+    <div class="flex items-center gap-4 mb-8 z-10">
+      <div class="w-10 h-10 rounded-xl bg-[#fae8ff] text-[#c026d3] flex items-center justify-center">
+        <i data-lucide="book-open" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[14px] font-semibold text-[#701a75]">Subjects</span>
+    </div>
+    
+    <div class="flex items-end justify-between z-10 mt-auto">
+      <span class="text-[40px] leading-none font-bold text-[#701a75]">{{ subject_count }}</span>
+      <div class="flex flex-col items-end">
+        <span class="text-[11px] text-[#86198f] font-medium mb-1 tracking-wide">Categories</span>
+        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+          <i data-lucide="trending-up" class="w-3 h-3"></i> +0 this week
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Cards Count -->
+  <div class="bg-[#eff6ff] rounded-[18px] p-6 shadow-sm border border-[#dbeafe] relative overflow-hidden flex flex-col">
+    <i data-lucide="file-text" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#dbeafe] z-0 stroke-[1.5] fill-[#dbeafe]/50"></i>
+    
+    <div class="flex items-center gap-4 mb-8 z-10">
+      <div class="w-10 h-10 rounded-xl bg-[#dbeafe] text-[#2563eb] flex items-center justify-center">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[14px] font-semibold text-[#1e3a8a]">Report Cards</span>
+    </div>
+    
+    <div class="flex items-end justify-between z-10 mt-auto">
+      <span class="text-[40px] leading-none font-bold text-[#1e3a8a]">{{ report_card_count }}</span>
+      <div class="flex flex-col items-end">
+        <span class="text-[11px] text-[#1e40af] font-medium mb-1 tracking-wide">Generated</span>
+        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+          <i data-lucide="trending-up" class="w-3 h-3"></i> +1 this week
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

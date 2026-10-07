@@ -1,0 +1,151 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}{{ subject.name }} - Questions{% endblock %}
+
+{% block active_questions %}active{% endblock %}
+
+{% block breadcrumb %}Subject Questions{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <div class="flex items-center gap-3.5">
+    <a href="{% url 'question_list' %}" class="w-10 h-10 rounded-xl bg-white border border-[#e2e8f0] text-[#64748b] hover:text-[#0f172a] hover:border-slate-300 transition flex items-center justify-center shadow-sm" title="Back to Subjects">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+    </a>
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0f172a]">{{ subject.name }}</h1>
+      <p class="text-[#64748b] text-sm mt-0.5 font-normal">{{ questions.count }} question{{ questions.count|pluralize }} in this subject</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2.5 sm:gap-3">
+    <a href="{% url 'question_add_mcq' %}?subject={{ subject.name|urlencode }}"
+      class="h-[42px] px-4 sm:px-5 rounded-[14px] font-bold text-xs sm:text-sm bg-[#7c5cf5] hover:bg-[#6d42e8] text-white flex items-center gap-1.5 shadow-[0_4px_14px_rgba(124,92,245,0.35)] transition-all duration-200 active:scale-95">
+      <i data-lucide="plus" class="w-4 h-4 text-white"></i> Add Question
+    </a>
+    <form method="POST" action="{% url 'subject_delete' subject.id %}" onsubmit="return confirm('Are you sure you want to delete the entire quiz \'{{ subject.name|escapejs }}\' and all its {{ questions.count }} questions? This cannot be undone.');" class="m-0 p-0">
+      {% csrf_token %}
+      <button type="submit"
+        class="h-[42px] px-4 sm:px-5 rounded-[14px] font-bold text-xs sm:text-sm bg-[#ffe6e6] hover:bg-[#fecdd3] text-[#e11d48] border border-[#fecdd3]/70 flex items-center gap-1.5 transition-all duration-200 active:scale-95" title="Delete entire quiz">
+        <i data-lucide="trash-2" class="w-4 h-4 text-[#e11d48]"></i> Delete Quiz
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if messages %}
+<div class="mb-6 space-y-2">
+  {% for message in messages %}
+  <div class="flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
+    <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500"></i>
+    <span>{{ message }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- All Questions — Detail Card Format Matching Image -->
+{% if questions %}
+<div class="space-y-6">
+  {% for q in questions %}
+  <div class="rounded-[28px] p-6 sm:p-7 bg-white border border-[#eae8f7] shadow-[0_10px_30px_-5px_rgba(124,92,245,0.06),0_2px_8px_rgba(0,0,0,0.02)] flex flex-col">
+
+    <!-- Top Row: Question Number + Type Badge -->
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-xs font-bold text-[#64748b] tracking-wider uppercase">QUESTION {{ forloop.counter }}</span>
+      {% if q.is_mcq %}
+      <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#ede9fe] text-[#7c5cf5]">MCQ</span>
+      {% else %}
+      <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/70">Q&A</span>
+      {% endif %}
+    </div>
+
+    <!-- Question Text -->
+    <h3 class="text-[15px] sm:text-base font-semibold text-[#0f172a] leading-relaxed mb-4">
+      {{ q.question_text }}
+    </h3>
+
+    <!-- Options Section -->
+    {% if q.is_mcq %}
+    <div class="space-y-2.5 mb-5">
+      {% if q.option_a %}
+      <div class="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 rounded-[16px] transition-all
+        {% if q.correct_option == 'A' %}bg-[#ecfdf5] border border-[#a7f3d0]{% else %}bg-white border border-[#e2e8f0]{% endif %}">
+        <span class="text-sm {% if q.correct_option == 'A' %}font-semibold text-[#065f46]{% else %}font-medium text-[#334155]{% endif %}">A) {{ q.option_a }}</span>
+        {% if q.correct_option == 'A' %}
+        <span class="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#d1fae5] text-[#059669] uppercase flex items-center gap-1 shrink-0">&check; CORRECT</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if q.option_b %}
+      <div class="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 rounded-[16px] transition-all
+        {% if q.correct_option == 'B' %}bg-[#ecfdf5] border border-[#a7f3d0]{% else %}bg-white border border-[#e2e8f0]{% endif %}">
+        <span class="text-sm {% if q.correct_option == 'B' %}font-semibold text-[#065f46]{% else %}font-medium text-[#334155]{% endif %}">B) {{ q.option_b }}</span>
+        {% if q.correct_option == 'B' %}
+        <span class="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#d1fae5] text-[#059669] uppercase flex items-center gap-1 shrink-0">&check; CORRECT</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if q.option_c %}
+      <div class="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 rounded-[16px] transition-all
+        {% if q.correct_option == 'C' %}bg-[#ecfdf5] border border-[#a7f3d0]{% else %}bg-white border border-[#e2e8f0]{% endif %}">
+        <span class="text-sm {% if q.correct_option == 'C' %}font-semibold text-[#065f46]{% else %}font-medium text-[#334155]{% endif %}">C) {{ q.option_c }}</span>
+        {% if q.correct_option == 'C' %}
+        <span class="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#d1fae5] text-[#059669] uppercase flex items-center gap-1 shrink-0">&check; CORRECT</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if q.option_d %}
+      <div class="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 rounded-[16px] transition-all
+        {% if q.correct_option == 'D' %}bg-[#ecfdf5] border border-[#a7f3d0]{% else %}bg-white border border-[#e2e8f0]{% endif %}">
+        <span class="text-sm {% if q.correct_option == 'D' %}font-semibold text-[#065f46]{% else %}font-medium text-[#334155]{% endif %}">D) {{ q.option_d }}</span>
+        {% if q.correct_option == 'D' %}
+        <span class="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#d1fae5] text-[#059669] uppercase flex items-center gap-1 shrink-0">&check; CORRECT</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    {% else %}
+    <!-- Q&A Format -->
+    <div class="space-y-2.5 mb-5">
+      {% if q.option_a %}
+      <div class="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 rounded-[16px] bg-[#ecfdf5] border border-[#a7f3d0]">
+        <span class="text-sm font-semibold text-[#065f46]">{{ q.option_a }}</span>
+        <span class="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#d1fae5] text-[#059669] uppercase flex items-center gap-1 shrink-0">&check; CORRECT</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Bottom Action Row (Edit & Delete matching image) -->
+    <div class="flex items-center gap-2.5">
+      <a href="{% url 'question_edit' q.id %}"
+        class="h-9 px-4 rounded-xl font-bold text-xs sm:text-[13px] bg-white hover:bg-slate-50 text-[#334155] border border-[#e2e8f0] flex items-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
+        <i data-lucide="edit-3" class="w-3.5 h-3.5 text-[#64748b]"></i> Edit
+      </a>
+
+      <form method="POST" action="{% url 'question_delete' q.id %}" onsubmit="return confirm('Are you sure you want to delete this question?');" class="m-0 p-0">
+        {% csrf_token %}
+        <button type="submit"
+          class="h-9 px-4 rounded-xl font-bold text-xs sm:text-[13px] bg-[#ffe6e6] hover:bg-[#fecdd3] text-[#e11d48] border border-[#fecdd3]/70 flex items-center gap-1.5 transition-all duration-200 active:scale-95" title="Delete question">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-[#e11d48]"></i> Delete
+        </button>
+      </form>
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="glass-card rounded-[28px] p-12 text-center text-[var(--text-muted)] font-medium">
+  <i data-lucide="help-circle" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+  <p class="text-lg mb-1">No questions in this subject.</p>
+  <p class="text-xs">Click <a href="{% url 'question_add_mcq' %}?subject={{ subject.name|urlencode }}" class="text-[var(--accent-primary)] hover:underline font-semibold">+ Add Question</a> to add one.</p>
+</div>
+{% endif %}
+
+{% endblock %}

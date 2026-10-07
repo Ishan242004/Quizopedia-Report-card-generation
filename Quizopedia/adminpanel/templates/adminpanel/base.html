@@ -1,0 +1,395 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel - Quizopedia{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --primary: #7c5cf5;
+      --primary-light: #a78bfa;
+      --primary-dark: #6d42e8;
+      --primary-gradient: linear-gradient(135deg, #7c5cf5 0%, #a78bfa 50%, #8b6cf7 100%);
+      --bg-base: #f5f3ff;
+      --header-bg: rgba(255, 255, 255, 0.8);
+      --header-border: rgba(124, 92, 245, 0.15);
+      --card-bg: #ffffff;
+      --card-border: rgba(124, 92, 245, 0.15);
+      --text-main: #1a1a2e;
+      --text-muted: #6b7280;
+      --text-light-muted: #9ca3af;
+      --border-soft: rgba(124, 92, 245, 0.15);
+
+      --accent-primary: #7c5cf5;
+      --accent-secondary: #a78bfa;
+      --accent-primary-rgb: 124, 92, 245;
+      --accent-secondary-rgb: 167, 139, 250;
+
+      --sidebar-bg: rgba(255, 255, 255, 0.7);
+      --sidebar-border: rgba(124, 92, 245, 0.15);
+      --sidebar-link: rgba(26, 26, 46, 0.6);
+      --sidebar-link-hover: rgba(124, 92, 245, 0.08);
+      --sidebar-link-active: #7c5cf5;
+      --panel: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #e5e7eb;
+      --input-text: #1a1a2e;
+      --input-placeholder: #9ca3af;
+      --table-header-bg: rgba(124, 92, 245, 0.05);
+    }
+
+    * {
+      font-family: 'Inter', system-ui, sans-serif;
+      box-sizing: border-box;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    .brand-font {
+      font-family: 'DM Sans', 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(100px);
+      opacity: 0.25;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      background: var(--accent-primary);
+      width: 500px;
+      height: 500px;
+      top: -150px;
+      left: -150px;
+    }
+
+    .blob-2 {
+      background: var(--accent-secondary);
+      width: 450px;
+      height: 450px;
+      bottom: -150px;
+      right: -150px;
+    }
+
+    .noise-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.02;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--card-border);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body.light-mode .glass-card {
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-link {
+      color: #4b5563; /* gray-600 */
+      transition: all 0.2s ease;
+      border-radius: 12px;
+      margin: 0 12px;
+    }
+
+    .sidebar-link:hover {
+      background: #f3f4f6; /* gray-100 */
+      color: #1f2937; /* gray-800 */
+    }
+
+    .sidebar-link.active {
+      background: var(--accent-primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(124, 92, 245, 0.3);
+    }
+
+    .cta-btn {
+      position: relative;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      transition: transform .18s ease, box-shadow .25s ease;
+      box-shadow: 0 8px 25px -8px rgba(var(--accent-primary-rgb), 0.4);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px -8px rgba(var(--accent-primary-rgb), 0.6);
+    }
+
+    /* Page Transitions & Premium Preloader */
+    .page-transition-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-base);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+    }
+
+    .page-transition-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .preloader-content {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preloader-glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(var(--accent-primary-rgb), 0.15) 0%, transparent 70%);
+      animation: preloaderPulse 1.5s ease-in-out infinite alternate;
+    }
+
+    .preloader-spinner {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border: 3px solid transparent;
+      border-top-color: var(--accent-primary);
+      border-right-color: var(--accent-secondary);
+      border-radius: 50%;
+      animation: preloaderSpin 0.8s linear infinite;
+    }
+
+    .preloader-logo {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(var(--accent-primary-rgb), 0.3);
+      z-index: 2;
+    }
+
+    @keyframes preloaderSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes preloaderPulse {
+      from {
+        transform: scale(0.9);
+        opacity: 0.5;
+      }
+
+      to {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen w-full flex overflow-x-hidden">
+  <!-- Page Transition Overlay & Preloader -->
+  <div class="page-transition-overlay" id="pageOverlay">
+    <div class="preloader-content">
+      <div class="preloader-glow"></div>
+      <div class="preloader-spinner"></div>
+    </div>
+  </div>
+  <!-- Ambient blobs background -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside
+    class="hidden lg:flex flex-col w-[260px] bg-white text-gray-700 border-r border-gray-100 flex-shrink-0 h-screen sticky top-0 transition-all duration-300 z-50">
+    <!-- Header -->
+    <div class="h-[84px] flex items-center gap-3 px-6">
+      <div class="w-10 h-10 rounded-lg overflow-hidden bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100">
+        <img src="{% static 'images/lo1.jpg' %}" alt="Logo" class="w-full h-full object-contain p-0.5">
+      </div>
+      <div class="flex flex-col">
+        <span class="text-[17px] font-bold tracking-wide text-gray-800 leading-tight">Quizopedia</span>
+        <span class="text-[11px] text-gray-400 tracking-wider">Admin Panel</span>
+      </div>
+    </div>
+
+    <!-- Navlinks -->
+    <nav class="flex-1 py-4 space-y-1.5 flex flex-col">
+      <a href="{% url 'admin_dashboard' %}"
+        class="sidebar-link {% block active_db %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard Overview
+      </a>
+      <a href="{% url 'admin_students' %}"
+        class="sidebar-link {% block active_students %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="users" class="w-4 h-4"></i> Student Accounts
+      </a>
+      <a href="{% url 'admin_profile_approvals' %}"
+        class="sidebar-link {% block active_approvals %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="check-circle" class="w-4 h-4"></i> Profile Approvals
+      </a>
+      <a href="{% url 'question_list' %}"
+        class="sidebar-link {% block active_questions %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="help-circle" class="w-4 h-4"></i> Question Management
+      </a>
+      <a href="{% url 'admin_report_cards' %}"
+        class="sidebar-link {% block active_report_cards %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="file-text" class="w-4 h-4"></i> Report Cards
+      </a>
+      <a href="{% url 'admin_profile' %}"
+        class="sidebar-link {% block active_profile %}{% endblock %} flex items-center gap-3 px-4 py-3 text-[13px] font-medium">
+        <i data-lucide="settings" class="w-4 h-4"></i> Profile Settings
+      </a>
+    </nav>
+
+    <!-- Footer logout -->
+    <div class="p-6 mt-auto border-t border-gray-50">
+      <a href="{% url 'logout' %}"
+        class="flex items-center gap-3 px-4 py-3 text-[13px] font-medium rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="flex-1 flex flex-col min-w-0 bg-[#f4f7fe]">
+    <!-- Top bar -->
+    <header class="h-[84px] bg-white flex items-center justify-between px-8 sticky top-0 z-30 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 text-[13px]">
+          <i data-lucide="home" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+          <span class="text-gray-400">›</span>
+          <span class="text-gray-600 font-medium">{% block breadcrumb %}Dashboard Overview{% endblock %}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center border border-[var(--accent-primary)]/20 overflow-hidden">
+            {% if request.user.profile_picture %}
+              <img src="{{ request.user.profile_picture.url }}" alt="Profile" class="w-full h-full object-cover">
+            {% else %}
+              <i data-lucide="user" class="w-5 h-5"></i>
+            {% endif %}
+          </div>
+          <div class="hidden md:flex flex-col">
+            <span class="text-[13px] font-bold text-gray-800 leading-tight">{{ request.user.username }}</span>
+            <span class="text-[11px] text-gray-500">Admin</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Mobile Nav Bar (Visible only on small screens) -->
+    <div
+      class="lg:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+      <a href="{% url 'admin_dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
+      <a href="{% url 'admin_students' %}" class="hover:text-[var(--text-main)]">Students</a>
+      <a href="{% url 'admin_profile_approvals' %}" class="hover:text-[var(--text-main)]">Approvals</a>
+      <a href="{% url 'question_list' %}" class="hover:text-[var(--text-main)]">Questions</a>
+      <a href="{% url 'admin_report_cards' %}" class="hover:text-[var(--text-main)]">Report Cards</a>
+      <a href="{% url 'admin_profile' %}" class="hover:text-[var(--text-main)]">Profile</a>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 p-6 md:p-10 max-w-6xl w-full mx-auto animate-fade-in">
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+
+
+    // Page Transition Handlers
+    window.addEventListener('DOMContentLoaded', () => {
+      const overlay = document.getElementById('pageOverlay');
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 400);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && link.href && !link.target && !link.href.startsWith('#') && !link.href.startsWith('javascript:')) {
+        // Only transition internal relative links or links matching current domain
+        try {
+          const currentHost = window.location.host;
+          const linkUrl = new URL(link.href);
+          if (currentHost === linkUrl.host && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            e.preventDefault();
+            const overlay = document.getElementById('pageOverlay');
+            if (overlay) {
+              overlay.style.display = 'flex';
+              overlay.offsetHeight; // force reflow
+              overlay.classList.remove('fade-out');
+            }
+            setTimeout(() => {
+              window.location.href = link.href;
+            }, 300);
+          }
+        } catch (err) {
+          // ignore invalid URLs
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
