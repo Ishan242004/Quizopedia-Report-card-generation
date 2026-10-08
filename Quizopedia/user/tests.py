@@ -670,6 +670,90 @@ class OptionModelFlowTests(TestCase):
         self.assertFalse(options[1].is_answer)
 
 
+class SampleReportCardQuizDataTests(TestCase):
+    def test_populate_sample_quiz_data_command(self):
+        """Verify populate_sample_quiz_data creates 3 subjects, 6 questions, 4 options each, exactly 1 answer."""
+        from django.core.management import call_command
+        from .models import Subject, Question, Option
+
+        call_command('populate_sample_quiz_data')
+
+        expected_subjects = ['Python Programming', 'Mathematics', 'Computer Science']
+        sample_subjects = Subject.objects.filter(name__in=expected_subjects)
+
+        # 1. Subject count for these sample subjects = 3
+        self.assertEqual(sample_subjects.count(), 3)
+
+        total_questions = 0
+        total_options = 0
+
+        for subj in sample_subjects:
+            # 2. Every subject has exactly 2 questions
+            questions = Question.objects.filter(subject=subj)
+            self.assertEqual(questions.count(), 2)
+            total_questions += questions.count()
+
+            for q in questions:
+                # Question type is mcq
+                self.assertEqual(q.question_type, 'mcq')
+
+                # 3. Every question has exactly 4 options in the new Option model
+                options = Option.objects.filter(question=q).order_by('id')
+                self.assertEqual(options.count(), 4)
+                total_options += options.count()
+
+                # 4. Every question has exactly 1 option where is_answer=True
+                correct_options = options.filter(is_answer=True)
+                self.assertEqual(correct_options.count(), 1)
+
+                # 5. Legacy MCQ fields match Option records
+                letter_map = {'A': q.option_a, 'B': q.option_b, 'C': q.option_c, 'D': q.option_d}
+                correct_opt_obj = correct_options.first()
+                self.assertEqual(correct_opt_obj.option_text, letter_map[q.correct_option])
+
+        # 6. Question count created by this task = 6
+        self.assertEqual(total_questions, 6)
+        # 7. Total option count = 24
+        self.assertEqual(total_options, 24)
+
+    def test_sample_quiz_attempt_generates_report_card(self):
+        """Verify that attempting a quiz on sample subject generates a valid ReportCard."""
+        from django.core.management import call_command
+        from .models import Subject, Question, Student, ReportCard
+        from django.contrib.auth.models import User
+
+        call_command('populate_sample_quiz_data')
+
+        user = User.objects.create_user(username='test_student_quiz', email='quiz@example.com', password='password123')
+        student = Student.objects.create(user=user, phone='9876543210')
+        self.client.login(username='test_student_quiz', password='password123')
+
+        subject = Subject.objects.get(name='Python Programming')
+        questions = Question.objects.filter(subject=subject).order_by('id')
+        self.assertEqual(questions.count(), 2)
+
+        # Submit quiz answers matching the correct options
+        post_data = {
+            f"question_{questions[0].id}": questions[0].correct_option,
+            f"question_{questions[1].id}": questions[1].correct_option,
+        }
+        response = self.client.post(reverse('quiz_attempt', args=[subject.id]), post_data)
+
+        # Should redirect to report card view
+        self.assertEqual(response.status_code, 302)
+
+        # Verify ReportCard
+        report_card = ReportCard.objects.filter(student=student, subject=subject).first()
+        self.assertIsNotNone(report_card)
+        self.assertEqual(report_card.total_questions, 2)
+        self.assertEqual(report_card.attempted_questions, 2)
+        self.assertEqual(report_card.correct_answers, 2)
+        self.assertEqual(report_card.wrong_answers, 0)
+        self.assertEqual(report_card.percentage, 100.0)
+        self.assertEqual(report_card.result_grade, 'A')
+
+
+
 
 
 
