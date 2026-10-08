@@ -43,165 +43,231 @@
     }
 
     h1,h2,h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; }
+
     a { text-decoration: none; color: inherit; }
 
-    .auth-container {
+    /* Layout */
+    .auth-wrap {
+      display: flex;
       width: 100%;
-      max-width: 500px;
+      max-width: 960px;
+      min-height: 600px;
+      background: var(--surface);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.04);
+      overflow: hidden;
     }
 
-    /* Logo header */
-    .auth-logo-row {
+    /* Left hero panel */
+    .auth-hero {
+      flex: 1;
+      background: linear-gradient(155deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 280px; height: 280px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+
+    .auth-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -40px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+
+    .auth-hero-logo {
       display: flex;
       align-items: center;
       gap: 0.65rem;
-      justify-content: center;
-      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
     }
 
-    .auth-logo-mark {
+    .auth-hero-logo-mark {
       width: 40px;
       height: 40px;
-      background: var(--brand);
+      background: rgba(255,255,255,0.2);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(79,70,229,0.25);
     }
 
-    .auth-logo-text {
+    .auth-hero-logo-text {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 800;
-      font-size: 1.25rem;
-      color: var(--text-primary);
+      font-size: 1.125rem;
+      color: white;
       letter-spacing: -0.03em;
     }
 
-    /* Card */
-    .auth-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.04);
-      padding: 2.5rem;
+    .auth-hero-content {
+      position: relative;
+      z-index: 1;
     }
 
-    .auth-card-title {
-      font-size: 1.375rem;
+    .auth-hero-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      margin-bottom: 1rem;
+    }
+
+    .auth-hero h2 {
+      font-size: 1.875rem;
+      color: white;
+      letter-spacing: -0.04em;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .auth-hero p {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.7;
+    }
+
+    .auth-hero-features {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .auth-hero-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+    }
+
+    .auth-hero-feature-dot {
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Right form panel */
+    .auth-form-panel {
+      flex: 1.15;
+      padding: 2.75rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .auth-form-title {
+      font-size: 1.5rem;
       font-weight: 800;
       color: var(--text-primary);
       letter-spacing: -0.03em;
       margin-bottom: 0.3rem;
     }
 
-    .auth-card-subtitle {
-      font-size: 0.8125rem;
+    .auth-form-subtitle {
+      font-size: 0.875rem;
       color: var(--text-muted);
-      margin-bottom: 1.75rem;
+      margin-bottom: 1.5rem;
     }
 
-    /* Messages */
+    /* Messages / Errors */
     .auth-alert {
       display: flex;
       align-items: flex-start;
       gap: 0.5rem;
-      padding: 0.75rem 1rem;
       border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
       font-size: 0.8125rem;
       font-weight: 500;
-      margin-bottom: 1.25rem;
     }
 
-    .auth-alert-error { background: var(--danger-bg); border: 1px solid #fecaca; color: #dc2626; }
-    .auth-alert-success { background: var(--success-bg); border: 1px solid #a7f3d0; color: #059669; }
-
-    /* Success panel */
-    .success-panel {
-      text-align: center;
-      padding: 1rem 0;
+    .auth-alert-error {
+      background: var(--danger-bg);
+      border: 1px solid #fecaca;
+      color: var(--danger);
     }
 
-    .success-icon {
-      width: 64px;
-      height: 64px;
+    .auth-alert-success {
       background: var(--success-bg);
-      border-radius: 50%;
+      border: 1px solid #a7f3d0;
+      color: #059669;
+    }
+
+    /* Form Fields */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+
+    .form-group {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.25rem;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
     }
 
-    .success-panel h2 {
-      font-size: 1.25rem;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
+    .form-group.full {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
     }
-
-    .success-panel p {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-    }
-
-    .success-info {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: left;
-      margin: 1.25rem 0;
-      font-size: 0.8125rem;
-    }
-
-    .success-info-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .success-info-row:last-child { border-bottom: none; }
-
-    .success-info-label { color: var(--text-muted); font-weight: 600; }
-    .success-info-value { color: var(--text-primary); font-weight: 700; }
-
-    /* Form */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-    @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
-
-    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-    .form-group.full { grid-column: 1/-1; }
 
     label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--text-primary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
-    .input-wrap { position: relative; }
+    .input-wrap {
+      position: relative;
+    }
 
     .input-wrap svg {
       position: absolute;
       left: 0.9rem;
       top: 50%;
       transform: translateY(-50%);
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       color: #94a3b8;
       pointer-events: none;
     }
 
     input[type="text"], input[type="email"], input[type="password"] {
       width: 100%;
-      height: 2.65rem;
-      padding: 0 1rem 0 2.6rem;
+      height: 2.7rem;
+      padding: 0 1rem 0 2.75rem;
       border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       background: var(--bg);
       font-size: 0.875rem;
       font-family: inherit;
@@ -223,7 +289,7 @@
       display: flex;
       align-items: flex-start;
       gap: 0.65rem;
-      margin: 1rem 0;
+      margin: 1rem 0 1.1rem;
     }
 
     .terms-row input[type="checkbox"] {
@@ -249,7 +315,11 @@
       font-weight: 700;
     }
 
-    /* Submit */
+    .terms-row label a:hover {
+      text-decoration: underline;
+    }
+
+    /* Submit Button */
     .auth-submit {
       width: 100%;
       height: 2.75rem;
@@ -263,10 +333,12 @@
       cursor: pointer;
       transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
       box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+      letter-spacing: 0.01em;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+      margin-top: 0.25rem;
     }
 
     .auth-submit:hover {
@@ -275,9 +347,11 @@
       box-shadow: 0 8px 20px rgba(79,70,229,0.35);
     }
 
+    .auth-submit:active { transform: translateY(0); }
+
     .auth-link-row {
       text-align: center;
-      margin-top: 1.5rem;
+      margin-top: 1.35rem;
       font-size: 0.8125rem;
       color: var(--text-muted);
     }
@@ -289,21 +363,109 @@
     }
 
     .auth-link-row a:hover { text-decoration: underline; }
+
+    /* Success Panel */
+    .success-panel {
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .success-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--success-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+
+    .success-panel h2 {
+      font-size: 1.35rem;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+
+    .success-panel p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .success-info {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: left;
+      margin: 1.25rem 0 1.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .success-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .success-info-row:last-child { border-bottom: none; }
+
+    .success-info-label { color: var(--text-muted); font-weight: 600; }
+    .success-info-value { color: var(--text-primary); font-weight: 700; }
+
+    /* Responsive */
+    @media (max-width: 820px) {
+      .auth-hero { display: none; }
+      .auth-form-panel { max-width: 100%; padding: 2.5rem 1.75rem; }
+      .auth-wrap { border-radius: 20px; max-width: 520px; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 0; align-items: flex-start; }
+      .auth-wrap { border-radius: 0; min-height: 100vh; box-shadow: none; border: none; }
+      .auth-form-panel { padding: 2rem 1.25rem; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
 <body>
-  <div class="auth-container">
-    <!-- Logo -->
-    <div class="auth-logo-row">
-      <div class="auth-logo-mark">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  <div class="auth-wrap">
+    <!-- Left: Hero Panel (Same as Login Page) -->
+    <div class="auth-hero">
+      <div class="auth-hero-logo">
+        <div class="auth-hero-logo-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="auth-hero-logo-text">Quizopedia</span>
       </div>
-      <span class="auth-logo-text">Quizopedia</span>
+
+      <div class="auth-hero-content">
+        <span class="auth-hero-tag">Student Learning Platform</span>
+        <h2>Test Your Knowledge &amp; Grow</h2>
+        <p>Take interactive quizzes, track your performance, and receive detailed report cards to measure your academic progress.</p>
+      </div>
+
+      <div class="auth-hero-features">
+        <div class="auth-hero-feature">
+          <div class="auth-hero-feature-dot"></div>
+          Multiple subjects and question sets
+        </div>
+        <div class="auth-hero-feature">
+          <div class="auth-hero-feature-dot"></div>
+          Instant performance feedback
+        </div>
+        <div class="auth-hero-feature">
+          <div class="auth-hero-feature-dot"></div>
+          Downloadable academic report cards
+        </div>
+      </div>
     </div>
 
-    <div class="auth-card">
-
+    <!-- Right: Form Panel -->
+    <div class="auth-form-panel">
       {% if student %}
       <!-- Registration success state -->
       <div class="success-panel">
@@ -328,16 +490,15 @@
           </div>
         </div>
 
-        <a href="{% url 'login' %}" style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--brand);color:white;padding:0.7rem 2rem;border-radius:12px;font-weight:700;font-size:0.875rem;box-shadow:0 4px 12px rgba(79,70,229,0.25);">
+        <a href="{% url 'login' %}" style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--brand);color:white;padding:0.75rem 2rem;border-radius:12px;font-weight:700;font-size:0.875rem;box-shadow:0 4px 12px rgba(79,70,229,0.25);">
           <i data-lucide="log-in" style="width:16px;height:16px;"></i>
           Sign In Now
         </a>
       </div>
 
       {% else %}
-      <!-- Registration form -->
-      <h1 class="auth-card-title">Create your account</h1>
-      <p class="auth-card-subtitle">Join Quizopedia and start your learning journey today.</p>
+      <h1 class="auth-form-title">Create your account</h1>
+      <p class="auth-form-subtitle">Join Quizopedia and start your learning journey today.</p>
 
       {% if errors %}
       {% for error in errors %}
@@ -411,7 +572,6 @@
       </p>
 
       {% endif %}
-
     </div>
   </div>
 
@@ -420,8 +580,6 @@
 
     {% if not student %}
     document.getElementById('registerForm').addEventListener('submit', function(e) {
-      const pass = document.getElementById('password').value;
-      const confirm = document.getElementById('confirm_password').value;
       const btn = document.getElementById('registerBtn');
       btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.75s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Creating account…';
       btn.style.opacity = '0.8';
