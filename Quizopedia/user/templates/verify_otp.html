@@ -1,0 +1,410 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two-Step Verification — Quizopedia</title>
+  <meta name="description" content="Verify your identity with the one-time code sent to your email to access Quizopedia.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-xl: 24px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 960px;
+      min-height: 560px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+
+    /* Left Hero Showcase */
+    .auth-showcase {
+      background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+      color: white;
+      padding: 3.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-showcase::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      margin-top: 2rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: #c7d2fe;
+    }
+
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #818cf8;
+      flex-shrink: 0;
+    }
+
+    /* Right Form Area */
+    .auth-form-wrap {
+      padding: 3.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+
+    .otp-input-field {
+      width: 100%;
+      height: 3.5rem;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      background: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: 0.55em;
+      text-align: center;
+      padding-left: 0.55em; /* counteract trailing letter-spacing */
+      outline: none;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .otp-input-field:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 3.15rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      margin-top: 1.25rem;
+    }
+
+    .submit-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.45);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .error-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.825rem;
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .success-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.825rem;
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    .warning-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.825rem;
+      color: #92400e;
+      font-weight: 600;
+    }
+
+    .resend-btn {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      text-decoration: underline;
+      transition: color 0.15s ease;
+    }
+
+    .resend-btn:hover {
+      color: var(--primary-hover);
+    }
+
+    @media (max-width: 768px) {
+      .auth-container {
+        grid-template-columns: 1fr;
+      }
+      .auth-showcase {
+        display: none;
+      }
+      .auth-form-wrap {
+        padding: 2.5rem 1.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="auth-container">
+    <!-- Left Hero Showcase -->
+    <div class="auth-showcase">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem;">
+          <div class="brand-mark">
+            <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
+          </div>
+          <div>
+            <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em;">Quizopedia</span>
+            <span style="display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: #818cf8; font-weight: 700;">Secure Portal</span>
+          </div>
+        </div>
+
+        <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.85rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; letter-spacing: -0.025em;">
+          Enhanced Account Protection
+        </h2>
+        <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; max-width: 320px;">
+          Two-step verification confirms your student identity and keeps your quiz scores and academic records safe.
+        </p>
+
+        <div class="hero-features">
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="lock" style="width: 16px; height: 16px;"></i></div>
+            <span>Single-use cryptographic 6-digit passcode</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="clock" style="width: 16px; height: 16px;"></i></div>
+            <span>Automatic expiration after {{ otp_expiry_minutes|default:5 }} minutes</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="mail-check" style="width: 16px; height: 16px;"></i></div>
+            <span>Direct SMTP delivery to your registered email</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.75rem; color: #64748b;">
+        &copy; Quizopedia Learning Technologies. All rights reserved.
+      </div>
+    </div>
+
+    <!-- Right Verification Form -->
+    <div class="auth-form-wrap">
+      <div style="margin-bottom: 1.75rem;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
+        </div>
+        <h1 style="font-size: 1.65rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); margin-bottom: 0.35rem;">
+          Enter Verification Code
+        </h1>
+        <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.5;">
+          We sent a 6-digit code to <strong style="color: var(--text-main);">{{ masked_email }}</strong>. Enter it below to complete your login.
+        </p>
+      </div>
+
+      <!-- Messages / Feedback -->
+      {% if messages %}
+      {% for message in messages %}
+      <div class="{% if message.tags == 'error' %}error-pill{% elif message.tags == 'warning' %}warning-pill{% else %}success-pill{% endif %}">
+        <i data-lucide="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}check-circle{% endif %}" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if errors %}
+      {% for error in errors %}
+      <div class="error-pill">
+        <i data-lucide="alert-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!-- OTP Form -->
+      <form method="POST" action="{% url 'verify_otp' %}" id="otpForm">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 1.25rem;">
+          <label for="otpInput" class="form-label">6-Digit Verification Code</label>
+          <input
+            type="text"
+            id="otpInput"
+            name="otp"
+            maxlength="6"
+            pattern="[0-9]{6}"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            required
+            autofocus
+            class="otp-input-field"
+          >
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; font-size: 0.775rem; color: var(--text-muted);">
+            <span>Expires in {{ otp_expiry_minutes|default:5 }} minutes</span>
+            <span id="expiryTimer">Single-use code</span>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="verifyBtn">
+          <span>Verify &amp; Continue</span>
+          <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+        </button>
+      </form>
+
+      <!-- Resend & Alternative actions -->
+      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.85rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+        <div>
+          Didn't receive the code?
+          <form method="POST" action="{% url 'resend_otp' %}" style="display: inline;" id="resendForm">
+            {% csrf_token %}
+            <button type="submit" class="resend-btn" id="resendBtn">
+              Resend Code
+            </button>
+          </form>
+        </div>
+
+        <div>
+          <a href="{% url 'login' %}" style="color: var(--text-muted); text-decoration: none; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+            <span>Back to Login</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Auto-filter non-digit characters in OTP input
+    const otpInput = document.getElementById('otpInput');
+    if (otpInput) {
+      otpInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+      });
+    }
+  </script>
+</body>
+
+</html>

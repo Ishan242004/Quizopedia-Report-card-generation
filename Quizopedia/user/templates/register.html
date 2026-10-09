@@ -204,10 +204,44 @@
       box-sizing: border-box;
     }
 
+    .form-input.has-toggle {
+      padding-right: 2.85rem;
+    }
+
     .form-input:focus {
       border-color: var(--primary);
       background: #ffffff;
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 0.35rem;
+      cursor: pointer;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: color 0.15s ease, background 0.15s ease;
+      z-index: 5;
+    }
+
+    .password-toggle-btn:hover {
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .password-toggle-btn svg,
+    .password-toggle-btn i {
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
     }
 
     /* Terms checkbox */
@@ -499,8 +533,11 @@
                 placeholder="••••••••"
                 autocomplete="new-password"
                 required
-                class="form-input"
+                class="form-input has-toggle"
               >
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Show/Hide Password" aria-label="Toggle password visibility">
+                <i data-lucide="eye" class="toggle-icon"></i>
+              </button>
             </div>
           </div>
 
@@ -516,8 +553,11 @@
                 placeholder="••••••••"
                 autocomplete="new-password"
                 required
-                class="form-input"
+                class="form-input has-toggle"
               >
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Show/Hide Password" aria-label="Toggle password visibility">
+                <i data-lucide="eye" class="toggle-icon"></i>
+              </button>
             </div>
           </div>
 
@@ -550,6 +590,23 @@
 
   <script>
     lucide.createIcons();
+
+    // Toggle Password Visibility (Show/Hide)
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+
+      btn.innerHTML = isPassword
+        ? '<i data-lucide="eye-off" class="toggle-icon"></i>'
+        : '<i data-lucide="eye" class="toggle-icon"></i>';
+      if (window.lucide) {
+        lucide.createIcons({
+          root: btn
+        });
+      }
+    }
 
     {% if not student %}
     const registerForm = document.getElementById('registerForm');

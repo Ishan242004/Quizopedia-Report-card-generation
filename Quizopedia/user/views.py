@@ -2,7 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Student, ProfileUpdateRequest, Subject, Question, ReportCard
+from django.conf import settings
+from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
+from django.db import transaction
+from .models import Student, ProfileUpdateRequest, Subject, Question, ReportCard, StudentOTP
 from .decorators import student_required
 import re
 from django.core.validators import validate_email
@@ -64,6 +69,70 @@ def register(request):
         'student': student
     })
 
+def mask_email(email):
+    """Utility to mask email address for privacy in verification displays (e.g. j***e@example.com)."""
+    if not email or '@' not in email:
+        return email or ''
+    parts = email.split('@', 1)
+    name, domain = parts[0], parts[1]
+    if len(name) <= 2:
+        masked_name = name[0] + '*'
+    else:
+        masked_name = name[0] + '*' * (len(name) - 2) + name[-1]
+    return f"{masked_name}@{domain}"
+
+
+def send_student_otp(request, user, student):
+    """
+    Helper to generate a secure 6-digit OTP, invalidate previous unused OTPs,
+    save the new StudentOTP record with expiry, and send it via Django's email backend.
+    Returns (success: bool, error_msg: str | None).
+    """
+    student_email = user.email or getattr(student, 'email', '')
+    if not student_email:
+        return False, "Your account does not have a registered email address. Please contact an administrator."
+
+    otp_expiry_minutes = getattr(settings, 'OTP_EXPIRY_MINUTES', 5)
+    otp_code = StudentOTP.generate_otp_code()
+    expires_at = timezone.now() + timedelta(minutes=otp_expiry_minutes)
+
+    with transaction.atomic():
+        # Invalidate previous unused OTPs for this student
+        StudentOTP.objects.filter(student=student, is_used=False).update(is_used=True)
+        # Create new OTP record
+        otp_record = StudentOTP.objects.create(
+            student=student,
+            otp=otp_code,
+            expires_at=expires_at,
+            is_used=False
+        )
+
+    # Email message preparation
+    subject = "Quizopedia Login Verification Code"
+    message = (
+        f"Hello {user.first_name or user.username},\n\n"
+        f"Your one-time login verification code (OTP) for Quizopedia is:\n\n"
+        f"    {otp_code}\n\n"
+        f"This code is valid for {otp_expiry_minutes} minutes and can only be used once.\n\n"
+        f"If you did not attempt to sign in to Quizopedia, please ignore this email or secure your account.\n\n"
+        f"Best regards,\nQuizopedia Learning Platform"
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[student_email],
+            fail_silently=False,
+        )
+        return True, None
+    except Exception as e:
+        # Delete the generated OTP record upon email delivery failure to prevent dangling codes
+        otp_record.delete()
+        return False, "Unable to send verification code due to an email delivery error. Please try again later."
+
+
 def login_view(request):
     if request.user.is_authenticated:
         if request.user.is_staff or request.user.is_superuser:
@@ -98,16 +167,157 @@ def login_view(request):
                 
             user = authenticate(request, username=auth_username, password=password)
             if user is not None:
-                login(request, user)
+                # If staff/admin user, direct login without student OTP
                 if user.is_staff or user.is_superuser:
+                    login(request, user)
                     return redirect('admin_dashboard')
-                return redirect('dashboard')
+
+                # For student users: initiate secure OTP verification flow
+                student = getattr(user, 'student', None)
+                if not student:
+                    student = Student.objects.create(user=user, phone='')
+
+                success, err = send_student_otp(request, user, student)
+                if success:
+                    request.session['pre_otp_user_id'] = user.id
+                    request.session['otp_attempts'] = 0
+                    request.session['otp_last_sent'] = timezone.now().timestamp()
+                    messages.success(request, f"A 6-digit verification code has been sent to your registered email.")
+                    return redirect('verify_otp')
+                else:
+                    errors.append(err)
             else:
                 errors.append("Invalid username or password.")
                 
     return render(request, 'login.html', {'errors': errors})
 
+
+def verify_otp_view(request):
+    """
+    Renders the OTP verification form and validates the submitted 6-digit OTP.
+    Upon successful validation, logs in the student and redirects to the dashboard.
+    """
+    if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('admin_dashboard')
+        return redirect('dashboard')
+
+    user_id = request.session.get('pre_otp_user_id')
+    if not user_id:
+        messages.info(request, "Please enter your login credentials first.")
+        return redirect('login')
+
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        request.session.pop('pre_otp_user_id', None)
+        return redirect('login')
+
+    student = getattr(user, 'student', None)
+    if not student:
+        request.session.pop('pre_otp_user_id', None)
+        return redirect('login')
+
+    masked_email = mask_email(user.email)
+    errors = []
+
+    if request.method == 'POST':
+        attempts = request.session.get('otp_attempts', 0)
+        if attempts >= 5:
+            # Invalidate any unused OTP
+            StudentOTP.objects.filter(student=student, is_used=False).update(is_used=True)
+            errors.append("Too many failed attempts. Please request a new verification code.")
+            return render(request, 'verify_otp.html', {
+                'masked_email': masked_email,
+                'errors': errors,
+                'too_many_attempts': True
+            })
+
+        submitted_otp = request.POST.get('otp', '').strip()
+
+        if not submitted_otp:
+            errors.append("Please enter the 6-digit verification code.")
+        elif len(submitted_otp) != 6 or not submitted_otp.isdigit():
+            errors.append("Verification code must be exactly 6 digits.")
+        else:
+            # Query latest active unused OTP for this student
+            otp_record = StudentOTP.objects.filter(
+                student=student,
+                is_used=False
+            ).order_by('-created_at').first()
+
+            if not otp_record:
+                errors.append("No active verification code found. Please request a new one.")
+            elif otp_record.is_expired:
+                errors.append("Verification code has expired. Please request a new code.")
+            elif otp_record.otp != submitted_otp:
+                request.session['otp_attempts'] = attempts + 1
+                errors.append("Incorrect verification code. Please try again.")
+            else:
+                # Valid OTP! Mark as used atomically
+                with transaction.atomic():
+                    otp_record.is_used = True
+                    otp_record.save(update_fields=['is_used'])
+
+                # Clear session pre-login keys
+                request.session.pop('pre_otp_user_id', None)
+                request.session.pop('otp_attempts', None)
+                request.session.pop('otp_last_sent', None)
+
+                # Complete student login!
+                login(request, user)
+                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                return redirect('dashboard')
+
+    return render(request, 'verify_otp.html', {
+        'masked_email': masked_email,
+        'errors': errors,
+        'otp_expiry_minutes': getattr(settings, 'OTP_EXPIRY_MINUTES', 5),
+    })
+
+
+def resend_otp_view(request):
+    """
+    Generates and sends a new OTP for the pending student session, with rate limiting.
+    """
+    if request.method != 'POST':
+        return redirect('verify_otp')
+
+    user_id = request.session.get('pre_otp_user_id')
+    if not user_id:
+        return redirect('login')
+
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return redirect('login')
+
+    student = getattr(user, 'student', None)
+    if not student:
+        return redirect('login')
+
+    # Rate limiting: 30 seconds cooldown between resends
+    last_sent = request.session.get('otp_last_sent')
+    now_ts = timezone.now().timestamp()
+    if last_sent and (now_ts - last_sent < 30):
+        wait_seconds = int(30 - (now_ts - last_sent))
+        messages.warning(request, f"Please wait {wait_seconds} seconds before requesting another code.")
+        return redirect('verify_otp')
+
+    success, err = send_student_otp(request, user, student)
+    if success:
+        request.session['otp_attempts'] = 0
+        request.session['otp_last_sent'] = now_ts
+        messages.success(request, "A fresh verification code has been sent to your email.")
+    else:
+        messages.error(request, err)
+
+    return redirect('verify_otp')
+
+
 def logout_view(request):
+    # Clear any pending OTP session data on logout
+    request.session.pop('pre_otp_user_id', None)
+    request.session.pop('otp_attempts', None)
+    request.session.pop('otp_last_sent', None)
     logout(request)
     return redirect('login')
 

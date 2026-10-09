@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, ProfileUpdateRequest, Subject, Question, Option
+from .models import Student, ProfileUpdateRequest, Subject, Question, Option, StudentOTP
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -50,5 +50,12 @@ class OptionAdmin(admin.ModelAdmin):
     list_display = ('question', 'option_text', 'is_answer')
     list_filter = ('is_answer',)
     search_fields = ('option_text', 'question__question_text')
+
+
+@admin.register(StudentOTP)
+class StudentOTPAdmin(admin.ModelAdmin):
+    list_display = ('student', 'otp', 'created_at', 'expires_at', 'is_used')
+    list_filter = ('is_used',)
+    search_fields = ('student__user__username', 'otp')
 
 

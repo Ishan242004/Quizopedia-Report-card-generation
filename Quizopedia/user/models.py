@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.utils import timezone
+import secrets
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student')
@@ -157,6 +159,39 @@ class ReportCard(models.Model):
 
     def __str__(self):
         return f"Report Card: {self.student.user.username} - {self.subject.name}"
+
+
+class StudentOTP(models.Model):
+    """
+    Model storing one-time passwords (OTP) with expiration for student authentication.
+    """
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='otps')
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Student OTP'
+        verbose_name_plural = 'Student OTPs'
+
+    def __str__(self):
+        return f"OTP for {self.student.user.username} (Used: {self.is_used})"
+
+    @classmethod
+    def generate_otp_code(cls):
+        """Generates a cryptographically secure 6-digit numeric string preserving leading zeros."""
+        return f"{secrets.randbelow(1000000):06d}"
+
+    @property
+    def is_expired(self):
+        """Returns True if the current timezone-aware time is at or beyond the expiration timestamp."""
+        return timezone.now() >= self.expires_at
+
+    def is_valid(self):
+        """Returns True if the OTP is unexpired and has not been used."""
+        return not self.is_used and not self.is_expired
 
 
 

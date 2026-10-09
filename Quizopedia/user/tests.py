@@ -131,22 +131,31 @@ class IntegrationFlowTests(TestCase):
         self.admin_user = User.objects.create_superuser(username='admin_test', email='admin@example.com', password='password123')
 
     def test_student_login_redirection(self):
-        # Post login as student
+        # Post login as student - triggers OTP generation and redirects to verify_otp
         response = self.client.post(reverse('login'), {
             'username': 'student_test',
             'password': 'password123'
         })
-        # Should redirect to student dashboard
-        self.assertRedirects(response, reverse('dashboard'))
+        self.assertRedirects(response, reverse('verify_otp'))
+        from .models import StudentOTP
+        otp_record = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+        self.assertIsNotNone(otp_record)
+        # Completing OTP verification should redirect to student dashboard
+        verify_resp = self.client.post(reverse('verify_otp'), {'otp': otp_record.otp})
+        self.assertRedirects(verify_resp, reverse('dashboard'))
 
     def test_student_login_by_email_redirection(self):
-        # Post login as student using email
+        # Post login as student using email - triggers OTP and redirects to verify_otp
         response = self.client.post(reverse('login'), {
             'username': 'student@example.com',
             'password': 'password123'
         })
-        # Should redirect to student dashboard
-        self.assertRedirects(response, reverse('dashboard'))
+        self.assertRedirects(response, reverse('verify_otp'))
+        from .models import StudentOTP
+        otp_record = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+        self.assertIsNotNone(otp_record)
+        verify_resp = self.client.post(reverse('verify_otp'), {'otp': otp_record.otp})
+        self.assertRedirects(verify_resp, reverse('dashboard'))
 
     def test_admin_login_redirection(self):
         # Post login as admin
@@ -751,6 +760,333 @@ class SampleReportCardQuizDataTests(TestCase):
         self.assertEqual(report_card.wrong_answers, 0)
         self.assertEqual(report_card.percentage, 100.0)
         self.assertEqual(report_card.result_grade, 'A')
+
+
+class StudentOTPFlowTests(TestCase):
+    """
+    Comprehensive automated tests for Student Login OTP generation,
+    expiry validation, email delivery, and authentication security.
+    """
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from django.core import mail
+        from .models import Student
+
+        mail.outbox = []
+
+        # Create primary student
+        self.student_user = User.objects.create_user(
+            username='otp_student',
+            email='otp_student@example.com',
+            password='Password123!',
+            first_name='Alice'
+        )
+        self.student = Student.objects.create(
+            user=self.student_user,
+            phone='9876543210'
+        )
+
+        # Create secondary student
+        self.student_user_b = User.objects.create_user(
+            username='other_student',
+            email='other_student@example.com',
+            password='Password123!',
+            first_name='Bob'
+        )
+        self.student_b = Student.objects.create(
+            user=self.student_user_b,
+            phone='1234567890'
+        )
+
+        # Create admin user
+        self.admin_user = User.objects.create_superuser(
+            username='otp_admin',
+            email='admin@example.com',
+            password='AdminPassword123!'
+        )
+
+    def test_otp_linked_to_correct_student(self):
+        """Verify StudentOTP record is correctly linked via ForeignKey to Student."""
+        from .models import StudentOTP
+        from django.utils import timezone
+        from datetime import timedelta
+
+        otp_record = StudentOTP.objects.create(
+            student=self.student,
+            otp='123456',
+            expires_at=timezone.now() + timedelta(minutes=5),
+            is_used=False
+        )
+        self.assertEqual(otp_record.student, self.student)
+        self.assertEqual(self.student.otps.count(), 1)
+        self.assertEqual(self.student_b.otps.count(), 0)
+
+    def test_otp_generation_six_digits_and_leading_zeros(self):
+        """Verify OTP generation produces six-digit strings and preserves leading zeros."""
+        from .models import StudentOTP
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Test random generator over multiple samples
+        for _ in range(30):
+            code = StudentOTP.generate_otp_code()
+            self.assertIsInstance(code, str)
+            self.assertEqual(len(code), 6)
+            self.assertTrue(code.isdigit())
+
+        # Test explicit leading zero preservation in database
+        leading_zero_code = '004589'
+        otp_record = StudentOTP.objects.create(
+            student=self.student,
+            otp=leading_zero_code,
+            expires_at=timezone.now() + timedelta(minutes=5),
+            is_used=False
+        )
+        otp_record.refresh_from_db()
+        self.assertEqual(otp_record.otp, '004589')
+        self.assertEqual(len(otp_record.otp), 6)
+        self.assertTrue(otp_record.otp.startswith('00'))
+
+    def test_otp_email_uses_django_email_system(self):
+        """Verify OTP email is dispatched via Django email system with correct recipient and code."""
+        from django.core import mail
+        from .models import StudentOTP
+
+        response = self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        self.assertRedirects(response, reverse('verify_otp'))
+
+        # Check outbox
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.to, ['otp_student@example.com'])
+        self.assertIn('Quizopedia', email.subject)
+
+        # Confirm code in email matches record in database
+        latest_otp = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+        self.assertIsNotNone(latest_otp)
+        self.assertIn(latest_otp.otp, email.body)
+
+    def test_valid_unexpired_unused_otp_succeeds(self):
+        """Verify submitting a valid, unexpired, unused OTP logs the student in and redirects to dashboard."""
+        from .models import StudentOTP
+
+        # Step 1: Login triggers OTP
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        otp_record = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+
+        # Step 2: Submit valid OTP
+        response = self.client.post(reverse('verify_otp'), {
+            'otp': otp_record.otp
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+
+        # Verify OTP marked as used
+        otp_record.refresh_from_db()
+        self.assertTrue(otp_record.is_used)
+
+        # Verify user is fully authenticated
+        self.assertEqual(int(self.client.session['_auth_user_id']), self.student_user.id)
+
+    def test_incorrect_otp_rejected(self):
+        """Verify submitting an incorrect OTP fails without granting access."""
+        from .models import StudentOTP
+
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        otp_record = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+
+        # Submit incorrect OTP code
+        wrong_code = '999999' if otp_record.otp != '999999' else '111111'
+        response = self.client.post(reverse('verify_otp'), {
+            'otp': wrong_code
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Incorrect verification code')
+
+        # User must NOT be logged in
+        self.assertNotIn('_auth_user_id', self.client.session)
+        otp_record.refresh_from_db()
+        self.assertFalse(otp_record.is_used)
+
+    def test_expired_otp_rejected(self):
+        """Verify an expired OTP is rejected with an appropriate error message."""
+        from .models import StudentOTP
+        from django.utils import timezone
+        from datetime import timedelta
+
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        otp_record = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+
+        # Artificially expire the OTP
+        otp_record.expires_at = timezone.now() - timedelta(minutes=1)
+        otp_record.save()
+        self.assertTrue(otp_record.is_expired)
+
+        # Attempt verification
+        response = self.client.post(reverse('verify_otp'), {
+            'otp': otp_record.otp
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'expired')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_used_otp_cannot_be_reused(self):
+        """Verify that an OTP already marked as used cannot be used again."""
+        from .models import StudentOTP
+
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        otp_record = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+
+        # First verification succeeds
+        self.client.post(reverse('verify_otp'), {'otp': otp_record.otp})
+        otp_record.refresh_from_db()
+        self.assertTrue(otp_record.is_used)
+
+        # Logout
+        self.client.logout()
+
+        # Second login attempt with same code directly
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        # Try verifying with the old code
+        response = self.client.post(reverse('verify_otp'), {'otp': otp_record.otp})
+        # Should be rejected
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_otp_belonging_to_another_student_cannot_authenticate(self):
+        """Verify an OTP issued to Student B cannot authenticate Student A."""
+        from .models import StudentOTP
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Generate OTP for Student B
+        otp_b = StudentOTP.objects.create(
+            student=self.student_b,
+            otp='654321',
+            expires_at=timezone.now() + timedelta(minutes=5),
+            is_used=False
+        )
+
+        # Student A initiates login
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+
+        # Student A attempts to submit Student B's OTP code
+        response = self.client.post(reverse('verify_otp'), {'otp': otp_b.otp})
+        self.assertEqual(response.status_code, 200)
+        # Access not granted
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_invalid_initial_login_cannot_bypass_authentication(self):
+        """Verify invalid credentials never trigger OTP generation or grant a session."""
+        from .models import StudentOTP
+
+        # Wrong password
+        response = self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'WrongPassword999'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Invalid username or password')
+        self.assertEqual(StudentOTP.objects.filter(student=self.student).count(), 0)
+        self.assertNotIn('pre_otp_user_id', self.client.session)
+
+        # Direct navigation to verify_otp without pre-login session redirects to login
+        verify_resp = self.client.get(reverse('verify_otp'))
+        self.assertRedirects(verify_resp, reverse('login'))
+
+    def test_smtp_delivery_failure_handles_gracefully(self):
+        """Verify SMTP failure does not grant access, does not report false success, and handles cleanly."""
+        from unittest.mock import patch
+        import smtplib
+        from .models import StudentOTP
+
+        # Mock send_mail to simulate SMTP server failure
+        with patch('user.views.send_mail', side_effect=smtplib.SMTPException("SMTP Server Connection Timed Out")):
+            response = self.client.post(reverse('login'), {
+                'username': 'otp_student',
+                'password': 'Password123!'
+            })
+
+            # Stays on login page with error
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'login.html')
+            self.assertContains(response, 'email delivery error')
+
+            # Pre-login session must NOT be established
+            self.assertNotIn('pre_otp_user_id', self.client.session)
+            self.assertNotIn('_auth_user_id', self.client.session)
+
+            # No dangling active OTP record should remain in DB
+            self.assertEqual(StudentOTP.objects.filter(student=self.student, is_used=False).count(), 0)
+
+    def test_resend_otp_and_cooldown_rate_limiting(self):
+        """Verify requesting a replacement OTP respects rate limits and invalidates previous code."""
+        from .models import StudentOTP
+        from django.core import mail
+
+        # Initial login sends 1st OTP
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        first_otp = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+
+        # Immediate resend should be rate-limited by cooldown
+        cooldown_resp = self.client.post(reverse('resend_otp'))
+        self.assertRedirects(cooldown_resp, reverse('verify_otp'))
+        self.assertEqual(len(mail.outbox), 1)  # No second email sent yet
+
+        # Fast-forward session timestamp by 35 seconds to bypass cooldown
+        session = self.client.session
+        session['otp_last_sent'] = session['otp_last_sent'] - 35
+        session.save()
+
+        # Resend code
+        resend_resp = self.client.post(reverse('resend_otp'))
+        self.assertRedirects(resend_resp, reverse('verify_otp'))
+        self.assertEqual(len(mail.outbox), 2)  # Second email sent
+
+        # First OTP should now be invalidated
+        first_otp.refresh_from_db()
+        self.assertTrue(first_otp.is_used)
+
+        # New active OTP exists
+        second_otp = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+        self.assertIsNotNone(second_otp)
+        self.assertNotEqual(first_otp.otp, second_otp.otp)
+
+    def test_admin_login_bypasses_student_otp(self):
+        """Verify staff/admin credentials log directly into admin dashboard without student OTP."""
+        from django.core import mail
+
+        response = self.client.post(reverse('login'), {
+            'username': 'otp_admin',
+            'password': 'AdminPassword123!'
+        })
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(int(self.client.session['_auth_user_id']), self.admin_user.id)
 
 
 
