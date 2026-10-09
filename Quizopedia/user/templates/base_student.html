@@ -6,734 +6,608 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Quizopedia — Student Portal{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Quizopedia — Interactive learning quizzes for students.{% endblock %}">
+  <meta name="description" content="{% block meta_description %}Quizopedia — Interactive learning & quiz portal for students.{% endblock %}">
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
   <style>
-    /* =============================================
-       DESIGN TOKENS / VARIABLES
-       ============================================= */
+    /* ==========================================================================
+       MODERN QUIZOPEDIA DESIGN SYSTEM (STUDENT PORTAL)
+       ========================================================================== */
     :root {
-      --brand:        #4f46e5;
-      --brand-dark:   #3730a3;
-      --brand-light:  #818cf8;
-      --brand-subtle: #eef2ff;
-      --brand-ring:   rgba(79,70,229,0.18);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-dark: #3730a3;
+      --primary-light: #818cf8;
+      --primary-subtle: #eef2ff;
+      --primary-glow: rgba(99, 102, 241, 0.25);
 
-      --success:      #10b981;
-      --success-bg:   #ecfdf5;
-      --warning:      #f59e0b;
-      --warning-bg:   #fffbeb;
-      --danger:       #ef4444;
-      --danger-bg:    #fef2f2;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
 
-      --bg:           #f8fafc;
-      --surface:      #ffffff;
-      --surface-2:    #f1f5f9;
-      --border:       #e2e8f0;
-      --border-focus: #4f46e5;
+      /* Sidebar & Dark Accents */
+      --sidebar-bg: #0f172a;
+      --sidebar-border: #1e293b;
+      --sidebar-text: #94a3b8;
+      --sidebar-text-hover: #ffffff;
+      --sidebar-active-bg: rgba(99, 102, 241, 0.15);
+      --sidebar-active-border: #6366f1;
 
-      --text-primary:   #0f172a;
-      --text-secondary: #475569;
-      --text-muted:     #94a3b8;
-      --text-inverse:   #ffffff;
+      /* Canvas & Cards */
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-card-subtle: #f1f5f9;
+      --border-subtle: #e2e8f0;
+      --border-focus: #6366f1;
 
-      --shadow-sm:   0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
-      --shadow-md:   0 4px 16px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.05);
-      --shadow-lg:   0 10px 36px rgba(15,23,42,0.1), 0 4px 12px rgba(15,23,42,0.06);
-      --shadow-brand:0 8px 24px rgba(79,70,229,0.22);
+      /* Typography */
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --text-white: #ffffff;
 
-      --radius-sm:  8px;
-      --radius:     12px;
-      --radius-lg:  18px;
-      --radius-xl:  24px;
+      /* Shadows & Radii */
+      --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+      --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+      --shadow-primary: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
 
-      --nav-h: 64px;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+
+      --sidebar-width: 270px;
+      --header-height: 72px;
     }
 
-    /* =============================================
-       BASE RESET & TYPOGRAPHY
-       ============================================= */
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-canvas);
+      color: var(--text-main);
       min-height: 100vh;
-      line-height: 1.6;
+      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
 
-    a { text-decoration: none; color: inherit; }
-    img { display:block; max-width:100%; }
-
-    h1,h2,h3,h4,h5 {
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      font-weight: 700;
-      line-height: 1.25;
-      letter-spacing: -0.02em;
-    }
-
-    /* =============================================
-       TOPNAV
-       ============================================= */
-    .qp-topnav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      height: var(--nav-h);
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-      gap: 1rem;
-    }
-
-    .qp-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      flex-shrink: 0;
-    }
-
-    .qp-logo-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: var(--brand);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow-brand);
-    }
-
-    .qp-logo-text {
+    h1, h2, h3, h4, h5, h6 {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 800;
-      font-size: 1.05rem;
-      color: var(--text-primary);
-      letter-spacing: -0.03em;
-    }
-
-    .qp-nav-divider {
-      width: 1px;
-      height: 22px;
-      background: var(--border);
-      margin: 0 0.5rem;
-      flex-shrink: 0;
-    }
-
-    .qp-nav-link {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      padding: 0.4rem 0.75rem;
-      border-radius: var(--radius-sm);
-      transition: color 0.15s, background 0.15s;
-    }
-
-    .qp-nav-link:hover, .qp-nav-link.active {
-      color: var(--brand);
-      background: var(--brand-subtle);
-    }
-
-    .qp-nav-actions {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .qp-user-pill {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.35rem 0.75rem 0.35rem 0.35rem;
-      border: 1px solid var(--border);
-      border-radius: 9999px;
-      background: var(--surface);
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .qp-user-pill:hover {
-      border-color: var(--brand-light);
-      box-shadow: 0 0 0 3px var(--brand-ring);
-    }
-
-    .qp-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--brand);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 800;
-      color: white;
-      flex-shrink: 0;
-    }
-
-    /* =============================================
-       MAIN LAYOUT
-       ============================================= */
-    .qp-main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-    }
-
-    .qp-page-header {
-      margin-bottom: 2rem;
-    }
-
-    .qp-page-title {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      letter-spacing: -0.03em;
-    }
-
-    .qp-page-subtitle {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin-top: 0.35rem;
-    }
-
-    /* =============================================
-       CARDS
-       ============================================= */
-    .qp-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .qp-card-body {
-      padding: 1.75rem;
-    }
-
-    /* =============================================
-       STAT CARDS
-       ============================================= */
-    .qp-stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s, transform 0.2s;
-    }
-
-    .qp-stat-card:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
-    }
-
-    .qp-stat-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .qp-stat-value {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      letter-spacing: -0.04em;
-      line-height: 1;
-    }
-
-    .qp-stat-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-top: 0.2rem;
-    }
-
-    /* =============================================
-       BUTTONS
-       ============================================= */
-    .qp-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-size: 0.8125rem;
       font-weight: 700;
-      padding: 0.6rem 1.25rem;
-      border-radius: var(--radius);
-      border: 1.5px solid transparent;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-      letter-spacing: 0.01em;
+      letter-spacing: -0.025em;
+      color: var(--text-main);
     }
 
-    .qp-btn-primary {
-      background: var(--brand);
-      color: white;
-      border-color: var(--brand);
-      box-shadow: var(--shadow-brand);
+    a {
+      text-decoration: none;
+      color: inherit;
     }
 
-    .qp-btn-primary:hover {
-      background: var(--brand-dark);
-      border-color: var(--brand-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 10px 28px rgba(79,70,229,0.3);
-    }
-
-    .qp-btn-primary:active { transform: translateY(0); }
-
-    .qp-btn-outline {
-      background: var(--surface);
-      color: var(--text-secondary);
-      border-color: var(--border);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .qp-btn-outline:hover {
-      border-color: var(--brand-light);
-      color: var(--brand);
-      background: var(--brand-subtle);
-    }
-
-    .qp-btn-danger {
-      background: var(--danger-bg);
-      color: var(--danger);
-      border-color: #fecaca;
-    }
-
-    .qp-btn-danger:hover {
-      background: var(--danger);
-      color: white;
-    }
-
-    .qp-btn-sm {
-      font-size: 0.75rem;
-      padding: 0.4rem 0.9rem;
-    }
-
-    /* =============================================
-       FORM ELEMENTS
-       ============================================= */
-    .qp-form-group {
+    /* ==========================================================================
+       APP LAYOUT (SIDEBAR + MAIN CANVAS)
+       ========================================================================== */
+    .qp-app-layout {
       display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .qp-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .qp-input {
+      min-height: 100vh;
       width: 100%;
-      height: 2.75rem;
-      padding: 0 1rem;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
-      font-size: 0.875rem;
-      font-family: inherit;
-      color: var(--text-primary);
-      transition: border-color 0.15s, box-shadow 0.15s;
-      outline: none;
-    }
-
-    .qp-input::placeholder { color: var(--text-muted); }
-
-    .qp-input:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 3px var(--brand-ring);
-    }
-
-    .qp-input-icon {
       position: relative;
     }
 
-    .qp-input-icon .qp-input {
-      padding-left: 2.75rem;
-    }
-
-    .qp-input-icon > svg, .qp-input-icon > .icon-slot {
-      position: absolute;
-      left: 0.9rem;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      color: var(--text-muted);
-      pointer-events: none;
-    }
-
-    /* =============================================
-       ALERTS & MESSAGES
-       ============================================= */
-    .qp-alert {
+    /* --------------------------------------------------------------------------
+       SIDEBAR
+       -------------------------------------------------------------------------- */
+    .qp-sidebar {
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--sidebar-border);
       display: flex;
-      align-items: flex-start;
-      gap: 0.65rem;
-      padding: 0.875rem 1rem;
-      border-radius: var(--radius);
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Sidebar Brand */
+    .qp-sidebar-brand {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0 1.5rem;
+      border-bottom: 1px solid var(--sidebar-border);
+    }
+
+    .qp-brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+      flex-shrink: 0;
+    }
+
+    .qp-brand-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .qp-brand-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .qp-brand-tag {
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: #818cf8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-top: 2px;
+    }
+
+    /* Sidebar Navigation Menu */
+    .qp-sidebar-menu {
+      flex: 1;
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .qp-menu-header {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.5rem 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .qp-menu-header:first-child {
+      margin-top: 0;
+    }
+
+    .qp-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.7rem 0.95rem;
+      border-radius: var(--radius-md);
+      color: var(--sidebar-text);
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .qp-nav-item i {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    .qp-nav-item:hover {
+      color: var(--sidebar-text-hover);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .qp-nav-item:hover i {
+      transform: scale(1.1);
+      color: #818cf8;
+    }
+
+    .qp-nav-item.active {
+      color: #ffffff;
+      background: var(--sidebar-active-bg);
+      font-weight: 700;
+    }
+
+    .qp-nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 4px;
+      background: var(--primary);
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .qp-nav-item.active i {
+      color: #818cf8;
+    }
+
+    .qp-nav-pill {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    /* Sidebar Footer User Card */
+    .qp-sidebar-footer {
+      padding: 1.25rem 1rem;
+      border-top: 1px solid var(--sidebar-border);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .qp-user-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .qp-user-box:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .qp-user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+      color: white;
+      font-weight: 800;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .qp-user-status-dot {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      border: 2px solid var(--sidebar-bg);
+    }
+
+    .qp-user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .qp-user-name {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .qp-user-role {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .qp-logout-btn {
+      color: #94a3b8;
+      padding: 0.4rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qp-logout-btn:hover {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* --------------------------------------------------------------------------
+       MAIN BODY WRAPPER (TOPBAR + CONTENT)
+       -------------------------------------------------------------------------- */
+    .qp-main-wrapper {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 100vh;
+    }
+
+    /* Top Navigation Header */
+    .qp-topbar {
+      height: var(--header-height);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      gap: 1.5rem;
+    }
+
+    .qp-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .qp-mobile-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: white;
+      color: var(--text-main);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .qp-mobile-toggle:hover {
+      background: var(--bg-card-subtle);
+      border-color: var(--primary-light);
+    }
+
+    .qp-breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       font-size: 0.8125rem;
       font-weight: 500;
-      border: 1px solid transparent;
+      color: var(--text-muted);
     }
 
-    .qp-alert-error {
-      background: var(--danger-bg);
-      border-color: #fecaca;
-      color: #dc2626;
+    .qp-breadcrumbs strong {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .qp-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Quick Action Button */
+    .qp-btn-accent {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1.15rem;
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.4);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .qp-btn-accent:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px -3px rgba(99, 102, 241, 0.5);
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    }
+
+    /* --------------------------------------------------------------------------
+       MAIN PAGE CONTENT CONTAINER
+       -------------------------------------------------------------------------- */
+    .qp-content-container {
+      flex: 1;
+      padding: 2.25rem 2.5rem 4rem;
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Messages / Alerts */
+    .qp-alerts-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .qp-alert {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      animation: slideInDown 0.3s ease;
     }
 
     .qp-alert-success {
-      background: var(--success-bg);
-      border-color: #a7f3d0;
-      color: #059669;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
     }
 
-    .qp-alert-warning {
-      background: var(--warning-bg);
-      border-color: #fcd34d;
-      color: #d97706;
+    .qp-alert-error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
     }
 
-    /* =============================================
-       BADGE
-       ============================================= */
+    .qp-alert-info {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    /* --------------------------------------------------------------------------
+       MODERN CARDS & COMPONENTS
+       -------------------------------------------------------------------------- */
+    .qp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .qp-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    /* Primary Buttons */
+    .qp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      line-height: 1.2;
+    }
+
+    .qp-btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-primary);
+    }
+
+    .qp-btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px -4px rgba(99, 102, 241, 0.45);
+    }
+
+    .qp-btn-outline {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .qp-btn-outline:hover {
+      background: var(--bg-card-subtle);
+      border-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Badges */
     .qp-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-      font-size: 0.6875rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-size: 0.725rem;
       font-weight: 700;
-      padding: 0.2rem 0.6rem;
-      border-radius: 9999px;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
 
-    .qp-badge-brand    { background: var(--brand-subtle); color: var(--brand); }
-    .qp-badge-success  { background: var(--success-bg); color: #059669; }
-    .qp-badge-danger   { background: var(--danger-bg); color: #dc2626; }
-    .qp-badge-warning  { background: var(--warning-bg); color: #d97706; }
-    .qp-badge-neutral  { background: var(--surface-2); color: var(--text-secondary); }
-
-    /* =============================================
-       PROGRESS BAR
-       ============================================= */
-    .qp-progress {
-      height: 6px;
-      background: var(--surface-2);
-      border-radius: 9999px;
-      overflow: hidden;
+    .qp-badge-primary {
+      background: var(--primary-subtle);
+      color: var(--primary);
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
 
-    .qp-progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--brand) 0%, var(--brand-light) 100%);
-      border-radius: 9999px;
-      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    .qp-badge-success {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
     }
 
-    /* =============================================
-       QUIZ CARDS
-       ============================================= */
-    .qp-quiz-card {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-      position: relative;
-      overflow: hidden;
+    .qp-badge-warning {
+      background: #fffbeb;
+      color: #d97706;
+      border: 1px solid #fde68a;
     }
 
-    .qp-quiz-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--brand) 0%, var(--brand-light) 100%);
-      opacity: 0;
-      transition: opacity 0.2s;
+    .qp-badge-danger {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
     }
 
-    .qp-quiz-card:hover {
-      border-color: var(--brand-light);
-      box-shadow: var(--shadow-md);
-      transform: translateY(-3px);
-    }
-
-    .qp-quiz-card:hover::before { opacity: 1; }
-
-    /* =============================================
-       EMPTY STATE
-       ============================================= */
-    .qp-empty {
-      text-align: center;
-      padding: 3rem 1.5rem;
-    }
-
-    .qp-empty-icon {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto 1.25rem;
-      background: var(--surface-2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-    }
-
-    .qp-empty h3 {
-      font-size: 1rem;
-      color: var(--text-primary);
-      margin-bottom: 0.35rem;
-    }
-
-    .qp-empty p {
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-    }
-
-    /* =============================================
-       MCQ OPTION BUTTONS
-       ============================================= */
-    .qp-option {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.875rem 1.125rem;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      background: var(--surface);
-    }
-
-    .qp-option:hover { border-color: var(--brand); background: var(--brand-subtle); }
-
-    .qp-option input[type="radio"] { display: none; }
-
-    .qp-option:has(input:checked) {
-      border-color: var(--brand);
-      background: var(--brand-subtle);
-      box-shadow: 0 0 0 3px var(--brand-ring);
-    }
-
-    .qp-option-bullet {
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s;
-      font-size: 0.6875rem;
-      font-weight: 800;
-      color: var(--text-muted);
-    }
-
-    .qp-option:hover .qp-option-bullet { border-color: var(--brand); color: var(--brand); }
-
-    .qp-option:has(input:checked) .qp-option-bullet {
-      border-color: var(--brand);
-      background: var(--brand);
-      color: white;
-    }
-
-    .qp-option-text {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    /* =============================================
-       SECTION DIVIDER
-       ============================================= */
-    .qp-section-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 1.5rem 0;
-    }
-
-    /* =============================================
-       TABLE
-       ============================================= */
-    .qp-table-wrap {
-      overflow-x: auto;
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .qp-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8125rem;
-    }
-
-    .qp-table thead tr {
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .qp-table th {
-      padding: 0.875rem 1.25rem;
-      text-align: left;
-      font-size: 0.6875rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      white-space: nowrap;
-    }
-
-    .qp-table td {
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-primary);
-    }
-
-    .qp-table tbody tr:last-child td { border-bottom: none; }
-
-    .qp-table tbody tr:hover { background: #f8fafc; }
-
-    /* =============================================
-       REPORT CARD
-       ============================================= */
-    .qp-report-hero {
-      background: linear-gradient(135deg, var(--brand) 0%, #7c3aed 100%);
-      border-radius: var(--radius-xl);
-      padding: 2.5rem;
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .qp-report-hero::before {
-      content: '';
-      position: absolute;
-      top: -40px; right: -40px;
-      width: 200px; height: 200px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 50%;
-    }
-
-    .qp-report-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -60px; left: -30px;
-      width: 160px; height: 160px;
-      background: rgba(255,255,255,0.04);
-      border-radius: 50%;
-    }
-
-    .qp-grade-badge {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      border: 3px solid rgba(255,255,255,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 2.25rem;
-      font-weight: 900;
-      color: white;
-    }
-
-    /* =============================================
-       MOBILE NAV
-       ============================================= */
-    .qp-mobile-nav {
+    /* --------------------------------------------------------------------------
+       MOBILE SIDEBAR OVERLAY
+       -------------------------------------------------------------------------- */
+    .qp-sidebar-backdrop {
       display: none;
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
-      padding: 0.5rem 0;
-      z-index: 100;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
-    .qp-mobile-nav-inner {
-      display: flex;
-      justify-content: space-around;
-    }
-
-    .qp-mobile-nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-      padding: 0.4rem 1rem;
-      font-size: 0.6rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      transition: color 0.15s;
-      border-radius: var(--radius-sm);
-    }
-
-    .qp-mobile-nav-item.active, .qp-mobile-nav-item:hover {
-      color: var(--brand);
-    }
-
-    /* =============================================
-       PAGE LOADER
-       ============================================= */
+    /* Preloader */
     #qp-page-loader {
       position: fixed;
       inset: 0;
-      background: var(--bg);
+      background: #ffffff;
       z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.35s ease;
     }
 
     #qp-page-loader.hidden {
@@ -742,160 +616,275 @@
     }
 
     .qp-spinner {
-      width: 44px;
-      height: 44px;
-      border: 3px solid var(--border);
-      border-top-color: var(--brand);
+      width: 48px;
+      height: 48px;
+      border: 3.5px solid #e2e8f0;
+      border-top-color: var(--primary);
       border-radius: 50%;
       animation: qp-spin 0.75s linear infinite;
     }
 
-    @keyframes qp-spin { to { transform: rotate(360deg); } }
-
-    /* =============================================
-       ANIMATIONS
-       ============================================= */
-    @keyframes qp-fade-up {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0);    }
+    @keyframes qp-spin {
+      to { transform: rotate(360deg); }
     }
 
-    .qp-animate {
-      animation: qp-fade-up 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    @keyframes slideInDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
-    .qp-animate-delay-1 { animation-delay: 0.05s; opacity: 0; }
-    .qp-animate-delay-2 { animation-delay: 0.1s;  opacity: 0; }
-    .qp-animate-delay-3 { animation-delay: 0.15s; opacity: 0; }
-    .qp-animate-delay-4 { animation-delay: 0.2s;  opacity: 0; }
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .qp-sidebar {
+        transform: translateX(-100%);
+      }
 
-    /* =============================================
-       RESPONSIVE
-       ============================================= */
-    @media (max-width: 768px) {
-      .qp-main { padding: 1.5rem 1rem 5rem; }
-      .qp-page-title { font-size: 1.375rem; }
-      .qp-mobile-nav { display: block; }
-      .qp-topnav { padding: 0 1rem; }
-      .qp-nav-link { display: none; }
+      .qp-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .qp-sidebar-backdrop.show {
+        display: block;
+        opacity: 1;
+      }
+
+      .qp-main-wrapper {
+        margin-left: 0;
+      }
+
+      .qp-mobile-toggle {
+        display: flex;
+      }
+
+      .qp-topbar {
+        padding: 0 1.25rem;
+      }
+
+      .qp-content-container {
+        padding: 1.5rem 1.25rem 3rem;
+      }
     }
 
-    @media (max-width: 480px) {
-      .qp-card-body { padding: 1.25rem; }
-    }
-
-    /* =============================================
-       PRINT
-       ============================================= */
-    @media print {
-      .qp-topnav, .qp-mobile-nav, .no-print { display: none !important; }
-      body { background: white; }
-      .qp-report-hero { background: #4f46e5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @media (max-width: 640px) {
+      .qp-breadcrumbs {
+        display: none;
+      }
+      .qp-topbar-actions .qp-btn-accent span {
+        display: none;
+      }
+      .qp-topbar-actions .qp-btn-accent {
+        padding: 0.55rem 0.75rem;
+      }
     }
   </style>
+
   {% block extra_head %}{% endblock %}
 </head>
 
 <body>
-  <!-- Page Loader -->
+  <!-- Page Preloader -->
   <div id="qp-page-loader">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
-      <div style="width:40px;height:40px;background:var(--brand);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;">
+      <div class="qp-brand-badge" style="width:52px;height:52px;border-radius:16px;">
+        <i data-lucide="award" style="width:28px;height:28px;"></i>
       </div>
       <div class="qp-spinner"></div>
     </div>
   </div>
 
-  <!-- Top Navigation -->
-  <nav class="qp-topnav">
-    <a href="{% url 'dashboard' %}" class="qp-logo">
-      <div class="qp-logo-mark">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  <!-- Mobile Backdrop Overlay -->
+  <div class="qp-sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="qp-app-layout">
+    <!-- ========================================================================
+         SIDEBAR NAVIGATION
+         ======================================================================== -->
+    <aside class="qp-sidebar" id="appSidebar">
+      <!-- Brand Header -->
+      <div class="qp-sidebar-brand">
+        <a href="{% url 'dashboard' %}" style="display:flex;align-items:center;gap:0.75rem;">
+          <div class="qp-brand-badge">
+            <i data-lucide="award" style="width:22px;height:22px;"></i>
+          </div>
+          <div class="qp-brand-title">
+            <span class="qp-brand-name">Quizopedia</span>
+            <span class="qp-brand-tag">Student Portal</span>
+          </div>
+        </a>
       </div>
-      <span class="qp-logo-text">Quizopedia</span>
-    </a>
 
-    <div class="qp-nav-divider"></div>
+      <!-- Navigation Menu -->
+      <nav class="qp-sidebar-menu">
+        <span class="qp-menu-header">Menu</span>
 
-    <a href="{% url 'dashboard' %}" class="qp-nav-link {% block nav_active_dash %}{% endblock %}">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-      Dashboard
-    </a>
+        <!-- Dashboard Overview -->
+        <a href="{% url 'dashboard' %}" class="qp-nav-item {% if current_view == 'overview' %}active{% endif %}" id="nav-dashboard">
+          <span>Dashboard Overview</span>
+        </a>
 
-    <a href="{% url 'profile' %}" class="qp-nav-link {% block nav_active_profile %}{% endblock %}">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Profile
-    </a>
+        <!-- Available Quizzes -->
+        <a href="{% url 'dashboard' %}?view=quizzes" class="qp-nav-item {% if current_view == 'quizzes' %}active{% endif %}" id="nav-quizzes">
+          <span>Available Quizzes</span>
+          {% if subjects_count %}
+          <span class="qp-nav-pill">{{ subjects_count }}</span>
+          {% endif %}
+        </a>
 
-    <div class="qp-nav-actions">
-      {% if user.is_authenticated %}
-      <a href="{% url 'logout' %}" class="qp-btn qp-btn-outline qp-btn-sm">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sign Out
-      </a>
-      {% endif %}
+        <!-- Recent Report Cards -->
+        <a href="{% url 'dashboard' %}?view=reports" class="qp-nav-item {% if current_view == 'reports' %}active{% endif %}" id="nav-results">
+          <span>Recent Report Cards</span>
+          {% if completed_quizzes %}
+          <span class="qp-nav-pill">{{ completed_quizzes }}</span>
+          {% endif %}
+        </a>
+
+        <span class="qp-menu-header">Account</span>
+
+        <!-- Profile Settings -->
+        <a href="{% url 'profile' %}" class="qp-nav-item {% block nav_active_profile %}{% endblock %}" id="nav-profile">
+          <span>Profile Settings</span>
+        </a>
+
+        {% if user.is_staff or user.is_superuser %}
+        <span class="qp-menu-header">Administration</span>
+        <a href="{% url 'admin_dashboard' %}" class="qp-nav-item" id="nav-admin">
+          <span>Admin Portal</span>
+          <span class="qp-nav-pill" style="background:rgba(239,68,68,0.2);color:#fca5a5;border-color:rgba(239,68,68,0.3);">Staff</span>
+        </a>
+        {% endif %}
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="qp-sidebar-footer">
+        <div class="qp-user-box">
+          <div class="qp-user-avatar">
+            {{ user.username|slice:":1"|upper }}
+            <span class="qp-user-status-dot"></span>
+          </div>
+          <div class="qp-user-info">
+            <div class="qp-user-name">{{ user.first_name|default:user.username }}</div>
+            <div class="qp-user-role">
+              <i data-lucide="check-circle" style="width:12px;height:12px;color:#10b981;"></i>
+              <span>Active Student</span>
+            </div>
+          </div>
+          <a href="{% url 'logout' %}" class="qp-logout-btn" title="Sign Out" id="sidebarLogoutBtn">
+            <i data-lucide="log-out" style="width:16px;height:16px;"></i>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========================================================================
+         MAIN CANVAS WRAPPER (TOPBAR + CONTENT)
+         ======================================================================== -->
+    <div class="qp-main-wrapper">
+      <!-- Topbar Header -->
+      <header class="qp-topbar">
+        <div class="qp-topbar-left">
+          <!-- Mobile Sidebar Toggle -->
+          <button type="button" class="qp-mobile-toggle" id="sidebarToggle" aria-label="Toggle Navigation">
+            <i data-lucide="menu" style="width:20px;height:20px;"></i>
+          </button>
+
+          <!-- Breadcrumbs / Greeting -->
+          <div class="qp-breadcrumbs">
+            <i data-lucide="compass" style="width:15px;height:15px;color:var(--primary);"></i>
+            <span>Student Portal</span>
+            <span>/</span>
+            <strong>{% block breadcrumb_title %}Dashboard{% endblock %}</strong>
+          </div>
+        </div>
+
+        <!-- Topbar Right Actions -->
+        <div class="qp-topbar-actions">
+          {% if available_subjects %}
+          <a href="{% url 'quiz_attempt' available_subjects.0.id %}" class="qp-btn-accent" id="topbarStartQuizBtn">
+            <i data-lucide="play" style="width:14px;height:14px;fill:currentColor;"></i>
+            <span>Start Quiz</span>
+          </a>
+          {% endif %}
+
+          <a href="{% url 'profile' %}" class="qp-btn qp-btn-outline" style="padding:0.5rem 0.9rem;font-size:0.8125rem;">
+            <i data-lucide="user" style="width:15px;height:15px;"></i>
+            <span>{{ user.username }}</span>
+          </a>
+
+          <a href="{% url 'logout' %}" class="qp-btn qp-btn-outline" style="padding:0.5rem 0.8rem;color:#ef4444;" title="Sign Out">
+            <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Block -->
+      <main class="qp-content-container">
+        <!-- Django Flash Messages Stack -->
+        {% if messages %}
+        <div class="qp-alerts-stack">
+          {% for message in messages %}
+          <div class="qp-alert {% if message.tags == 'error' %}qp-alert-error{% elif message.tags == 'success' %}qp-alert-success{% else %}qp-alert-info{% endif %}">
+            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% else %}info{% endif %}" style="width:18px;height:18px;flex-shrink:0;"></i>
+            <span>{{ message }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
     </div>
-  </nav>
+  </div>
 
-  <!-- Main -->
-  <main class="qp-main qp-animate">
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Mobile Bottom Nav -->
-  <nav class="qp-mobile-nav">
-    <div class="qp-mobile-nav-inner">
-      <a href="{% url 'dashboard' %}" class="qp-mobile-nav-item {% block mnav_active_dash %}{% endblock %}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-        Home
-      </a>
-      <a href="{% url 'profile' %}" class="qp-mobile-nav-item {% block mnav_active_profile %}{% endblock %}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        Profile
-      </a>
-      <a href="{% url 'logout' %}" class="qp-mobile-nav-item">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sign Out
-      </a>
-    </div>
-  </nav>
-
+  <!-- Global Scripts -->
   <script>
-    // Icons
+    // Initialize Lucide Icons
     lucide.createIcons();
 
-    // Page loader
+    // Mobile Sidebar Drawer Toggle
+    const sidebar = document.getElementById('appSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const toggleBtn = document.getElementById('sidebarToggle');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        if (sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeSidebar);
+    }
+
+    // Page Loader Fadeout
     window.addEventListener('DOMContentLoaded', () => {
       const loader = document.getElementById('qp-page-loader');
       if (loader) {
         requestAnimationFrame(() => {
           loader.classList.add('hidden');
-          setTimeout(() => loader.style.display = 'none', 350);
+          setTimeout(() => { loader.style.display = 'none'; }, 350);
         });
       }
     });
-
-    // Page transition
-    document.addEventListener('click', e => {
-      const link = e.target.closest('a[href]');
-      if (!link) return;
-      const href = link.getAttribute('href');
-      if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.target) return;
-      try {
-        const url = new URL(link.href);
-        if (url.host === window.location.host && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
-          const loader = document.getElementById('qp-page-loader');
-          if (loader) {
-            e.preventDefault();
-            loader.style.display = 'flex';
-            loader.classList.remove('hidden');
-            setTimeout(() => window.location.href = link.href, 250);
-          }
-        }
-      } catch(_) {}
-    });
   </script>
+
   {% block extra_scripts %}{% endblock %}
 </body>
 

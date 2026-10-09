@@ -114,6 +114,7 @@ def logout_view(request):
 @student_required
 def dashboard(request):
     student = getattr(request.user, 'student', None)
+    current_view = request.GET.get('view', 'overview')
     
     # Calculate statistics
     completed_quizzes = student.report_cards.count() if student else 0
@@ -144,6 +145,7 @@ def dashboard(request):
         'subjects_count': Subject.objects.filter(questions__isnull=False).distinct().count(),
         'available_subjects': available_subjects,
         'recent_progress': recent_progress,
+        'current_view': current_view,
     }
     return render(request, 'dashboard.html', context)
 

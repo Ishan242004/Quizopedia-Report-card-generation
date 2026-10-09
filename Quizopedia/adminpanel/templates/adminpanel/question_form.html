@@ -1,6 +1,6 @@
 {% extends 'adminpanel/base.html' %}
 
-{% block title %}{{ title }} - Quizopedia Admin{% endblock %}
+{% block title %}{{ title }} — Quizopedia Admin{% endblock %}
 
 {% block active_questions %}active{% endblock %}
 
@@ -9,20 +9,20 @@
 {% block content %}
 <div class="mb-8">
   <div class="flex items-center gap-3 mb-2">
-    <a href="{% url 'question_list' %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to Questions">
+    <a href="{% url 'question_list' %}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center shadow-sm" title="Back to Questions">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
     </a>
-    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">{{ title }}</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">{{ title }}</h1>
   </div>
-  <p class="text-[var(--text-muted)] text-sm">Categorize the question under a subject and provide the question text.</p>
+  <p class="text-slate-500 text-sm">Categorize the question under a subject and provide the question text.</p>
 </div>
 
 <!-- Form validation errors -->
 {% if errors %}
 <div class="mb-6 space-y-2 max-w-xl">
   {% for error in errors %}
-  <div class="flex items-start gap-2.5 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-red-400"></i>
+  <div class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-rose-500"></i>
     <span>{{ error }}</span>
   </div>
   {% endfor %}
@@ -30,83 +30,83 @@
 {% endif %}
 
 <!-- Form Container -->
-<div class="glass-card rounded-[28px] p-6 sm:p-8 max-w-xl relative overflow-hidden">
+<div class="glass-card rounded-[24px] p-6 sm:p-8 max-w-xl bg-white border border-slate-200/80 shadow-sm relative overflow-hidden">
   <form method="POST" novalidate>
     {% csrf_token %}
     
     <!-- Subject Select -->
-    <div class="mb-6">
-      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Subject</label>
+    <div class="mb-5">
+      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Subject</label>
       {{ form.subject }}
       {% if form.subject.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.subject.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.subject.errors.0 }}</p>
       {% endif %}
     </div>
 
     <!-- Question Textarea -->
-    <div class="mb-6">
-      <label for="{{ form.question_text.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Question</label>
+    <div class="mb-5">
+      <label for="{{ form.question_text.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Question</label>
       {{ form.question_text }}
       {% if form.question_text.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.question_text.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.question_text.errors.0 }}</p>
       {% endif %}
     </div>
 
     <!-- Check if MCQ fields exist (for edit form) -->
     {% if form.option_a %}
     <!-- Correct Answer / Option A -->
-    <div class="mb-6">
-      <label for="{{ form.option_a.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Correct Answer</label>
+    <div class="mb-5">
+      <label for="{{ form.option_a.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Correct Answer / Option A</label>
       {{ form.option_a }}
       {% if form.option_a.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.option_a.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.option_a.errors.0 }}</p>
       {% endif %}
     </div>
 
-    <!-- Option B — only show if has value -->
+    <!-- Option B -->
     {% if form.option_b.value %}
     <div class="mb-4">
-      <label for="{{ form.option_b.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option B</label>
+      <label for="{{ form.option_b.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option B</label>
       {{ form.option_b }}
       {% if form.option_b.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.option_b.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.option_b.errors.0 }}</p>
       {% endif %}
     </div>
     {% else %}
       {{ form.option_b.as_hidden }}
     {% endif %}
 
-    <!-- Option C — only show if has value -->
+    <!-- Option C -->
     {% if form.option_c.value %}
     <div class="mb-4">
-      <label for="{{ form.option_c.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option C</label>
+      <label for="{{ form.option_c.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option C</label>
       {{ form.option_c }}
       {% if form.option_c.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.option_c.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.option_c.errors.0 }}</p>
       {% endif %}
     </div>
     {% else %}
       {{ form.option_c.as_hidden }}
     {% endif %}
 
-    <!-- Option D — only show if has value -->
+    <!-- Option D -->
     {% if form.option_d.value %}
-    <div class="mb-6">
-      <label for="{{ form.option_d.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option D</label>
+    <div class="mb-5">
+      <label for="{{ form.option_d.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option D</label>
       {{ form.option_d }}
       {% if form.option_d.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.option_d.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.option_d.errors.0 }}</p>
       {% endif %}
     </div>
     {% endif %}
 
-    <!-- Correct Option — only show for MCQ (when B exists) -->
+    <!-- Correct Option -->
     {% if form.option_b.value %}
     <div class="mb-8">
-      <label for="{{ form.correct_option.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Correct Option</label>
+      <label for="{{ form.correct_option.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Correct Option</label>
       {{ form.correct_option }}
       {% if form.correct_option.errors %}
-      <p class="text-red-400 text-xs mt-1.5 ml-1">{{ form.correct_option.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.correct_option.errors.0 }}</p>
       {% endif %}
     </div>
     {% else %}
@@ -115,11 +115,11 @@
     {% endif %}
 
     <!-- Submit & Cancel Buttons -->
-    <div class="flex flex-col sm:flex-row gap-3">
-      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none">
+    <div class="flex flex-col sm:flex-row gap-3 pt-2 border-t border-slate-100">
+      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none shadow-md">
         <i data-lucide="save" class="w-4 h-4"></i> {{ submit_text }}
       </button>
-      <a href="{% url 'question_list' %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-main)] flex items-center justify-center transition flex-1 sm:flex-none">
+      <a href="{% url 'question_list' %}" class="px-5 h-11 rounded-xl font-semibold text-xs sm:text-sm border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition flex-1 sm:flex-none shadow-sm">
         Cancel
       </a>
     </div>

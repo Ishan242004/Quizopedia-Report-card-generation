@@ -1,660 +1,313 @@
+{% extends 'base_student.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Profile - Quizopedia</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+{% block title %}Profile Settings — Quizopedia{% endblock %}
+{% block meta_description %}Manage and update your Quizopedia student account information and credentials.{% endblock %}
+{% block nav_active_profile %}active{% endblock %}
+{% block breadcrumb_title %}Profile Settings{% endblock %}
 
-    :root {
-      --primary: #7c5cf5;
-      --primary-light: #a78bfa;
-      --primary-dark: #6d42e8;
-      --primary-gradient: linear-gradient(135deg, #7c5cf5 0%, #a78bfa 50%, #8b6cf7 100%);
-      --bg-base: #f5f3ff;
-      --header-bg: rgba(255, 255, 255, 0.8);
-      --header-border: rgba(124, 92, 245, 0.15);
-      --card-bg: #ffffff;
-      --card-border: rgba(124, 92, 245, 0.15);
-      --text-main: #1a1a2e;
-      --text-muted: #6b7280;
-      --text-light-muted: #9ca3af;
-      --border-soft: rgba(124, 92, 245, 0.15);
+{% block content %}
 
-      --accent-primary: #7c5cf5;
-      --accent-secondary: #a78bfa;
-      --accent-primary-rgb: 124, 92, 245;
-      --accent-secondary-rgb: 167, 139, 250;
+<!-- Page Header -->
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">
+    Student Profile &amp; Settings
+  </h1>
+  <p style="font-size: 0.875rem; color: var(--text-muted);">
+    View your active student credentials, registration status, and submit account updates.
+  </p>
+</div>
 
-      --sidebar-bg: rgba(255, 255, 255, 0.7);
-      --sidebar-border: rgba(124, 92, 245, 0.15);
-      --sidebar-link: rgba(26, 26, 46, 0.6);
-      --sidebar-link-hover: rgba(124, 92, 245, 0.08);
-      --sidebar-link-active: #7c5cf5;
-      --panel: #ffffff;
-      --input-bg: #ffffff;
-      --input-border: #e5e7eb;
-      --input-text: #1a1a2e;
-      --input-placeholder: #9ca3af;
-      --table-header-bg: rgba(124, 92, 245, 0.05);
-    }
+<!-- Main Two-Column Layout -->
+<div style="display: grid; grid-template-columns: 360px 1fr; gap: 2rem; align-items: start;">
 
-    * {
-      font-family: 'Inter', system-ui, sans-serif;
-      box-sizing: border-box;
-    }
+  <!-- Left Column: Student Identity Card -->
+  <div class="qp-card" style="padding: 2rem; text-align: center; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; right: -50px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); pointer-events: none;"></div>
 
-    h1,
-    h2,
-    h3,
-    h4,
-    .brand-font {
-      font-family: 'DM Sans', 'Inter', sans-serif;
-    }
+    <!-- Student Avatar -->
+    <div style="width: 84px; height: 84px; border-radius: 24px; background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; color: white; font-size: 2rem; font-weight: 800; box-shadow: 0 10px 25px -4px rgba(79, 70, 229, 0.4); border: 3px solid white;">
+      {{ student.username|default:request.user.username|slice:":1"|upper }}
+    </div>
 
-    body {
-      background: var(--bg-base);
-      color: var(--text-main);
-      overflow-x: hidden;
-      min-height: 100vh;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
+    <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+      {{ student.username|default:request.user.username }}
+    </h2>
+    <span class="qp-badge qp-badge-primary" style="margin-bottom: 1.5rem;">
+      <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
+      Verified Student
+    </span>
 
-    /* Ambient background blobs */
-    .blob {
-      position: absolute;
-      border-radius: 9999px;
-      filter: blur(100px);
-      opacity: 0.25;
-      pointer-events: none;
-      will-change: transform;
-    }
+    <!-- Student Details Summary List -->
+    <div style="display: flex; flex-direction: column; gap: 1rem; text-align: left; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); font-size: 0.8125rem;">
+      <div>
+        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block;">Full Name</span>
+        <span style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;">
+          {{ request.user.first_name|default:'Not provided' }}
+        </span>
+      </div>
 
-    .blob-1 {
-      background: var(--accent-primary);
-      width: 500px;
-      height: 500px;
-      top: -100px;
-      left: -100px;
-    }
+      <div>
+        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block;">Email Address</span>
+        <span style="font-weight: 600; color: var(--text-main); font-size: 0.9rem; word-break: break-all;">
+          {{ request.user.email }}
+        </span>
+      </div>
 
-    .blob-2 {
-      background: var(--accent-secondary);
-      width: 450px;
-      height: 450px;
-      bottom: -100px;
-      right: -100px;
-    }
+      <div>
+        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block;">Phone Number</span>
+        <span style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;">
+          {{ student.phone|default:'Not provided' }}
+        </span>
+      </div>
 
-    .noise-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.02;
-      mix-blend-mode: overlay;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
-    .glass-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.4);
-      transition: background-color 0.3s ease, border-color 0.3s ease;
-    }
-
-    body.light-mode .glass-card {
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-    }
-
-    .cta-btn {
-      position: relative;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-      transition: transform .18s ease, box-shadow .25s ease;
-      box-shadow: 0 8px 20px -6px rgba(var(--accent-primary-rgb), 0.4);
-    }
-
-    .cta-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 25px -8px rgba(var(--accent-primary-rgb), 0.6);
-    }
-
-    .input-shell {
-      position: relative;
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-      border-radius: 14px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      width: 100%;
-    }
-
-    .input-shell:focus-within {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb), 0.15);
-      background: var(--card-bg);
-    }
-
-    .input-field {
-      width: 100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      padding: 12px 16px 12px 42px;
-      font-size: 0.875rem;
-      color: var(--input-text);
-      font-weight: 500;
-    }
-
-    .input-field::placeholder {
-      color: var(--input-placeholder);
-    }
-
-    .input-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      pointer-events: none;
-      transition: color 0.2s ease;
-    }
-
-    .input-shell:focus-within .input-icon {
-      color: var(--accent-primary);
-    }
-
-    #portalSub {
-      color: var(--accent-secondary);
-    }
-
-    body.light-mode #portalSub {
-      color: var(--accent-primary);
-    }
-
-    /* Page Transitions & Premium Preloader */
-    .page-transition-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--bg-base);
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1;
-      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      pointer-events: auto;
-    }
-
-    .page-transition-overlay.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .preloader-content {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .preloader-glow {
-      position: absolute;
-      inset: -20px;
-      background: radial-gradient(circle, rgba(var(--accent-primary-rgb), 0.15) 0%, transparent 70%);
-      animation: preloaderPulse 1.5s ease-in-out infinite alternate;
-    }
-
-    .preloader-spinner {
-      position: absolute;
-      width: 72px;
-      height: 72px;
-      border: 3px solid transparent;
-      border-top-color: var(--accent-primary);
-      border-right-color: var(--accent-secondary);
-      border-radius: 50%;
-      animation: preloaderSpin 0.8s linear infinite;
-    }
-
-    .preloader-logo {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 20px rgba(var(--accent-primary-rgb), 0.3);
-      z-index: 2;
-    }
-
-    @keyframes preloaderSpin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes preloaderPulse {
-      from {
-        transform: scale(0.9);
-        opacity: 0.5;
-      }
-
-      to {
-        transform: scale(1.15);
-        opacity: 1;
-      }
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .animate-fade-in {
-      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .input-shell.input-error {
-      border-color: #f87171;
-      background: rgba(248, 113, 113, 0.05);
-      box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
-    }
-
-    body.light-mode .input-shell.input-error {
-      background: #fef2f2;
-    }
-
-    .input-shell.input-success {
-      border-color: #34d399;
-      background: rgba(52, 211, 153, 0.05);
-      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
-    }
-
-    body.light-mode .input-shell.input-success {
-      background: #f0fdf4;
-    }
-
-    .field-error-msg {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: max-height .25s ease, opacity .2s ease, margin .25s ease;
-    }
-
-    .field-error-msg.show {
-      max-height: 40px;
-      opacity: 1;
-      margin-top: 6px;
-    }
-  </style>
-</head>
-
-<body class="relative min-h-screen w-full pb-16">
-  <!-- Page Transition Overlay & Preloader -->
-  <div class="page-transition-overlay" id="pageOverlay">
-    <div class="preloader-content">
-      <div class="preloader-glow"></div>
-      <div class="preloader-spinner"></div>
+      <!-- Update Status Badge -->
+      <div>
+        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 0.35rem;">Approval Status</span>
+        {% if latest_request %}
+          {% if latest_request.status == 'pending' %}
+          <div class="qp-badge qp-badge-warning" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+            <span>Pending Approval</span>
+          </div>
+          <div style="margin-top: 0.6rem; padding: 0.75rem; border-radius: var(--radius-sm); background: #fffbeb; border: 1px solid #fef3c7; font-size: 0.75rem; color: #92400e;">
+            <strong>Pending Changes:</strong>
+            <ul style="margin-top: 0.25rem; padding-left: 1.25rem; list-style-type: disc;">
+              <li>Name: {{ latest_request.name }}</li>
+              <li>Email: {{ latest_request.email }}</li>
+              <li>Phone: {{ latest_request.phone }}</li>
+            </ul>
+          </div>
+          {% elif latest_request.status == 'approved' %}
+          <div class="qp-badge qp-badge-success" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+            <i data-lucide="check" style="width: 13px; height: 13px;"></i>
+            <span>Approved</span>
+          </div>
+          {% elif latest_request.status == 'rejected' %}
+          <div class="qp-badge qp-badge-danger" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+            <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+            <span>Rejected</span>
+          </div>
+          {% if latest_request.rejection_reason %}
+          <p style="font-size: 0.75rem; color: #dc2626; margin-top: 0.4rem; font-style: italic;">
+            Reason: {{ latest_request.rejection_reason }}
+          </p>
+          {% endif %}
+          {% endif %}
+        {% else %}
+        <div class="qp-badge qp-badge-success" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+          <i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i>
+          <span>Approved</span>
+        </div>
+        {% endif %}
+      </div>
     </div>
   </div>
-  <!-- Background blobs -->
-  <div class="fixed inset-0 -z-10 overflow-hidden">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="noise-overlay"></div>
-  </div>
 
-  <!-- =========================================
-       HEADER NAVIGATION BAR
-       ========================================= -->
-  <header
-    class="w-full h-16 border-b border-[var(--header-border)] bg-[var(--header-bg)] flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 backdrop-blur-md">
-    <div class="flex items-center gap-3">
-      <!-- Logo Badge matching reference image structure -->
-      <div
-        class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] shadow-lg shadow-[rgba(16,185,129,0.25)] flex-shrink-0">
-        <i data-lucide="award" class="w-5 h-5 text-white"></i>
+  <!-- Right Column: Profile Edit Form -->
+  <div class="qp-card" style="padding: 2.25rem;">
+    <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+      <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+        <i data-lucide="edit-3" style="width: 18px; height: 18px;"></i>
       </div>
       <div>
-        <span class="brand-font text-md font-bold tracking-tight block text-[var(--text-main)]">Quizopedia</span>
-        <span class="text-[9px] font-bold tracking-widest uppercase block leading-none mt-0.5" id="portalSub">Student
-          Portal</span>
+        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Update Profile Information</h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Changes to Name, Email, or Phone require admin approval.</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-4">
-      <a href="{% url 'dashboard' %}"
-        class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)]">
-        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
-        <span>Dashboard</span>
-      </a>
-
-
-
-      <a href="{% url 'logout' %}"
-        class="px-4 py-2 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition text-xs font-bold flex items-center gap-1.5 text-[var(--text-main)] hover:text-red-400">
-        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-        <span>Logout</span>
-      </a>
+    <!-- Feedback Alerts -->
+    {% if errors %}
+    <div style="margin-bottom: 1.5rem; padding: 1rem; border-radius: var(--radius-md); background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; font-size: 0.825rem;">
+      <div style="font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem;">
+        <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+        <span>Please correct the errors below:</span>
+      </div>
+      <ul style="padding-left: 1.5rem;">
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
     </div>
-  </header>
+    {% endif %}
 
-  <!-- Mobile Navigation Bar -->
-  <div
-    class="md:hidden border-b border-[var(--header-border)] bg-white/[0.01] flex justify-around py-3 text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">
-    <a href="{% url 'dashboard' %}" class="hover:text-[var(--text-main)]">Dashboard</a>
-    <a href="{% url 'profile' %}"
-      class="text-[var(--text-main)] border-b border-[var(--accent-primary)] pb-1">Profile</a>
+    {% if success %}
+    <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.6rem;">
+      <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #059669; flex-shrink: 0;"></i>
+      <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Edit Form -->
+    <form method="POST" id="profileForm" style="display: flex; flex-direction: column; gap: 1.35rem;">
+      {% csrf_token %}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+        <!-- Full Name -->
+        <div>
+          <label for="name" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
+            Full Name
+          </label>
+          <div class="input-shell" id="nameShell" style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; transition: all 0.2s ease;">
+            <i data-lucide="user" style="position: absolute; left: 1rem; width: 17px; height: 17px; color: var(--text-light); pointer-events: none;"></i>
+            <input type="text" name="name" id="name" value="{{ form_name }}" placeholder="Your Full Name" required style="width: 100%; height: 2.85rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none;">
+          </div>
+          <p id="nameError" style="display: none; font-size: 0.75rem; color: #dc2626; margin-top: 0.35rem;">Name is required.</p>
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+          <label for="phone" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
+            Phone Number
+          </label>
+          <div class="input-shell" id="phoneShell" style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; transition: all 0.2s ease;">
+            <i data-lucide="phone" style="position: absolute; left: 1rem; width: 17px; height: 17px; color: var(--text-light); pointer-events: none;"></i>
+            <input type="text" name="phone" id="phone" value="{{ form_phone }}" placeholder="10 Digit Number" required style="width: 100%; height: 2.85rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none;">
+          </div>
+          <p id="phoneError" style="display: none; font-size: 0.75rem; color: #dc2626; margin-top: 0.35rem;">Enter a valid phone number.</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+        <!-- Email Address -->
+        <div>
+          <label for="email" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
+            Email Address
+          </label>
+          <div class="input-shell" id="emailShell" style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; transition: all 0.2s ease;">
+            <i data-lucide="mail" style="position: absolute; left: 1rem; width: 17px; height: 17px; color: var(--text-light); pointer-events: none;"></i>
+            <input type="email" name="email" id="email" value="{{ form_email }}" placeholder="you@example.com" required style="width: 100%; height: 2.85rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none;">
+          </div>
+          <p id="emailError" style="display: none; font-size: 0.75rem; color: #dc2626; margin-top: 0.35rem;">Enter a valid email address.</p>
+        </div>
+
+        <!-- New Password (Optional) -->
+        <div>
+          <label for="password" style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem;">
+            New Password <span style="font-weight: 500; color: var(--text-muted); text-transform: none;">(Optional)</span>
+          </label>
+          <div class="input-shell" id="passwordShell" style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; transition: all 0.2s ease;">
+            <i data-lucide="lock" style="position: absolute; left: 1rem; width: 17px; height: 17px; color: var(--text-light); pointer-events: none;"></i>
+            <input type="password" name="password" id="password" placeholder="Leave blank to keep current" style="width: 100%; height: 2.85rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Row -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+        <a href="{% url 'dashboard' %}" class="qp-btn qp-btn-outline">
+          <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
+          <span>Back to Dashboard</span>
+        </a>
+
+        <button type="submit" class="qp-btn qp-btn-primary" id="saveProfileBtn">
+          <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+          <span>Save Changes</span>
+        </button>
+      </div>
+
+    </form>
   </div>
 
-  <!-- Main Container -->
-  <main class="relative z-10 max-w-6xl mx-auto px-6 py-10 animate-fade-in">
-    <!-- Header -->
-    <div class="mb-10">
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Profile Settings</h1>
-      <p class="text-[var(--text-muted)] text-sm">View and customize your account parameters, contact info, and
-        credentials.</p>
-    </div>
+</div>
 
-    <!-- Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left Profile Details Column -->
-      <div class="lg:col-span-1">
-        <div
-          class="glass-card rounded-[28px] p-6 relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[380px]">
-          <!-- Card Decorative Blob -->
-          <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-[var(--accent-primary)] opacity-20 blur-xl">
-          </div>
+{% endblock %}
 
-          <div class="relative z-10 flex flex-col items-center">
-            <!-- Profile Avatar Badge -->
-            <div
-              class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-xl shadow-[rgba(16,185,129,0.3)] mb-5">
-              <i data-lucide="user" class="w-10 h-10 text-white"></i>
-            </div>
-
-            <h2 class="text-xl font-extrabold text-[var(--text-main)] tracking-tight leading-tight mb-1">
-              {{ student.username|default:request.user.username }}
-            </h2>
-            <span
-              class="text-xs text-[var(--accent-secondary)] font-bold tracking-wide uppercase px-3 py-1 rounded-full bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.15)] mb-6">
-              Student Subscriber
-            </span>
-
-            <div class="space-y-4 w-full text-left border-t border-[var(--border-soft)] pt-6 text-sm">
-              <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Registration
-                  Status</span>
-                <span class="font-medium text-emerald-400 flex items-center gap-1.5 mt-0.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Verified Account
-                </span>
-              </div>
-              <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Name</span>
-                <span class="font-medium text-[var(--text-main)]">{{ request.user.first_name|default:'Not provided' }}</span>
-              </div>
-              <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Email
-                  Associated</span>
-                <span class="font-medium text-[var(--text-main)] break-all">{{ request.user.email }}</span>
-              </div>
-              <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Phone
-                  Associated</span>
-                <span class="font-medium text-[var(--text-main)]">{{ student.phone|default:'Not provided' }}</span>
-              </div>
-              <div>
-                <span class="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider font-bold">Update
-                  Request Status</span>
-                {% if latest_request %}
-                {% if latest_request.status == 'pending' %}
-                <span
-                  class="font-bold text-amber-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit text-xs">
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Pending Approval
-                </span>
-                <div
-                  class="mt-2 text-[11px] text-[var(--text-muted)] bg-white/5 rounded-lg p-2.5 border border-[var(--border-soft)]">
-                  <p class="font-semibold text-white mb-1 text-xs">Requested Changes:</p>
-                  <ul class="space-y-0.5">
-                    <li>Name: <span class="text-white">{{ latest_request.name }}</span></li>
-                    <li>Email: <span class="text-white">{{ latest_request.email }}</span></li>
-                    <li>Phone: <span class="text-white">{{ latest_request.phone }}</span></li>
-                  </ul>
-                </div>
-                {% elif latest_request.status == 'approved' %}
-                <span
-                  class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
-                </span>
-                {% elif latest_request.status == 'rejected' %}
-                <span
-                  class="font-bold text-rose-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit text-xs"
-                  title="Reason: {{ latest_request.rejection_reason|default:'No reason provided' }}">
-                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Rejected
-                </span>
-                {% if latest_request.rejection_reason %}
-                <span class="text-[11px] text-rose-300 block mt-1 italic">Reason: {{ latest_request.rejection_reason }}</span>
-                {% endif %}
-                {% endif %}
-                {% else %}
-                <span
-                  class="font-bold text-emerald-400 flex items-center gap-1.5 mt-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit text-xs">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Approved
-                </span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Edit Form Column -->
-      <div class="lg:col-span-2">
-        <div class="glass-card rounded-[28px] p-6 md:p-8">
-          <h3 class="text-lg font-extrabold text-[var(--text-main)] tracking-tight mb-6 flex items-center gap-2">
-            <i data-lucide="edit" class="w-5 h-5 text-[var(--accent-primary)]"></i> Update Profile Credentials
-          </h3>
-
-          <!-- Notifications -->
-          {% if errors %}
-          <div
-            class="mb-6 p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs font-semibold space-y-1">
-            {% for error in errors %}
-            <p class="flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> {{ error }}</p>
-            {% endfor %}
-          </div>
-          {% endif %}
-
-          {% if success %}
-          <div
-            class="mb-6 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
-            <i data-lucide="check-circle" class="w-4 h-4"></i> {{ success }}
-          </div>
-          {% endif %}
-
-          <form method="POST" class="space-y-6">
-            {% csrf_token %}
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <!-- Name input -->
-              <div class="space-y-2">
-                <label for="name" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Name</label>
-                <div class="input-shell" id="nameShell">
-                  <i data-lucide="user" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="text" name="name" id="name" value="{{ form_name }}" class="input-field"
-                    placeholder="Name" required>
-                </div>
-                <p class="field-error-msg text-xs text-red-500 ml-1" id="nameError">Name is required.</p>
-              </div>
-
-              <!-- Phone input -->
-              <div class="space-y-2">
-                <label for="phone" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Phone
-                  Number</label>
-                <div class="input-shell" id="phoneShell">
-                  <i data-lucide="phone" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="text" name="phone" id="phone" value="{{ form_phone }}" class="input-field"
-                    placeholder="10 Digit Number" required>
-                </div>
-                <p class="field-error-msg text-xs text-red-500 ml-1" id="phoneError">Enter a valid phone number.</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <!-- Email input -->
-              <div class="space-y-2">
-                <label for="email" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">Email
-                  Address</label>
-                <div class="input-shell" id="emailShell">
-                  <i data-lucide="mail" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="email" name="email" id="email" value="{{ form_email }}" class="input-field"
-                    placeholder="you@example.com" required>
-                </div>
-                <p class="field-error-msg text-xs text-red-500 ml-1" id="emailError">Enter a valid email address.</p>
-              </div>
-
-              <!-- Password input (optional) -->
-              <div class="space-y-2">
-                <label for="password" class="text-xs font-bold text-[var(--text-main)] tracking-wide uppercase">New
-                  Password</label>
-                <div class="input-shell" id="passwordShell">
-                  <i data-lucide="lock" class="input-icon w-[18px] h-[18px]"></i>
-                  <input type="password" name="password" id="password" class="input-field"
-                    placeholder="Leave blank to keep unchanged">
-                </div>
-              </div>
-            </div>
-
-            <!-- Submit buttons -->
-            <div class="flex items-center justify-between border-t border-[var(--border-soft)] pt-6 mt-8">
-              <a href="{% url 'dashboard' %}"
-                class="px-5 py-2.5 rounded-xl border border-[var(--header-border)] bg-white/5 hover:bg-white/10 transition text-xs font-bold flex items-center gap-1 text-[var(--text-main)]">
-                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
-              </a>
-
-              <button type="submit"
-                class="cta-btn px-6 py-2.5 rounded-xl text-xs font-extrabold text-white flex items-center gap-1.5 shadow-md">
-                <i data-lucide="save" class="w-4 h-4"></i> Save Settings
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <script>
-    lucide.createIcons();
-
-
-
-    // Page Transition Handlers
-    window.addEventListener('DOMContentLoaded', () => {
-      const overlay = document.getElementById('pageOverlay');
-      if (overlay) {
-        overlay.classList.add('fade-out');
-        setTimeout(() => {
-          overlay.style.display = 'none';
-        }, 400);
-      }
-    });
-
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a');
-      if (link && link.href && !link.target && !link.href.startsWith('#') && !link.href.startsWith('javascript:')) {
-        try {
-          const currentHost = window.location.host;
-          const linkUrl = new URL(link.href);
-          if (currentHost === linkUrl.host && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
-            e.preventDefault();
-            const overlay = document.getElementById('pageOverlay');
-            if (overlay) {
-              overlay.style.display = 'flex';
-              overlay.offsetHeight;
-              overlay.classList.remove('fade-out');
-            }
-            setTimeout(() => {
-              window.location.href = link.href;
-            }, 300);
-          }
-        } catch (err) { }
-      }
-    });
-
-    // Real-time Validation for Settings Form
-    const profileForm = document.querySelector('form');
-    if (profileForm) {
-      const nameInput = document.getElementById('name');
-      const emailInput = document.getElementById('email');
-      const phoneInput = document.getElementById('phone');
-
-      function setInputShellState(shellId, state) {
-        const el = document.getElementById(shellId);
-        if (!el) return;
-        el.classList.remove('input-error', 'input-success');
-        if (state === 'error') el.classList.add('input-error');
-        if (state === 'success') el.classList.add('input-success');
-      }
-
-      function showError(id, show) {
-        const el = document.getElementById(id);
-        if (el) el.classList.toggle('show', show);
-      }
-
-      function validateName() {
-        const val = nameInput.value.strip ? nameInput.value.strip() : nameInput.value.trim();
-        const valid = val.length > 0;
-        setInputShellState('nameShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
-        showError('nameError', val.length > 0 && !valid);
-        return valid;
-      }
-      if (nameInput) nameInput.addEventListener('input', validateName);
-
-      function validateEmail() {
-        const val = emailInput.value.trim();
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const valid = re.test(val);
-        setInputShellState('emailShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
-        showError('emailError', val.length > 0 && !valid);
-        return valid;
-      }
-      if (emailInput) emailInput.addEventListener('input', validateEmail);
-
-      function validatePhone() {
-        const val = phoneInput.value.trim();
-        const re = /^[\d\s\-\+\(\)]{7,20}$/;
-        const valid = re.test(val);
-        setInputShellState('phoneShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
-        showError('phoneError', val.length > 0 && !valid);
-        return valid;
-      }
-      if (phoneInput) phoneInput.addEventListener('input', validatePhone);
-
-      profileForm.addEventListener('submit', function (e) {
-        const validName = validateName();
-        const validEmail = validateEmail();
-        const validPhone = validatePhone();
-
-        if (!validName || !validEmail || !validPhone) {
-          e.preventDefault();
-        }
-      });
+{% block extra_scripts %}
+<style>
+  .input-shell svg, .input-shell i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 17px;
+    height: 17px;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: color 0.2s ease;
+  }
+  .input-shell:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px var(--primary-glow) !important;
+  }
+  .input-shell:focus-within svg, .input-shell:focus-within i {
+    color: var(--primary) !important;
+  }
+  .input-shell.input-error {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+  }
+  .input-shell.input-success {
+    border-color: #10b981 !important;
+  }
+  @media (max-width: 900px) {
+    div[style*="grid-template-columns: 360px 1fr"] {
+      grid-template-columns: 1fr !important;
     }
-  </script>
-</body>
+    div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
 
-</html>
+<script>
+  // Real-time client side validation
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+
+    function setShellState(shellId, state) {
+      const shell = document.getElementById(shellId);
+      if (!shell) return;
+      shell.classList.remove('input-error', 'input-success');
+      if (state === 'error') shell.classList.add('input-error');
+      if (state === 'success') shell.classList.add('input-success');
+    }
+
+    function toggleError(errId, show) {
+      const err = document.getElementById(errId);
+      if (err) err.style.display = show ? 'block' : 'none';
+    }
+
+    function validateName() {
+      const val = nameInput.value.trim();
+      const valid = val.length > 0;
+      setShellState('nameShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+      toggleError('nameError', val.length > 0 && !valid);
+      return valid;
+    }
+    if (nameInput) nameInput.addEventListener('input', validateName);
+
+    function validateEmail() {
+      const val = emailInput.value.trim();
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const valid = re.test(val);
+      setShellState('emailShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+      toggleError('emailError', val.length > 0 && !valid);
+      return valid;
+    }
+    if (emailInput) emailInput.addEventListener('input', validateEmail);
+
+    function validatePhone() {
+      const val = phoneInput.value.trim();
+      const re = /^[\d\s\-\+\(\)]{7,20}$/;
+      const valid = re.test(val);
+      setShellState('phoneShell', val.length === 0 ? 'default' : (valid ? 'success' : 'error'));
+      toggleError('phoneError', val.length > 0 && !valid);
+      return valid;
+    }
+    if (phoneInput) phoneInput.addEventListener('input', validatePhone);
+
+    profileForm.addEventListener('submit', (e) => {
+      const vName = validateName();
+      const vEmail = validateEmail();
+      const vPhone = validatePhone();
+      if (!vName || !vEmail || !vPhone) {
+        e.preventDefault();
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 {% extends 'adminpanel/base.html' %}
 
-{% block title %}Edit MCQ Question - Quizopedia Admin{% endblock %}
+{% block title %}Edit MCQ Question — Quizopedia Admin{% endblock %}
 
 {% block active_questions %}active{% endblock %}
 
@@ -9,20 +9,20 @@
 {% block content %}
 <div class="mb-8">
   <div class="flex items-center gap-3 mb-2">
-    <a href="{% url 'question_detail' question.id %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to Question">
+    <a href="{% url 'question_detail' question.id %}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center shadow-sm" title="Back to Question">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
     </a>
-    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Edit MCQ Question</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Edit MCQ Question</h1>
   </div>
-  <p class="text-[var(--text-muted)] text-sm">Update the question, options, and correct answer below.</p>
+  <p class="text-slate-500 text-sm">Update the question text, options, or correct answer selection below.</p>
 </div>
 
 <!-- Form validation errors -->
 {% if errors %}
 <div class="mb-6 space-y-2 max-w-xl">
   {% for error in errors %}
-  <div class="flex items-start gap-2.5 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500"></i>
+  <div class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-rose-500"></i>
     <span>{{ error }}</span>
   </div>
   {% endfor %}
@@ -30,65 +30,68 @@
 {% endif %}
 
 <!-- Form Container -->
-<div class="glass-card rounded-[28px] p-6 sm:p-8 max-w-xl relative overflow-hidden">
-  <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-[var(--border-soft)]">
-    <div class="w-8 h-8 rounded-lg bg-[rgba(var(--accent-primary-rgb),0.15)] flex items-center justify-center">
-      <i data-lucide="list-checks" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+<div class="glass-card rounded-[24px] p-6 sm:p-8 max-w-xl bg-white border border-slate-200/80 shadow-sm relative overflow-hidden">
+  <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-slate-100">
+    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+      <i data-lucide="list-checks" class="w-5 h-5"></i>
     </div>
-    <span class="text-xs font-bold text-[var(--accent-primary)] uppercase tracking-wider">4 Option MCQ</span>
+    <div>
+      <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block">Edit MCQ Question</span>
+      <span class="text-xs text-slate-400">Subject: {{ question.subject.name }}</span>
+    </div>
   </div>
 
   <form method="POST" novalidate>
     {% csrf_token %}
     
     <!-- Subject -->
-    <div class="mb-6">
-      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Subject</label>
+    <div class="mb-5">
+      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Subject</label>
       {{ form.subject }}
     </div>
 
     <!-- Question -->
-    <div class="mb-6">
-      <label for="{{ form.question_text.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Question</label>
+    <div class="mb-5">
+      <label for="{{ form.question_text.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Question Text</label>
       {{ form.question_text }}
     </div>
 
     <!-- Option A -->
     <div class="mb-4">
-      <label for="{{ form.option_a.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option A</label>
+      <label for="{{ form.option_a.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option A</label>
       {{ form.option_a }}
     </div>
 
     <!-- Option B -->
     <div class="mb-4">
-      <label for="{{ form.option_b.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option B</label>
+      <label for="{{ form.option_b.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option B</label>
       {{ form.option_b }}
     </div>
 
     <!-- Option C -->
     <div class="mb-4">
-      <label for="{{ form.option_c.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option C</label>
+      <label for="{{ form.option_c.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option C</label>
       {{ form.option_c }}
     </div>
 
     <!-- Option D -->
-    <div class="mb-6">
-      <label for="{{ form.option_d.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Option D</label>
+    <div class="mb-5">
+      <label for="{{ form.option_d.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Option D</label>
       {{ form.option_d }}
     </div>
 
     <!-- Correct Option -->
     <div class="mb-8">
-      <label for="{{ form.correct_option.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Correct Answer</label>
+      <label for="{{ form.correct_option.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Correct Answer</label>
       {{ form.correct_option }}
     </div>
 
     <!-- Submit & Cancel Buttons -->
-    <div class="flex flex-col sm:flex-row gap-3">
-      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none">
+    <div class="flex flex-col sm:flex-row gap-3 pt-2 border-t border-slate-100">
+      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none shadow-md">
         <i data-lucide="save" class="w-4 h-4"></i> Save Changes
       </button>
-      <a href="{% url 'question_detail' question.id %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-main)] flex items-center justify-center transition flex-1 sm:flex-none">
+      <a href="{% url 'question_detail' question.id %}" class="px-5 h-11 rounded-xl font-semibold text-xs sm:text-sm border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition flex-1 sm:flex-none shadow-sm">
         Cancel
       </a>
     </div>

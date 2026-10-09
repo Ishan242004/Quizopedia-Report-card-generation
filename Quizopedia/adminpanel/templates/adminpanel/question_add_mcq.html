@@ -1,6 +1,6 @@
 {% extends 'adminpanel/base.html' %}
 
-{% block title %}Add MCQ Questions - Quizopedia Admin{% endblock %}
+{% block title %}Add MCQ Questions — Quizopedia Admin{% endblock %}
 
 {% block active_questions %}active{% endblock %}
 
@@ -10,25 +10,25 @@
 <div class="mb-8">
   <div class="flex items-center gap-3 mb-2">
     {% if selected_subject %}
-    <a href="{% url 'subject_questions' selected_subject.id %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to {{ selected_subject.name }}">
+    <a href="{% url 'subject_questions' selected_subject.id %}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center shadow-sm" title="Back to {{ selected_subject.name }}">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
     </a>
     {% else %}
-    <a href="{% url 'question_add' %}" class="p-2 rounded-xl bg-white/5 border border-white/10 text-[var(--text-muted)] hover:text-white transition" title="Back to Type Selection">
+    <a href="{% url 'question_add' %}" class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center shadow-sm" title="Back to Type Selection">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
     </a>
     {% endif %}
-    <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Add 4 Option MCQ</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Add 4 Option MCQ</h1>
   </div>
-  <p class="text-[var(--text-muted)] text-sm">Paste one or multiple MCQ questions in the format shown below. All questions will be saved at once.</p>
+  <p class="text-slate-500 text-sm">Paste one or multiple MCQ questions in the bulk format below. All questions will be saved simultaneously.</p>
 </div>
 
 <!-- Form validation errors -->
 {% if errors %}
 <div class="mb-6 space-y-2 max-w-2xl">
   {% for error in errors %}
-  <div class="flex items-start gap-2.5 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500"></i>
+  <div class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-rose-500"></i>
     <span>{{ error }}</span>
   </div>
   {% endfor %}
@@ -36,12 +36,15 @@
 {% endif %}
 
 <!-- Form Container -->
-<div class="glass-card rounded-[28px] p-6 sm:p-8 max-w-2xl relative overflow-hidden">
-  <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-[var(--border-soft)]">
-    <div class="w-8 h-8 rounded-lg bg-[rgba(var(--accent-primary-rgb),0.15)] flex items-center justify-center">
-      <i data-lucide="list-checks" class="w-4 h-4 text-[var(--accent-primary)]"></i>
+<div class="glass-card rounded-[24px] p-6 sm:p-8 max-w-2xl bg-white border border-slate-200/80 shadow-sm relative overflow-hidden">
+  <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-slate-100">
+    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+      <i data-lucide="list-checks" class="w-5 h-5"></i>
     </div>
-    <span class="text-xs font-bold text-[var(--accent-primary)] uppercase tracking-wider">4 Option MCQ — Bulk Import</span>
+    <div>
+      <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block">Standard MCQ &bull; Bulk Mode</span>
+      <span class="text-xs text-slate-400">Multiple choice questions with 4 options and answer key</span>
+    </div>
   </div>
 
   <form method="POST" novalidate id="mcqForm">
@@ -49,48 +52,48 @@
     
     <!-- Subject -->
     <div class="mb-6">
-      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Subject</label>
+      <label for="{{ form.subject.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Subject / Quiz Title</label>
       {{ form.subject }}
       {% if form.subject.errors %}
-      <p class="text-red-500 text-xs mt-1.5 ml-1">{{ form.subject.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.subject.errors.0 }}</p>
       {% endif %}
     </div>
 
     <!-- MCQ Textarea -->
     <div class="mb-6">
-      <label for="{{ form.mcq_text.id_for_label }}" class="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 ml-1">Questions</label>
+      <label for="{{ form.mcq_text.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 ml-1">Questions Input</label>
       {{ form.mcq_text }}
       {% if form.mcq_text.errors %}
-      <p class="text-red-500 text-xs mt-1.5 ml-1">{{ form.mcq_text.errors.0 }}</p>
+      <p class="text-rose-500 text-xs mt-1.5 ml-1">{{ form.mcq_text.errors.0 }}</p>
       {% endif %}
-      <p class="text-[10px] text-[var(--text-light-muted)] mt-2 ml-1">
-        💡 Tip: You can paste 1, 10, 20, 50 or more questions at once. Each question must follow the format shown in the placeholder.
+      <p class="text-[11px] text-slate-400 mt-2 ml-1">
+        💡 Tip: You can paste 1, 10, 20, 50 or more questions at once. Each question must follow the format with options A, B, C, D and Correct Answer.
       </p>
     </div>
 
     <!-- Preview Section (JS-powered) -->
     <div id="previewSection" class="mb-6 hidden">
       <div class="flex items-center justify-between mb-3">
-        <p class="text-xs font-bold text-[var(--accent-primary)] uppercase tracking-wider">MCQ Preview</p>
-        <span id="previewCount" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[rgba(var(--accent-primary-rgb),0.1)] text-[var(--accent-primary)] border border-[rgba(var(--accent-primary-rgb),0.2)]"></span>
+        <p class="text-xs font-bold text-indigo-600 uppercase tracking-wider">MCQ Parser Preview</p>
+        <span id="previewCount" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
       </div>
       <div id="previewContainer" class="space-y-4 max-h-[400px] overflow-y-auto pr-2"></div>
     </div>
 
     <!-- Submit & Cancel Buttons -->
-    <div class="flex flex-col sm:flex-row gap-3">
-      <button type="button" id="previewBtn" class="px-6 h-11 rounded-xl font-bold text-sm border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] flex items-center justify-center gap-1.5 hover:bg-[rgba(var(--accent-primary-rgb),0.08)] transition flex-1 sm:flex-none">
-        <i data-lucide="eye" class="w-4 h-4"></i> Preview
+    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+      <button type="button" id="previewBtn" class="px-5 h-11 rounded-xl font-bold text-xs sm:text-sm border border-indigo-300 text-indigo-600 flex items-center justify-center gap-1.5 hover:bg-indigo-50 transition flex-1 sm:flex-none">
+        <i data-lucide="eye" class="w-4 h-4"></i> Preview Parser
       </button>
-      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none">
+      <button type="submit" class="cta-btn px-6 h-11 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-1.5 relative flex-1 sm:flex-none shadow-md">
         <i data-lucide="save" class="w-4 h-4"></i> Save All Questions
       </button>
       {% if selected_subject %}
-      <a href="{% url 'subject_questions' selected_subject.id %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-main)] flex items-center justify-center transition flex-1 sm:flex-none">
+      <a href="{% url 'subject_questions' selected_subject.id %}" class="px-5 h-11 rounded-xl font-semibold text-xs sm:text-sm border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition flex-1 sm:flex-none shadow-sm">
         Cancel
       </a>
       {% else %}
-      <a href="{% url 'question_add' %}" class="px-6 h-11 rounded-xl font-semibold text-sm border border-white/10 bg-white/5 hover:bg-white/10 text-[var(--text-main)] flex items-center justify-center transition flex-1 sm:flex-none">
+      <a href="{% url 'question_add' %}" class="px-5 h-11 rounded-xl font-semibold text-xs sm:text-sm border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center transition flex-1 sm:flex-none shadow-sm">
         Cancel
       </a>
       {% endif %}
@@ -177,29 +180,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     questions.forEach((q, idx) => {
       const card = document.createElement('div');
-      card.className = 'p-4 rounded-xl bg-white/5 border border-[var(--card-border)]';
+      card.className = 'p-4 rounded-2xl bg-slate-50 border border-slate-200';
       
       const optionHtml = (label, text, isCorrect) => {
-        if (!text) return `<div class="text-red-500 text-xs">⚠ Option ${label} is missing</div>`;
-        const bg = isCorrect ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5 border-white/5';
-        const textColor = isCorrect ? 'text-emerald-600' : 'text-[var(--text-main)]';
-        const badge = isCorrect ? '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30">✓ CORRECT</span>' : '';
-        return `<div class="flex items-center justify-between p-3 rounded-lg border ${bg}">
+        if (!text) return `<div class="text-rose-500 text-xs">⚠ Option ${label} is missing</div>`;
+        const bg = isCorrect ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-slate-200';
+        const textColor = isCorrect ? 'text-emerald-800' : 'text-slate-800';
+        const badge = isCorrect ? '<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">✓ CORRECT</span>' : '';
+        return `<div class="flex items-center justify-between p-3 rounded-xl border ${bg}">
           <span class="text-xs font-semibold ${textColor}">${label}) ${text}</span>
           ${badge}
         </div>`;
       };
 
       card.innerHTML = `
-        <p class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-bold mb-1.5">Question ${idx + 1}</p>
-        <p class="text-sm font-medium text-[var(--text-main)] mb-3">${q.qText || '<span class="text-red-500">Missing question text</span>'}</p>
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1.5">Question ${idx + 1}</p>
+        <p class="text-sm font-semibold text-slate-900 mb-3">${q.qText || '<span class="text-rose-500">Missing question text</span>'}</p>
         <div class="space-y-1.5">
           ${optionHtml('A', q.optA, q.correct === 'A')}
           ${optionHtml('B', q.optB, q.correct === 'B')}
           ${optionHtml('C', q.optC, q.correct === 'C')}
           ${optionHtml('D', q.optD, q.correct === 'D')}
         </div>
-        ${!q.correct ? '<p class="text-red-500 text-xs mt-2">⚠ Correct Answer is missing</p>' : ''}
+        ${!q.correct ? '<p class="text-rose-500 text-xs mt-2">⚠ Correct Answer is missing</p>' : ''}
       `;
       previewContainer.appendChild(card);
     });

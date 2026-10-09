@@ -1,111 +1,152 @@
 {% extends 'adminpanel/base.html' %}
 
-{% block title %}Dashboard Overview - Quizopedia Admin{% endblock %}
-
+{% block title %}Dashboard Overview — Quizopedia Admin{% endblock %}
 {% block active_db %}active{% endblock %}
 {% block breadcrumb %}Dashboard Overview{% endblock %}
 
 {% block content %}
+<!-- Top Header & Actions -->
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
   <div>
-    <h1 class="text-[22px] font-bold text-gray-800 mb-1">Dashboard Overview</h1>
-    <p class="text-gray-500 text-[13px]">Real-time statistics and recent activity from the database.</p>
+    <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Executive Dashboard</h1>
+    <p class="text-slate-500 text-sm mt-0.5">Real-time statistics, registered students, and learning metrics.</p>
   </div>
-  <div>
-    <a href="{% url 'question_add' %}" class="bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-dark)] text-white px-5 py-2.5 rounded-lg text-[13px] font-semibold flex items-center gap-2 transition shadow-[0_4px_12px_rgba(124,92,245,0.2)]">
-      <i data-lucide="plus" class="w-4 h-4"></i> Add Question
+  <div class="flex items-center gap-3">
+    <a href="{% url 'question_add' %}" class="cta-btn px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      <span>Add New Question</span>
     </a>
   </div>
 </div>
 
-<!-- Stat Cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-  <!-- Students Count -->
-  <div class="bg-[#f5f3ff] rounded-[18px] p-6 shadow-sm border border-[#ede9fe] relative overflow-hidden flex flex-col">
-    <i data-lucide="users" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#ede9fe] z-0 stroke-[1.5] fill-[#ede9fe]/50"></i>
-    
-    <div class="flex items-center gap-4 mb-8 z-10">
-      <div class="w-10 h-10 rounded-xl bg-[#ede9fe] text-[#6d28d9] flex items-center justify-center">
+<!-- 4 Key Stat Metric Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+  <!-- Students Metric -->
+  <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Students</span>
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
         <i data-lucide="users" class="w-5 h-5"></i>
       </div>
-      <span class="text-[14px] font-semibold text-[#2e1065]">Total Students</span>
     </div>
-    
-    <div class="flex items-end justify-between z-10 mt-auto">
-      <span class="text-[40px] leading-none font-bold text-[#2e1065]">{{ total_students }}</span>
-      <div class="flex flex-col items-end">
-        <span class="text-[11px] text-[#4c1d95] font-medium mb-1 tracking-wide">Registered</span>
-        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-          <i data-lucide="trending-up" class="w-3 h-3"></i> +0 this week
-        </span>
-      </div>
+    <div class="flex items-baseline justify-between mt-2">
+      <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ total_students }}</span>
+      <span class="text-xs font-semibold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full">
+        <i data-lucide="trending-up" class="w-3 h-3"></i> Enrolled
+      </span>
     </div>
   </div>
 
-  <!-- Questions Count -->
-  <div class="bg-[#eff6ff] rounded-[18px] p-6 shadow-sm border border-[#dbeafe] relative overflow-hidden flex flex-col">
-    <i data-lucide="help-circle" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#dbeafe] z-0 stroke-[1.5] fill-[#dbeafe]/50"></i>
-    
-    <div class="flex items-center gap-4 mb-8 z-10">
-      <div class="w-10 h-10 rounded-xl bg-[#dbeafe] text-[#2563eb] flex items-center justify-center">
+  <!-- Questions Metric -->
+  <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Questions</span>
+      <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
         <i data-lucide="help-circle" class="w-5 h-5"></i>
       </div>
-      <span class="text-[14px] font-semibold text-[#1e3a8a]">Total Questions</span>
     </div>
-    
-    <div class="flex items-end justify-between z-10 mt-auto">
-      <span class="text-[40px] leading-none font-bold text-[#1e3a8a]">{{ question_count }}</span>
-      <div class="flex flex-col items-end">
-        <span class="text-[11px] text-[#1e40af] font-medium mb-1 tracking-wide">Inserted</span>
-        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-          <i data-lucide="trending-up" class="w-3 h-3"></i> +2 this week
-        </span>
-      </div>
+    <div class="flex items-baseline justify-between mt-2">
+      <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ question_count }}</span>
+      <span class="text-xs font-semibold text-cyan-700 flex items-center gap-1 bg-cyan-50 px-2 py-0.5 rounded-full">
+        <i data-lucide="database" class="w-3 h-3"></i> Banked
+      </span>
     </div>
   </div>
 
-  <!-- Subjects Count -->
-  <div class="bg-[#fdf4ff] rounded-[18px] p-6 shadow-sm border border-[#fae8ff] relative overflow-hidden flex flex-col">
-    <i data-lucide="book-open" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#fae8ff] z-0 stroke-[1.5] fill-[#fae8ff]/50"></i>
-    
-    <div class="flex items-center gap-4 mb-8 z-10">
-      <div class="w-10 h-10 rounded-xl bg-[#fae8ff] text-[#c026d3] flex items-center justify-center">
+  <!-- Subjects Metric -->
+  <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Quiz Subjects</span>
+      <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
         <i data-lucide="book-open" class="w-5 h-5"></i>
       </div>
-      <span class="text-[14px] font-semibold text-[#701a75]">Subjects</span>
     </div>
-    
-    <div class="flex items-end justify-between z-10 mt-auto">
-      <span class="text-[40px] leading-none font-bold text-[#701a75]">{{ subject_count }}</span>
-      <div class="flex flex-col items-end">
-        <span class="text-[11px] text-[#86198f] font-medium mb-1 tracking-wide">Categories</span>
-        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-          <i data-lucide="trending-up" class="w-3 h-3"></i> +0 this week
-        </span>
-      </div>
+    <div class="flex items-baseline justify-between mt-2">
+      <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ subject_count }}</span>
+      <span class="text-xs font-semibold text-purple-700 flex items-center gap-1 bg-purple-50 px-2 py-0.5 rounded-full">
+        <i data-lucide="layers" class="w-3 h-3"></i> Active
+      </span>
     </div>
   </div>
 
-  <!-- Report Cards Count -->
-  <div class="bg-[#eff6ff] rounded-[18px] p-6 shadow-sm border border-[#dbeafe] relative overflow-hidden flex flex-col">
-    <i data-lucide="file-text" class="w-32 h-32 absolute -bottom-8 -right-8 text-[#dbeafe] z-0 stroke-[1.5] fill-[#dbeafe]/50"></i>
-    
-    <div class="flex items-center gap-4 mb-8 z-10">
-      <div class="w-10 h-10 rounded-xl bg-[#dbeafe] text-[#2563eb] flex items-center justify-center">
-        <i data-lucide="file-text" class="w-5 h-5"></i>
-      </div>
-      <span class="text-[14px] font-semibold text-[#1e3a8a]">Report Cards</span>
-    </div>
-    
-    <div class="flex items-end justify-between z-10 mt-auto">
-      <span class="text-[40px] leading-none font-bold text-[#1e3a8a]">{{ report_card_count }}</span>
-      <div class="flex flex-col items-end">
-        <span class="text-[11px] text-[#1e40af] font-medium mb-1 tracking-wide">Generated</span>
-        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-          <i data-lucide="trending-up" class="w-3 h-3"></i> +1 this week
-        </span>
+  <!-- Report Cards Metric -->
+  <div class="glass-card p-6 flex flex-col justify-between relative overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Report Cards</span>
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <i data-lucide="file-check-2" class="w-5 h-5"></i>
       </div>
     </div>
+    <div class="flex items-baseline justify-between mt-2">
+      <span class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ report_card_count }}</span>
+      <span class="text-xs font-semibold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full">
+        <i data-lucide="award" class="w-3 h-3"></i> Awarded
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Administration Hub Grid -->
+<div class="mb-6">
+  <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+    <i data-lucide="command" class="w-5 h-5 text-indigo-600"></i>
+    <span>Management Hub</span>
+  </h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    
+    <!-- Hub Card 1: Students -->
+    <a href="{% url 'admin_students' %}" class="glass-card p-5 block group hover:border-indigo-300">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+        <i data-lucide="users" class="w-5 h-5"></i>
+      </div>
+      <h3 class="font-bold text-sm text-slate-800 mb-1">Student Accounts</h3>
+      <p class="text-xs text-slate-500 line-clamp-2">Register, view, and manage student credentials and accounts.</p>
+      <div class="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-600 group-hover:gap-2 transition-all">
+        <span>Open Accounts</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </div>
+    </a>
+
+    <!-- Hub Card 2: Approvals -->
+    <a href="{% url 'admin_profile_approvals' %}" class="glass-card p-5 block group hover:border-amber-300">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+      </div>
+      <h3 class="font-bold text-sm text-slate-800 mb-1">Profile Approvals</h3>
+      <p class="text-xs text-slate-500 line-clamp-2">Review pending student requests to change contact info or names.</p>
+      <div class="mt-4 flex items-center gap-1 text-xs font-bold text-amber-600 group-hover:gap-2 transition-all">
+        <span>Review Queue</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </div>
+    </a>
+
+    <!-- Hub Card 3: Questions -->
+    <a href="{% url 'question_list' %}" class="glass-card p-5 block group hover:border-cyan-300">
+      <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+        <i data-lucide="book-open" class="w-5 h-5"></i>
+      </div>
+      <h3 class="font-bold text-sm text-slate-800 mb-1">Question Management</h3>
+      <p class="text-xs text-slate-500 line-clamp-2">Create MCQs and Q&A questions, manage subjects and answer keys.</p>
+      <div class="mt-4 flex items-center gap-1 text-xs font-bold text-cyan-600 group-hover:gap-2 transition-all">
+        <span>Manage Bank</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </div>
+    </a>
+
+    <!-- Hub Card 4: Report Cards -->
+    <a href="{% url 'admin_report_cards' %}" class="glass-card p-5 block group hover:border-emerald-300">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+        <i data-lucide="file-check-2" class="w-5 h-5"></i>
+      </div>
+      <h3 class="font-bold text-sm text-slate-800 mb-1">Report Cards</h3>
+      <p class="text-xs text-slate-500 line-clamp-2">Monitor test submissions, student grade averages, and certifications.</p>
+      <div class="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-600 group-hover:gap-2 transition-all">
+        <span>View Records</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </div>
+    </a>
+
   </div>
 </div>
 {% endblock %}

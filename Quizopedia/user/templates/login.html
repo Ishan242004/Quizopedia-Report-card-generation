@@ -6,62 +6,71 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In — Quizopedia</title>
-  <meta name="description" content="Sign in to your Quizopedia account to start learning with interactive quizzes.">
+  <meta name="description" content="Sign in to your Quizopedia student account to access quizzes and track progress.">
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
     :root {
-      --brand:       #4f46e5;
-      --brand-dark:  #3730a3;
-      --brand-subtle:#eef2ff;
-      --brand-ring:  rgba(79,70,229,0.2);
-      --bg:          #f8fafc;
-      --surface:     #ffffff;
-      --border:      #e2e8f0;
-      --text-primary:#0f172a;
-      --text-muted:  #64748b;
-      --danger:      #ef4444;
-      --danger-bg:   #fef2f2;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-dark: #3730a3;
+      --bg-canvas: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+    }
+
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
     }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text-primary);
+      background: var(--bg-canvas);
+      color: var(--text-main);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem 1rem;
+      padding: 2rem 1.5rem;
       -webkit-font-smoothing: antialiased;
     }
 
-    h1,h2,h3 { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; }
+    h1, h2, h3 {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-weight: 700;
+    }
 
     a { text-decoration: none; color: inherit; }
 
-    /* Layout */
-    .auth-wrap {
-      display: flex;
+    /* Auth Card Wrap */
+    .auth-container {
       width: 100%;
-      max-width: 900px;
-      min-height: 560px;
-      background: var(--surface);
-      border-radius: 28px;
+      max-width: 980px;
+      min-height: 580px;
+      background: #ffffff;
       border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(15,23,42,0.08), 0 4px 16px rgba(15,23,42,0.04);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       overflow: hidden;
     }
 
-    /* Left hero panel */
-    .auth-hero {
-      flex: 1;
-      background: linear-gradient(155deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%);
-      padding: 3rem;
+    /* Left Hero Showcase */
+    .auth-showcase {
+      background: linear-gradient(145deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+      color: white;
+      padding: 3.5rem 3rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -69,299 +78,241 @@
       overflow: hidden;
     }
 
-    .auth-hero::before {
+    .auth-showcase::before {
       content: '';
       position: absolute;
       top: -60px; right: -60px;
-      width: 280px; height: 280px;
-      background: rgba(255,255,255,0.05);
+      width: 240px; height: 240px;
       border-radius: 50%;
-    }
-
-    .auth-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -80px; left: -40px;
-      width: 200px; height: 200px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 50%;
-    }
-
-    .auth-hero-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .auth-hero-logo-mark {
-      width: 40px;
-      height: 40px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .auth-hero-logo-text {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 800;
-      font-size: 1.125rem;
-      color: white;
-      letter-spacing: -0.03em;
-    }
-
-    .auth-hero-content {
-      position: relative;
-      z-index: 1;
-    }
-
-    .auth-hero-tag {
-      display: inline-block;
-      background: rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.9);
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.8rem;
-      border-radius: 9999px;
-      border: 1px solid rgba(255,255,255,0.2);
-      margin-bottom: 1rem;
-    }
-
-    .auth-hero h2 {
-      font-size: 1.875rem;
-      color: white;
-      letter-spacing: -0.04em;
-      line-height: 1.2;
-      margin-bottom: 1rem;
-    }
-
-    .auth-hero p {
-      font-size: 0.875rem;
-      color: rgba(255,255,255,0.75);
-      line-height: 1.7;
-    }
-
-    .auth-hero-features {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    .auth-hero-feature {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.8125rem;
-      color: rgba(255,255,255,0.85);
-      font-weight: 500;
-    }
-
-    .auth-hero-feature-dot {
-      width: 6px;
-      height: 6px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* Right form panel */
-    .auth-form-panel {
-      flex: 1;
-      max-width: 420px;
-      padding: 3rem 2.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .auth-form-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      letter-spacing: -0.03em;
-      margin-bottom: 0.4rem;
-    }
-
-    .auth-form-subtitle {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      margin-bottom: 2rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      margin-bottom: 1.1rem;
-    }
-
-    label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .input-wrap {
-      position: relative;
-    }
-
-    .input-wrap svg {
-      position: absolute;
-      left: 0.9rem;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      color: #94a3b8;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
       pointer-events: none;
     }
 
-    input[type="text"], input[type="email"], input[type="password"] {
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: #c7d2fe;
+    }
+
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #818cf8;
+      flex-shrink: 0;
+    }
+
+    /* Right Form Area */
+    .auth-form-wrap {
+      padding: 3.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+
+    .input-wrapper {
+      position: relative;
       width: 100%;
-      height: 2.75rem;
-      padding: 0 1rem 0 2.75rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper .leading-icon,
+    .input-wrapper svg.leading-icon,
+    .input-wrapper i.leading-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: #94a3b8;
+      pointer-events: none;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+    }
+
+    .input-wrapper:focus-within .leading-icon,
+    .input-wrapper:focus-within svg.leading-icon {
+      color: var(--primary);
+    }
+
+    .form-input {
+      width: 100%;
+      height: 3rem;
+      padding: 0 1rem 0 3rem;
       border: 1.5px solid var(--border);
       border-radius: 12px;
-      background: var(--bg);
-      font-size: 0.875rem;
+      background: #f8fafc;
       font-family: inherit;
-      color: var(--text-primary);
+      font-size: 0.875rem;
+      color: var(--text-main);
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
     }
 
-    input::placeholder { color: #94a3b8; }
-
-    input:focus {
-      border-color: var(--brand);
-      background: var(--surface);
-      box-shadow: 0 0 0 3px var(--brand-ring);
+    .form-input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 
-    .auth-error {
+    .submit-btn {
+      width: 100%;
+      height: 3rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.925rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
+      justify-content: center;
       gap: 0.5rem;
-      background: var(--danger-bg);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      margin-top: 0.75rem;
+    }
+
+    .submit-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.45);
+    }
+
+    .error-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fef2f2;
       border: 1px solid #fecaca;
       border-radius: 10px;
       padding: 0.75rem 1rem;
       margin-bottom: 1.25rem;
-      font-size: 0.8125rem;
-      color: var(--danger);
-      font-weight: 500;
+      font-size: 0.825rem;
+      color: #dc2626;
+      font-weight: 600;
     }
 
-    .auth-submit {
-      width: 100%;
-      height: 2.75rem;
-      background: var(--brand);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 0.875rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-      box-shadow: 0 4px 12px rgba(79,70,229,0.25);
-      letter-spacing: 0.01em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-
-    .auth-submit:hover {
-      background: var(--brand-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(79,70,229,0.35);
-    }
-
-    .auth-submit:active { transform: translateY(0); }
-
-    .auth-link-row {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-    }
-
-    .auth-link-row a {
-      color: var(--brand);
-      font-weight: 700;
-      margin-left: 0.2rem;
-    }
-
-    .auth-link-row a:hover { text-decoration: underline; }
-
-    @media (max-width: 700px) {
-      .auth-hero { display: none; }
-      .auth-form-panel { max-width: 100%; padding: 2.5rem 1.75rem; }
-      .auth-wrap { border-radius: 20px; }
-    }
-
-    @media (max-width: 480px) {
-      body { padding: 0; align-items: flex-start; }
-      .auth-wrap { border-radius: 0; min-height: 100vh; }
-      .auth-form-panel { padding: 2rem 1.5rem; }
+    @media (max-width: 768px) {
+      .auth-container {
+        grid-template-columns: 1fr;
+      }
+      .auth-showcase {
+        display: none;
+      }
+      .auth-form-wrap {
+        padding: 2.5rem 1.75rem;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="auth-wrap">
-    <!-- Left: Hero Panel -->
-    <div class="auth-hero">
-      <div class="auth-hero-logo">
-        <div class="auth-hero-logo-mark">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  <div class="auth-container">
+    <!-- Left Hero -->
+    <div class="auth-showcase">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem;">
+          <div class="brand-mark">
+            <i data-lucide="award" style="width: 24px; height: 24px;"></i>
+          </div>
+          <div>
+            <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em;">Quizopedia</div>
+            <div style="font-size: 0.65rem; color: #818cf8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Assessment Suite</div>
+          </div>
         </div>
-        <span class="auth-hero-logo-text">Quizopedia</span>
+
+        <h2 style="font-size: 2rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.03em; margin-bottom: 1rem;">
+          Empower Your Mind with Interactive Quizzes.
+        </h2>
+        <p style="font-size: 0.9rem; color: #94a3b8; line-height: 1.6;">
+          Sign in to take timed subject tests, verify your proficiency, and generate verified report cards instantly.
+        </p>
+
+        <div class="hero-features">
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="check" style="width: 15px; height: 15px;"></i></div>
+            <span>Multiple Subjects &amp; Adaptive Question Banks</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="zap" style="width: 15px; height: 15px;"></i></div>
+            <span>Real-time Scoring &amp; Instant Grade Calculation</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i data-lucide="file-text" style="width: 15px; height: 15px;"></i></div>
+            <span>Printable Academic Certificate Report Cards</span>
+          </div>
+        </div>
       </div>
 
-      <div class="auth-hero-content">
-        <span class="auth-hero-tag">Student Learning Platform</span>
-        <h2>Test Your Knowledge &amp; Grow</h2>
-        <p>Take interactive quizzes, track your performance, and receive detailed report cards to measure your academic progress.</p>
-      </div>
-
-      <div class="auth-hero-features">
-        <div class="auth-hero-feature">
-          <div class="auth-hero-feature-dot"></div>
-          Multiple subjects and question sets
-        </div>
-        <div class="auth-hero-feature">
-          <div class="auth-hero-feature-dot"></div>
-          Instant performance feedback
-        </div>
-        <div class="auth-hero-feature">
-          <div class="auth-hero-feature-dot"></div>
-          Downloadable academic report cards
-        </div>
+      <div style="font-size: 0.75rem; color: #64748b;">
+        &copy; Quizopedia Learning Technologies. All rights reserved.
       </div>
     </div>
 
-    <!-- Right: Form Panel -->
-    <div class="auth-form-panel">
-      <h1 class="auth-form-title">Welcome back</h1>
-      <p class="auth-form-subtitle">Sign in to access your student portal.</p>
+    <!-- Right Form -->
+    <div class="auth-form-wrap">
+      <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); margin-bottom: 0.35rem;">
+          Welcome Back
+        </h1>
+        <p style="font-size: 0.875rem; color: var(--text-muted);">
+          Enter your student account details to continue.
+        </p>
+      </div>
 
       {% if errors %}
       {% for error in errors %}
-      <div class="auth-error">
-        <i data-lucide="alert-circle" style="width:15px;height:15px;flex-shrink:0;margin-top:1px;"></i>
-        {{ error }}
+      <div class="error-pill">
+        <i data-lucide="alert-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+        <span>{{ error }}</span>
       </div>
       {% endfor %}
       {% endif %}
@@ -370,47 +321,65 @@
         {% csrf_token %}
 
         <div class="form-group">
-          <label for="username">Username or Email</label>
-          <div class="input-wrap">
-            <i data-lucide="user"></i>
-            <input type="text" id="username" name="username" placeholder="e.g. john_doe" autocomplete="username" required>
+          <label for="username" class="form-label">Username or Email</label>
+          <div class="input-wrapper">
+            <i data-lucide="user" class="leading-icon"></i>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="e.g. student_test or name@domain.com"
+              autocomplete="username"
+              required
+              class="form-input"
+            >
           </div>
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
-          <div class="input-wrap">
-            <i data-lucide="lock"></i>
-            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+          <label for="password" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock" class="leading-icon"></i>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+              class="form-input"
+            >
           </div>
         </div>
 
-        <button type="submit" class="auth-submit" id="loginBtn">
-          <i data-lucide="log-in" style="width:16px;height:16px;"></i>
-          Sign In
+        <button type="submit" class="submit-btn" id="loginBtn">
+          <span>Sign In to Portal</span>
+          <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
         </button>
       </form>
 
-      <p class="auth-link-row">
-        Don't have an account?
-        <a href="{% url 'register' %}">Create one &rarr;</a>
-      </p>
+      <div style="text-align: center; margin-top: 1.75rem; font-size: 0.85rem; color: var(--text-muted);">
+        Don't have an account yet?
+        <a href="{% url 'register' %}" style="color: var(--primary); font-weight: 700; margin-left: 0.35rem;">
+          Create an account &rarr;
+        </a>
+      </div>
     </div>
   </div>
 
   <script>
     lucide.createIcons();
 
-    document.getElementById('loginForm').addEventListener('submit', () => {
-      const btn = document.getElementById('loginBtn');
-      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.75s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Signing In…';
-      btn.style.opacity = '0.8';
-      btn.disabled = true;
-    });
+    // Submission button loading state
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.addEventListener('submit', () => {
+        const btn = document.getElementById('loginBtn');
+        btn.innerHTML = '<span>Signing In…</span>';
+        btn.style.opacity = '0.75';
+      });
+    }
   </script>
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
 </body>
 
 </html>

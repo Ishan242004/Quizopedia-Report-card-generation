@@ -1,166 +1,388 @@
 {% extends 'base_student.html' %}
 {% load static %}
 
-{% block title %}Student Dashboard — Quizopedia{% endblock %}
-{% block meta_description %}View your quiz statistics, start new quizzes, and track your learning progress.{% endblock %}
-{% block nav_active_dash %}active{% endblock %}
-{% block mnav_active_dash %}active{% endblock %}
+{% block title %}
+  {% if current_view == 'reports' %}
+    Recent Report Cards — Quizopedia
+  {% elif current_view == 'quizzes' %}
+    Available Quizzes — Quizopedia
+  {% else %}
+    Student Dashboard — Quizopedia
+  {% endif %}
+{% endblock %}
+
+{% block meta_description %}
+  {% if current_view == 'reports' %}
+    View your recent quiz report cards and performance scores.
+  {% elif current_view == 'quizzes' %}
+    Browse all available interactive quizzes across subjects.
+  {% else %}
+    Student portal overview with metrics, active quizzes, and performance analytics.
+  {% endif %}
+{% endblock %}
+
+{% block breadcrumb_title %}
+  {% if current_view == 'reports' %}
+    Recent Report Cards
+  {% elif current_view == 'quizzes' %}
+    Available Quizzes
+  {% else %}
+    Dashboard Overview
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 
-<!-- Page Header -->
-<div class="qp-page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-  <div>
-    <h1 class="qp-page-title">Dashboard</h1>
-    <p class="qp-page-subtitle">Welcome back, <strong>{{ user.username }}</strong> — here's your learning overview.</p>
+<!-- ========================================================================
+     VIEW 1: RECENT REPORT CARDS ONLY (?view=reports)
+     ======================================================================== -->
+{% if current_view == 'reports' %}
+<div id="recent-results">
+  <!-- Page Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background: #ecfdf5; font-size: 0.75rem; font-weight: 700; color: #059669; border: 1px solid #a7f3d0; margin-bottom: 0.5rem;">
+        <i data-lucide="file-check-2" style="width: 13px; height: 13px;"></i>
+        <span>Academic Records</span>
+      </div>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em;">
+        Recent Report Cards
+      </h1>
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+        Detailed history of all completed quizzes, score breakdowns, and performance certificates.
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="{% url 'dashboard' %}?view=quizzes" class="qp-btn qp-btn-primary" style="font-size: 0.825rem; padding: 0.55rem 1.15rem;">
+        <i data-lucide="play" style="width: 14px; height: 14px; fill: currentColor;"></i>
+        <span>Take Another Quiz</span>
+      </a>
+      <a href="{% url 'dashboard' %}" class="qp-btn qp-btn-outline" style="font-size: 0.825rem; padding: 0.55rem 1.15rem;">
+        <i data-lucide="layout-dashboard" style="width: 14px; height: 14px;"></i>
+        <span>Dashboard</span>
+      </a>
+    </div>
   </div>
-  {% if available_subjects %}
-  <a href="{% url 'quiz_attempt' available_subjects.0.id %}" class="qp-btn qp-btn-primary" id="start-quiz-top-btn">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-    Start a Quiz
-  </a>
+
+  {% if recent_progress %}
+  <!-- Report Cards List Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.25rem;">
+    {% for card in recent_progress %}
+    <div class="qp-card" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem;">
+          <div style="min-width: 0;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ card.subject.name }}
+            </h3>
+            <div style="font-size: 0.775rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="calendar" style="width: 13px; height: 13px;"></i>
+              <span>{{ card.created_at|date:"F d, Y @ h:i A" }}</span>
+            </div>
+          </div>
+          <div style="text-align: right; flex-shrink: 0;">
+            <div style="font-size: 1.45rem; font-weight: 800; {% if card.percentage >= 60 %}color:#059669;{% else %}color:#dc2626;{% endif %} line-height: 1;">
+              {{ card.percentage }}%
+            </div>
+            <span class="qp-badge {% if card.result_grade == 'F' %}qp-badge-danger{% else %}qp-badge-success{% endif %}" style="margin-top: 0.35rem;">
+              Grade {{ card.result_grade }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Score Stats Row -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 1rem; text-align: center; font-size: 0.75rem;">
+          <div>
+            <span style="color: var(--text-muted); display: block; font-size: 0.675rem; text-transform: uppercase; font-weight: 700;">Score</span>
+            <strong style="color: var(--text-main); font-size: 0.9rem;">{{ card.obtained_marks }}/{{ card.total_marks }}</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); display: block; font-size: 0.675rem; text-transform: uppercase; font-weight: 700;">Correct</span>
+            <strong style="color: #10b981; font-size: 0.9rem;">{{ card.correct_answers }}/{{ card.total_questions }}</strong>
+          </div>
+          <div>
+            <span style="color: var(--text-muted); display: block; font-size: 0.675rem; text-transform: uppercase; font-weight: 700;">Attempted</span>
+            <strong style="color: #6366f1; font-size: 0.9rem;">{{ card.attempted_questions }}</strong>
+          </div>
+        </div>
+
+        <!-- Animated Progress Meter -->
+        <div style="height: 6px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; margin-bottom: 1.25rem;">
+          <div class="qp-progress-fill" style="height: 100%; border-radius: 9999px; width: {{ card.percentage }}%; {% if card.percentage >= 60 %}background: linear-gradient(90deg, #10b981 0%, #059669 100%);{% else %}background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);{% endif %} transition: width 0.8s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Button -->
+      <a href="{% url 'report_card_view' card.id %}" id="view-report-{{ card.id }}" class="qp-btn qp-btn-outline" style="width: 100%; justify-content: center; font-size: 0.8125rem; font-weight: 700;">
+        <i data-lucide="award" style="width: 15px; height: 15px; color: var(--primary);"></i>
+        <span>View Full Certificate &amp; Breakdown</span>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty State -->
+  <div class="qp-card" style="padding: 4rem 2rem; text-align: center;">
+    <div style="width: 64px; height: 64px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--text-muted);">
+      <i data-lucide="file-question" style="width: 32px; height: 32px;"></i>
+    </div>
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No Report Cards Yet</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 420px; margin: 0 auto 1.5rem;">
+      You haven't attempted any quizzes yet. Take a quiz from the Available Quizzes section to earn marks and receive your official certificate!
+    </p>
+    <a href="{% url 'dashboard' %}?view=quizzes" class="qp-btn qp-btn-primary">
+      <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+      <span>Browse Available Quizzes</span>
+    </a>
+  </div>
   {% endif %}
 </div>
 
-<!-- Stats Row -->
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2.25rem;">
-  <div class="qp-stat-card qp-animate qp-animate-delay-1">
-    <div class="qp-stat-icon" style="background:#eef2ff;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
-    </div>
+
+<!-- ========================================================================
+     VIEW 2: AVAILABLE QUIZZES ONLY (?view=quizzes)
+     ======================================================================== -->
+{% elif current_view == 'quizzes' %}
+<div id="available-quizzes">
+  <!-- Page Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
     <div>
-      <div class="qp-stat-value" id="stat-completed">{{ completed_quizzes }}</div>
-      <div class="qp-stat-label">Quizzes Taken</div>
+      <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background: var(--primary-subtle); font-size: 0.75rem; font-weight: 700; color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2); margin-bottom: 0.5rem;">
+        <i data-lucide="book-open" style="width: 13px; height: 13px;"></i>
+        <span>Subject Tests</span>
+      </div>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em;">
+        Available Quizzes
+      </h1>
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+        Select any available subject below to begin an official timed assessment session.
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="{% url 'dashboard' %}?view=reports" class="qp-btn qp-btn-outline" style="font-size: 0.825rem; padding: 0.55rem 1.15rem;">
+        <i data-lucide="file-check-2" style="width: 14px; height: 14px;"></i>
+        <span>View Report Cards</span>
+      </a>
+      <a href="{% url 'dashboard' %}" class="qp-btn qp-btn-outline" style="font-size: 0.825rem; padding: 0.55rem 1.15rem;">
+        <i data-lucide="layout-dashboard" style="width: 14px; height: 14px;"></i>
+        <span>Dashboard</span>
+      </a>
     </div>
   </div>
 
-  <div class="qp-stat-card qp-animate qp-animate-delay-2">
-    <div class="qp-stat-icon" style="background:#ecfdf5;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+  {% if available_subjects %}
+  <!-- Available Quizzes Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
+    {% for subject in available_subjects %}
+    <div class="qp-card" id="quiz-card-{{ subject.id }}" style="padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid var(--primary);">
+      <div>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); line-height: 1.3;">
+            {{ subject.name }}
+          </h3>
+          <span class="qp-badge qp-badge-primary" style="flex-shrink: 0;">
+            {{ subject.total_questions }} Qs
+          </span>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+          {{ subject.description|default:"Test your skills and challenge your conceptual mastery in this quiz." }}
+        </p>
+
+        <div style="display: flex; align-items: center; gap: 1.25rem; font-size: 0.775rem; color: var(--text-muted); padding: 0.75rem 0; border-top: 1px solid var(--border-subtle); margin-bottom: 1.25rem;">
+          <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--primary);"></i>
+            ~{{ subject.total_questions|add:subject.total_questions }} mins
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <i data-lucide="award" style="width: 14px; height: 14px; color: #10b981;"></i>
+            Instant Grading
+          </span>
+        </div>
+      </div>
+
+      <a href="{% url 'quiz_attempt' subject.id %}" class="qp-btn qp-btn-primary" id="start-quiz-{{ subject.id }}" style="width: 100%; justify-content: center;">
+        <span>Start Quiz</span>
+        <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
+      </a>
     </div>
-    <div>
-      <div class="qp-stat-value" id="stat-avg" style="color:#059669;">{{ avg_score }}</div>
-      <div class="qp-stat-label">Average Score</div>
-    </div>
+    {% endfor %}
   </div>
 
-  <div class="qp-stat-card qp-animate qp-animate-delay-3">
-    <div class="qp-stat-icon" style="background:#fff7ed;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+  {% else %}
+  <!-- Empty State -->
+  <div class="qp-card" style="padding: 4rem 2rem; text-align: center;">
+    <div style="width: 64px; height: 64px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--text-muted);">
+      <i data-lucide="folder-open" style="width: 32px; height: 32px;"></i>
     </div>
-    <div>
-      <div class="qp-stat-value" id="stat-subjects">{{ subjects_count }}</div>
-      <div class="qp-stat-label">Available Quizzes</div>
-    </div>
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No Quizzes Available</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 420px; margin: 0 auto;">
+      Check back shortly — new quizzes and subject questions will appear here as soon as they are published by the admin.
+    </p>
   </div>
+  {% endif %}
 </div>
 
-<!-- Two-column grid: Available quizzes + Recent Progress -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
 
-  <!-- Available Quizzes -->
-  <section id="available-quizzes" style="min-width:0;">
-    <h2 style="font-size:0.9375rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-      Available Quizzes
-    </h2>
+<!-- ========================================================================
+     VIEW 3: DASHBOARD OVERVIEW (DEFAULT / OVERVIEW)
+     ======================================================================== -->
+{% else %}
+<!-- Welcome Hero Card -->
+<div class="qp-card" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); border: none; padding: 2.25rem 2.5rem; margin-bottom: 2rem; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px -5px rgba(49, 46, 129, 0.4);">
+  <div style="position: absolute; right: -40px; top: -40px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%); pointer-events: none;"></div>
+  <div style="position: absolute; right: 180px; bottom: -60px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%); pointer-events: none;"></div>
+
+  <div style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+    <div style="max-width: 620px;">
+      <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #c7d2fe; margin-bottom: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.15);">
+        <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+        <span>Student Learning Workspace</span>
+      </div>
+      <h1 style="font-size: 1.95rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 0.5rem;">
+        Welcome back, {{ user.first_name|default:user.username }}! 👋
+      </h1>
+      <p style="font-size: 0.9rem; color: #c7d2fe; line-height: 1.5;">
+        Track your performance across subjects, jump straight into tests, and view verified academic report cards anytime.
+      </p>
+    </div>
 
     {% if available_subjects %}
-    <div style="display:flex;flex-direction:column;gap:0.875rem;">
-      {% for subject in available_subjects %}
-      <div class="qp-quiz-card" id="quiz-card-{{ subject.id }}">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;">
-          <div style="min-width:0;">
-            <h3 style="font-size:0.9375rem;font-weight:700;color:var(--text-primary);letter-spacing:-0.02em;margin-bottom:0.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ subject.name }}</h3>
-            <p style="font-size:0.75rem;color:var(--text-muted);line-height:1.5;">{{ subject.description|default:"Interactive quiz to test your knowledge."|truncatechars:65 }}</p>
-          </div>
-          <span class="qp-badge qp-badge-brand" style="flex-shrink:0;margin-top:2px;">{{ subject.total_questions }} Q</span>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
-          <span style="font-size:0.6875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ~{{ subject.total_questions|add:subject.total_questions }} min
-          </span>
-          <a href="{% url 'quiz_attempt' subject.id %}" class="qp-btn qp-btn-primary qp-btn-sm" id="start-quiz-{{ subject.id }}">
-            Start Quiz
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    {% else %}
-    <div class="qp-card">
-      <div class="qp-empty">
-        <div class="qp-empty-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-        </div>
-        <h3>No Quizzes Available</h3>
-        <p>Check back later — new quizzes will appear here once they're published.</p>
-      </div>
+    <div style="flex-shrink: 0;">
+      <a href="{% url 'quiz_attempt' available_subjects.0.id %}" class="qp-btn" id="start-quiz-top-btn" style="background: #ffffff; color: #3730a3; font-weight: 800; padding: 0.8rem 1.5rem; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15); border: none;">
+        <i data-lucide="play" style="width: 16px; height: 16px; fill: currentColor;"></i>
+        <span>Start First Quiz</span>
+      </a>
     </div>
     {% endif %}
-  </section>
-
-  <!-- Recent Progress -->
-  <section style="min-width:0;">
-    <h2 style="font-size:0.9375rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="18.5 8 12 15 8 11 3 17"/></svg>
-      Recent Results
-    </h2>
-
-    {% if recent_progress %}
-    <div style="display:flex;flex-direction:column;gap:0.875rem;">
-      {% for card in recent_progress %}
-      <div class="qp-card">
-        <div class="qp-card-body" style="padding:1.25rem;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.875rem;">
-            <div style="min-width:0;">
-              <p style="font-size:0.875rem;font-weight:700;color:var(--text-primary);margin-bottom:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ card.subject.name }}</p>
-              <p style="font-size:0.75rem;color:var(--text-muted);">{{ card.correct_answers }} / {{ card.total_questions }} correct · {{ card.attempted_questions }} attempted</p>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-              <span style="font-size:1.125rem;font-weight:800;{% if card.percentage >= 60 %}color:#059669{% else %}color:#dc2626{% endif %};">{{ card.percentage }}%</span>
-              <span class="qp-badge {% if card.result_grade == 'F' %}qp-badge-danger{% else %}qp-badge-success{% endif %}" style="display:block;margin-top:0.2rem;">{{ card.result_grade }}</span>
-            </div>
-          </div>
-          <div class="qp-progress" style="margin-bottom:0.875rem;">
-            <div class="qp-progress-fill" style="width:{{ card.percentage }}%;{% if card.percentage < 60 %}background:linear-gradient(90deg,#ef4444,#f87171);{% endif %}"></div>
-          </div>
-          <a href="{% url 'report_card_view' card.id %}" id="view-report-{{ card.id }}" style="font-size:0.75rem;font-weight:700;color:var(--brand);display:inline-flex;align-items:center;gap:0.3rem;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            View Report Card
-          </a>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    {% else %}
-    <div class="qp-card">
-      <div class="qp-empty">
-        <div class="qp-empty-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <h3>No Results Yet</h3>
-        <p>Complete a quiz to see your results and report card here.</p>
-      </div>
-    </div>
-    {% endif %}
-
-  </section>
+  </div>
 </div>
+
+<!-- Key Stat Metrics Row -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+  <!-- Metric 1: Quizzes Completed -->
+  <div class="qp-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
+    <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #4f46e5; border: 1px solid #c7d2fe;">
+      <i data-lucide="award" style="width: 26px; height: 26px;"></i>
+    </div>
+    <div>
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem;">Quizzes Taken</div>
+      <div class="qp-stat-value" id="stat-completed" style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); line-height: 1; letter-spacing: -0.04em;">
+        {{ completed_quizzes }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 2: Average Score -->
+  <div class="qp-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
+    <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #059669; border: 1px solid #a7f3d0;">
+      <i data-lucide="trending-up" style="width: 26px; height: 26px;"></i>
+    </div>
+    <div>
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem;">Average Score</div>
+      <div class="qp-stat-value" id="stat-avg" style="font-size: 1.85rem; font-weight: 800; color: #059669; line-height: 1; letter-spacing: -0.04em;">
+        {{ avg_score }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 3: Available Subjects -->
+  <div class="qp-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
+    <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #d97706; border: 1px solid #fed7aa;">
+      <i data-lucide="book-open" style="width: 26px; height: 26px;"></i>
+    </div>
+    <div>
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem;">Available Subjects</div>
+      <div class="qp-stat-value" id="stat-subjects" style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); line-height: 1; letter-spacing: -0.04em;">
+        {{ subjects_count }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Navigation Portals Hub -->
+<div style="margin-bottom: 1.5rem;">
+  <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+    <i data-lucide="compass" style="width: 18px; height: 18px; color: var(--primary);"></i>
+    <span>Explore Your Workspace</span>
+  </h2>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    
+    <!-- Portal Card 1: Available Quizzes -->
+    <div class="qp-card" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--primary);">
+      <div>
+        <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+          <i data-lucide="sparkles" style="width: 24px; height: 24px;"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+          Available Quizzes
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+          Browse all active quizzes across various subjects. Choose a test and take it with instant grading.
+        </p>
+      </div>
+      <a href="{% url 'dashboard' %}?view=quizzes" class="qp-btn qp-btn-primary" style="width: 100%; justify-content: center;">
+        <span>Open Available Quizzes</span>
+        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+      </a>
+    </div>
+
+    <!-- Portal Card 2: Recent Report Cards -->
+    <div class="qp-card" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #10b981;">
+      <div>
+        <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+          <i data-lucide="file-check-2" style="width: 24px; height: 24px;"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+          Recent Report Cards
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+          Review your quiz history, see detailed score breakdowns, and view or print verified certificates.
+        </p>
+      </div>
+      <a href="{% url 'dashboard' %}?view=reports" class="qp-btn qp-btn-outline" style="width: 100%; justify-content: center; color: #059669; border-color: #a7f3d0; background: #f0fdf4;">
+        <span>Open Report Cards</span>
+        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+      </a>
+    </div>
+
+    <!-- Portal Card 3: Profile Settings -->
+    <div class="qp-card" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #64748b;">
+      <div>
+        <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #f1f5f9; color: #475569; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+          <i data-lucide="user-cog" style="width: 24px; height: 24px;"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+          Profile &amp; Settings
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem;">
+          Manage your personal details, verify contact info, request credential updates, and update passwords.
+        </p>
+      </div>
+      <a href="{% url 'profile' %}" class="qp-btn qp-btn-outline" style="width: 100%; justify-content: center;">
+        <span>Manage Profile</span>
+        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% endif %}
 
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  // Animate progress bars
+  // Progress bar animation
   document.querySelectorAll('.qp-progress-fill').forEach(bar => {
     const width = bar.style.width;
     bar.style.width = '0';
-    setTimeout(() => { bar.style.width = width; }, 200);
+    setTimeout(() => { bar.style.width = width; }, 150);
   });
 </script>
 {% endblock %}
