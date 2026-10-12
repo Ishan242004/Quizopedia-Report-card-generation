@@ -217,10 +217,11 @@ class IntegrationFlowTests(TestCase):
         from django.contrib.auth.hashers import check_password
         self.assertTrue(check_password('newpassword123', self.student_user.password))
         
-        # Verify ProfileUpdateRequest created
-        from .models import ProfileUpdateRequest
+        # Verify ProfileUpdateRequest / PendingProfileUpdate created
+        from .models import ProfileUpdateRequest, PendingProfileUpdate
         self.assertEqual(ProfileUpdateRequest.objects.count(), 1)
-        req = ProfileUpdateRequest.objects.first()
+        self.assertEqual(PendingProfileUpdate.objects.count(), 1)
+        req = PendingProfileUpdate.objects.first()
         self.assertEqual(req.name, 'John Doe')
         self.assertEqual(req.email, 'updated@example.com')
         self.assertEqual(req.phone, '0987654321')

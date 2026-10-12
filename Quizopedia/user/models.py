@@ -63,6 +63,10 @@ class ProfileUpdateRequest(models.Model):
         return f"Update for {self.student.user.username} - {self.status}"
 
 
+# Model Alias to support PendingProfileUpdate terminology
+PendingProfileUpdate = ProfileUpdateRequest
+
+
 class Subject(models.Model):
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
