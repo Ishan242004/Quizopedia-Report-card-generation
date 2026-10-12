@@ -233,8 +233,13 @@
       </a>
 
       <a href="{% url 'admin_profile_approvals' %}"
-        class="sidebar-link {% block active_approvals %}{% endblock %}">
+        class="sidebar-link flex items-center justify-between {% block active_approvals %}{% endblock %}">
         <span>Profile Approvals</span>
+        {% if pending_approvals_count > 0 %}
+        <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-500 text-slate-950 shadow-sm animate-pulse">
+          {{ pending_approvals_count }}
+        </span>
+        {% endif %}
       </a>
 
       <a href="{% url 'question_list' %}"
@@ -296,6 +301,18 @@
       </div>
 
       <div class="flex items-center gap-4">
+        <!-- Notification Bell for Pending Profile Approvals -->
+        <a href="{% url 'admin_profile_approvals' %}"
+          class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition flex items-center justify-center"
+          title="{% if pending_approvals_count > 0 %}{{ pending_approvals_count }} Pending Profile Update Requests{% else %}No pending requests{% endif %}">
+          <i data-lucide="bell" class="w-5 h-5 {% if pending_approvals_count > 0 %}text-amber-500{% endif %}"></i>
+          {% if pending_approvals_count > 0 %}
+          <span class="absolute top-1 right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-extrabold text-white shadow-sm ring-2 ring-white">
+            {{ pending_approvals_count }}
+          </span>
+          {% endif %}
+        </a>
+
         <a href="{% url 'dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-xs font-bold text-indigo-700 transition">
           <i data-lucide="compass" class="w-3.5 h-3.5"></i>
           <span>View Student Site</span>

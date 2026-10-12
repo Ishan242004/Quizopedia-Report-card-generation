@@ -284,6 +284,43 @@ class IntegrationFlowTests(TestCase):
         self.assertEqual(self.student_user.email, 'student@example.com')
         self.assertEqual(self.student.phone, '1234567890')
 
+    def test_admin_dashboard_shows_pending_profile_update_notification(self):
+        from .models import ProfileUpdateRequest
+        ProfileUpdateRequest.objects.create(
+            student=self.student,
+            name='Notification Name',
+            email='notify@example.com',
+            phone='9998887776',
+            status='pending'
+        )
+        self.client.login(username='admin_test', password='password123')
+        response = self.client.get(reverse('admin_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Student Profile Change Notification')
+        self.assertContains(response, 'notify@example.com')
+        self.assertContains(response, 'Notification Name')
+
+    def test_admin_dashboard_quick_approve_request(self):
+        from .models import ProfileUpdateRequest
+        req = ProfileUpdateRequest.objects.create(
+            student=self.student,
+            name='Quick Approved',
+            email='quick@example.com',
+            phone='5554443332',
+            status='pending'
+        )
+        self.client.login(username='admin_test', password='password123')
+        response = self.client.post(reverse('admin_dashboard'), {
+            'action': 'approve',
+            'request_id': req.id
+        })
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        req.refresh_from_db()
+        self.assertEqual(req.status, 'approved')
+        self.student_user.refresh_from_db()
+        self.assertEqual(self.student_user.first_name, 'Quick Approved')
+        self.assertEqual(self.student_user.email, 'quick@example.com')
+
     def test_student_cannot_access_approvals_view(self):
         self.client.login(username='student_test', password='password123')
         response = self.client.get(reverse('admin_profile_approvals'))

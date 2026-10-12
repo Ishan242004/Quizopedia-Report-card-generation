@@ -462,7 +462,7 @@ def profile_view(request):
                         update_req.phone = phone
                         update_req.save()
                     
-                    req_msg = "Profile update submitted successfully. Pending Admin Approval."
+                    req_msg = "Profile update request submitted to Admin! Your profile will be updated once approved by the administrator."
                     success_msg = (success_msg + req_msg) if success_msg else req_msg
                 else:
                     if not password_updated:

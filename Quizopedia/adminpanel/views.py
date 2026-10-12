@@ -13,18 +13,56 @@ import re
 
 @admin_required
 def admin_dashboard(request):
+    errors = []
+    success_msg = None
+
+    # Handle quick approve / reject directly from dashboard if requested
+    if request.method == 'POST' and 'action' in request.POST:
+        action = request.POST.get('action')
+        request_id = request.POST.get('request_id')
+        req = get_object_or_404(ProfileUpdateRequest, id=request_id)
+        
+        if action == 'approve':
+            user = req.student.user
+            if User.objects.exclude(id=user.id).filter(email__iexact=req.email).exists():
+                errors.append(f"Cannot approve request. Email '{req.email}' is already in use by another user.")
+            else:
+                user.first_name = req.name
+                user.email = req.email
+                user.save()
+                
+                student = req.student
+                student.phone = req.phone
+                student.save()
+                
+                req.status = 'approved'
+                req.save()
+                messages.success(request, f"Profile update request for '{user.username}' has been approved and applied!")
+                return redirect('admin_dashboard')
+                
+        elif action == 'reject':
+            rejection_reason = request.POST.get('rejection_reason', '').strip()
+            req.status = 'rejected'
+            req.rejection_reason = rejection_reason or 'Rejected by administrator.'
+            req.save()
+            messages.success(request, f"Profile update request for '{req.student.user.username}' has been rejected.")
+            return redirect('admin_dashboard')
+
     total_students = Student.objects.count()
     subject_count = Subject.objects.filter(questions__isnull=False).distinct().count()
     report_card_count = ReportCard.objects.count()
-    
-    # Total questions = total Question rows in DB (each row is one question)
     question_count = Question.objects.count()
+    
+    pending_profile_requests = ProfileUpdateRequest.objects.filter(status='pending').order_by('-created_at')
     
     context = {
         'total_students': total_students,
         'question_count': question_count,
         'subject_count': subject_count,
         'report_card_count': report_card_count,
+        'pending_profile_requests': pending_profile_requests,
+        'errors': errors,
+        'success': success_msg,
     }
     return render(request, 'adminpanel/dashboard.html', context)
 
@@ -152,7 +190,9 @@ def profile_approvals(request):
                 success_msg = f"Profile update request for '{user.username}' has been approved."
                 
         elif action == 'reject':
+            rejection_reason = request.POST.get('rejection_reason', '').strip()
             req.status = 'rejected'
+            req.rejection_reason = rejection_reason or 'Rejected by administrator.'
             req.save()
             success_msg = f"Profile update request for '{req.student.user.username}' has been rejected."
             

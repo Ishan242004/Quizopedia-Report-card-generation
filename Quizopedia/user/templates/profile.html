@@ -71,12 +71,15 @@
             <span>Pending Approval</span>
           </div>
           <div style="margin-top: 0.6rem; padding: 0.75rem; border-radius: var(--radius-sm); background: #fffbeb; border: 1px solid #fef3c7; font-size: 0.75rem; color: #92400e;">
-            <strong>Pending Changes:</strong>
+            <strong>Requested Changes (Under Review):</strong>
             <ul style="margin-top: 0.25rem; padding-left: 1.25rem; list-style-type: disc;">
               <li>Name: {{ latest_request.name }}</li>
               <li>Email: {{ latest_request.email }}</li>
               <li>Phone: {{ latest_request.phone }}</li>
             </ul>
+            <p style="margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; line-height: 1.4;">
+              ⏳ Admin notification sent. Your active credentials will update automatically once approved.
+            </p>
           </div>
           {% elif latest_request.status == 'approved' %}
           <div class="qp-badge qp-badge-success" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
