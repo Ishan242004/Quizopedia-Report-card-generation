@@ -1040,7 +1040,7 @@ class StudentOTPFlowTests(TestCase):
             self.assertEqual(StudentOTP.objects.filter(student=self.student, is_used=False).count(), 0)
 
     def test_resend_otp_and_cooldown_rate_limiting(self):
-        """Verify requesting a replacement OTP respects rate limits and invalidates previous code."""
+        """Verify requesting a replacement OTP respects 60s cooldown and invalidates previous code."""
         from .models import StudentOTP
         from django.core import mail
 
@@ -1052,29 +1052,76 @@ class StudentOTPFlowTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         first_otp = StudentOTP.objects.filter(student=self.student, is_used=False).first()
 
-        # Immediate resend should be rate-limited by cooldown
+        # Immediate resend should be rate-limited by 60s cooldown
         cooldown_resp = self.client.post(reverse('resend_otp'))
         self.assertRedirects(cooldown_resp, reverse('verify_otp'))
         self.assertEqual(len(mail.outbox), 1)  # No second email sent yet
 
-        # Fast-forward session timestamp by 35 seconds to bypass cooldown
+        # At 30 seconds elapsed, cooldown should STILL be active
         session = self.client.session
-        session['otp_last_sent'] = session['otp_last_sent'] - 35
+        session['otp_last_sent'] = session['otp_last_sent'] - 30
+        session.save()
+        cooldown_resp2 = self.client.post(reverse('resend_otp'))
+        self.assertRedirects(cooldown_resp2, reverse('verify_otp'))
+        self.assertEqual(len(mail.outbox), 1)  # Still no second email sent
+
+        # Fast-forward session timestamp by 65 seconds total to bypass 60s cooldown
+        session = self.client.session
+        session['otp_last_sent'] = session['otp_last_sent'] - 35  # 30 + 35 = 65s total
         session.save()
 
-        # Resend code
+        # Resend code should now succeed
         resend_resp = self.client.post(reverse('resend_otp'))
         self.assertRedirects(resend_resp, reverse('verify_otp'))
-        self.assertEqual(len(mail.outbox), 2)  # Second email sent
+        self.assertEqual(len(mail.outbox), 2)  # Second email sent!
 
         # First OTP should now be invalidated
         first_otp.refresh_from_db()
         self.assertTrue(first_otp.is_used)
 
-        # New active OTP exists
+        # New active OTP exists and is unexpired
         second_otp = StudentOTP.objects.filter(student=self.student, is_used=False).first()
         self.assertIsNotNone(second_otp)
         self.assertNotEqual(first_otp.otp, second_otp.otp)
+        self.assertFalse(second_otp.is_expired)
+
+    def test_resend_otp_unauthenticated_redirects_to_login(self):
+        """Verify direct request to resend_otp without login session redirects to login."""
+        from django.core import mail
+        response = self.client.post(reverse('resend_otp'))
+        self.assertRedirects(response, reverse('login'))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_resend_otp_smtp_failure_handles_cleanly(self):
+        """Verify SMTP failure during OTP resend safely handles error without dangling active OTP."""
+        from unittest.mock import patch
+        import smtplib
+        from .models import StudentOTP
+        from django.core import mail
+
+        # Login first
+        self.client.post(reverse('login'), {
+            'username': 'otp_student',
+            'password': 'Password123!'
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        first_otp = StudentOTP.objects.filter(student=self.student, is_used=False).first()
+
+        # Fast-forward beyond 60s cooldown
+        session = self.client.session
+        session['otp_last_sent'] = session['otp_last_sent'] - 65
+        session.save()
+
+        # Mock SMTP failure on resend
+        with patch('user.views.send_mail', side_effect=smtplib.SMTPException("Resend SMTP Error")):
+            resp = self.client.post(reverse('resend_otp'))
+            self.assertRedirects(resp, reverse('verify_otp'))
+
+        # First OTP was invalidated when resend attempted
+        first_otp.refresh_from_db()
+        self.assertTrue(first_otp.is_used)
+        # Dangling new OTP should NOT remain active in DB
+        self.assertEqual(StudentOTP.objects.filter(student=self.student, is_used=False).count(), 0)
 
     def test_admin_login_bypasses_student_otp(self):
         """Verify staff/admin credentials log directly into admin dashboard without student OTP."""

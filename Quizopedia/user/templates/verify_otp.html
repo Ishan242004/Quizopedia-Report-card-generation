@@ -233,21 +233,37 @@
     }
 
     .resend-btn {
-      background: transparent;
-      border: none;
+      width: 100%;
+      height: 2.85rem;
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
       color: var(--primary);
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      text-decoration: underline;
-      transition: color 0.15s ease;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
     }
 
-    .resend-btn:hover {
+    .resend-btn:hover:not(:disabled) {
+      background: #eef2ff;
+      border-color: var(--primary);
       color: var(--primary-hover);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    }
+
+    .resend-btn:disabled {
+      color: #94a3b8;
+      border-color: #e2e8f0;
+      background: #f1f5f9;
+      cursor: not-allowed;
+      opacity: 0.85;
+      box-shadow: none;
     }
 
     @media (max-width: 768px) {
@@ -373,19 +389,27 @@
       </form>
 
       <!-- Resend & Alternative actions -->
-      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.85rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
-        <div>
-          Didn't receive the code?
-          <form method="POST" action="{% url 'resend_otp' %}" style="display: inline;" id="resendForm">
-            {% csrf_token %}
-            <button type="submit" class="resend-btn" id="resendBtn">
-              Resend Code
-            </button>
-          </form>
+      <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.85rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+        <form method="POST" action="{% url 'resend_otp' %}" id="resendForm">
+          {% csrf_token %}
+          <button type="submit" class="resend-btn" id="resendBtn" {% if remaining_cooldown > 0 %}disabled{% endif %}>
+            <i data-lucide="refresh-cw" id="resendIcon" style="width: 15px; height: 15px;"></i>
+            <span id="resendBtnText">
+              {% if remaining_cooldown > 0 %}
+                Resend OTP in {{ remaining_cooldown }} seconds
+              {% else %}
+                Resend OTP
+              {% endif %}
+            </span>
+          </button>
+        </form>
+
+        <div id="cooldownNotice" style="font-size: 0.775rem; color: var(--text-muted); {% if remaining_cooldown <= 0 %}display: none;{% endif %}">
+          <span>A 60-second cooldown applies between code requests to ensure account security.</span>
         </div>
 
         <div>
-          <a href="{% url 'login' %}" style="color: var(--text-muted); text-decoration: none; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+          <a href="{% url 'login' %}" style="color: var(--text-muted); text-decoration: none; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.15s ease;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Login</span>
           </a>
@@ -403,6 +427,43 @@
       otpInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
       });
+    }
+
+    // Live countdown timer for Resend OTP button
+    let remainingCooldown = parseInt("{{ remaining_cooldown|default:0 }}", 10) || 0;
+    const resendBtn = document.getElementById('resendBtn');
+    const resendBtnText = document.getElementById('resendBtnText');
+    const cooldownNotice = document.getElementById('cooldownNotice');
+
+    function updateResendState(seconds) {
+      if (!resendBtn || !resendBtnText) return;
+
+      if (seconds > 0) {
+        resendBtn.disabled = true;
+        resendBtnText.textContent = `Resend OTP in ${seconds} second${seconds === 1 ? '' : 's'}`;
+        if (cooldownNotice) {
+          cooldownNotice.style.display = 'block';
+        }
+      } else {
+        resendBtn.disabled = false;
+        resendBtnText.textContent = 'Resend OTP';
+        if (cooldownNotice) {
+          cooldownNotice.style.display = 'none';
+        }
+      }
+    }
+
+    if (remainingCooldown > 0) {
+      updateResendState(remainingCooldown);
+      const timerInterval = setInterval(() => {
+        remainingCooldown -= 1;
+        updateResendState(remainingCooldown);
+        if (remainingCooldown <= 0) {
+          clearInterval(timerInterval);
+        }
+      }, 1000);
+    } else {
+      updateResendState(0);
     }
   </script>
 </body>

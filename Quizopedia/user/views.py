@@ -107,6 +107,13 @@ def send_student_otp(request, user, student):
             is_used=False
         )
 
+    # Print OTP prominently to the terminal console for instant access
+    print("\n" + "=" * 55, flush=True)
+    print(f"🔑 [QUIZOPEDIA OTP] For: {user.username} ({student_email})", flush=True)
+    print(f"👉 YOUR OTP CODE: >>> {otp_code} <<<", flush=True)
+    print(f"⏰ Valid for: {otp_expiry_minutes} minutes", flush=True)
+    print("=" * 55 + "\n", flush=True)
+
     # Email message preparation
     subject = "Quizopedia Login Verification Code"
     message = (
@@ -181,6 +188,7 @@ def login_view(request):
                 if success:
                     request.session['pre_otp_user_id'] = user.id
                     request.session['otp_attempts'] = 0
+                    request.session['otp_resend_count'] = 0
                     request.session['otp_last_sent'] = timezone.now().timestamp()
                     messages.success(request, f"A 6-digit verification code has been sent to your registered email.")
                     return redirect('verify_otp')
@@ -261,6 +269,7 @@ def verify_otp_view(request):
                 # Clear session pre-login keys
                 request.session.pop('pre_otp_user_id', None)
                 request.session.pop('otp_attempts', None)
+                request.session.pop('otp_resend_count', None)
                 request.session.pop('otp_last_sent', None)
 
                 # Complete student login!
@@ -268,10 +277,33 @@ def verify_otp_view(request):
                 messages.success(request, f"Welcome back, {user.first_name or user.username}!")
                 return redirect('dashboard')
 
+    # Print current active OTP to the terminal whenever verification page is opened/refreshed
+    active_otp = StudentOTP.objects.filter(
+        student=student,
+        is_used=False
+    ).order_by('-created_at').first()
+    if active_otp and not active_otp.is_expired:
+        print("\n" + "=" * 55, flush=True)
+        print(f"🔑 [CURRENT ACTIVE OTP] For: {user.username}", flush=True)
+        print(f"👉 YOUR OTP CODE: >>> {active_otp.otp} <<<", flush=True)
+        print("=" * 55 + "\n", flush=True)
+
+    # Calculate remaining cooldown seconds from last OTP send timestamp
+    cooldown_seconds = getattr(settings, 'OTP_RESEND_COOLDOWN_SECONDS', 60)
+    last_sent = request.session.get('otp_last_sent', 0)
+    now_ts = timezone.now().timestamp()
+    if last_sent:
+        elapsed = now_ts - float(last_sent)
+        remaining_cooldown = max(0, int(cooldown_seconds - elapsed))
+    else:
+        remaining_cooldown = 0
+
     return render(request, 'verify_otp.html', {
         'masked_email': masked_email,
         'errors': errors,
         'otp_expiry_minutes': getattr(settings, 'OTP_EXPIRY_MINUTES', 5),
+        'cooldown_seconds': cooldown_seconds,
+        'remaining_cooldown': remaining_cooldown,
     })
 
 
@@ -294,18 +326,28 @@ def resend_otp_view(request):
     if not student:
         return redirect('login')
 
-    # Rate limiting: 30 seconds cooldown between resends
+    # Rate limiting: max resend attempts per pending verification session (max 5)
+    resend_count = request.session.get('otp_resend_count', 0)
+    if resend_count >= 5:
+        # Invalidate active unused OTPs for security
+        StudentOTP.objects.filter(student=student, is_used=False).update(is_used=True)
+        messages.error(request, "Maximum resend attempts reached. Please return to login and start again.")
+        return redirect('verify_otp')
+
+    # Cooldown enforcement: 60-second cooldown between resends
+    cooldown_seconds = getattr(settings, 'OTP_RESEND_COOLDOWN_SECONDS', 60)
     last_sent = request.session.get('otp_last_sent')
     now_ts = timezone.now().timestamp()
-    if last_sent and (now_ts - last_sent < 30):
-        wait_seconds = int(30 - (now_ts - last_sent))
+    if last_sent and (now_ts - float(last_sent) < cooldown_seconds):
+        wait_seconds = max(1, int(cooldown_seconds - (now_ts - float(last_sent))))
         messages.warning(request, f"Please wait {wait_seconds} seconds before requesting another code.")
         return redirect('verify_otp')
 
     success, err = send_student_otp(request, user, student)
     if success:
         request.session['otp_attempts'] = 0
-        request.session['otp_last_sent'] = now_ts
+        request.session['otp_resend_count'] = resend_count + 1
+        request.session['otp_last_sent'] = timezone.now().timestamp()
         messages.success(request, "A fresh verification code has been sent to your email.")
     else:
         messages.error(request, err)
@@ -317,6 +359,7 @@ def logout_view(request):
     # Clear any pending OTP session data on logout
     request.session.pop('pre_otp_user_id', None)
     request.session.pop('otp_attempts', None)
+    request.session.pop('otp_resend_count', None)
     request.session.pop('otp_last_sent', None)
     logout(request)
     return redirect('login')
