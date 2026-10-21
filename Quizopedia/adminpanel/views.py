@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import transaction
 from user.models import Student, ProfileUpdateRequest, Subject, Question, ReportCard
 from user.decorators import admin_required
@@ -10,6 +12,106 @@ from .forms import (
     MCQBulkForm, MCQEditForm,
 )
 import re
+import sys
+
+
+def safe_print(text):
+    """Safely print text to terminal, gracefully handling Windows cp1252 encoding limitations."""
+    try:
+        print(text, flush=True)
+    except UnicodeEncodeError:
+        try:
+            encoding = getattr(sys.stdout, 'encoding', 'ascii') or 'ascii'
+            safe_text = text.encode(encoding, errors='replace').decode(encoding)
+            print(safe_text, flush=True)
+        except Exception:
+            print(text.encode('ascii', errors='replace').decode('ascii'), flush=True)
+
+
+def send_profile_status_email(req, status, rejection_reason='', old_email=None):
+    """
+    Sends an email notification to the student regarding their profile update request
+    (approved or rejected/cancelled), and prints the email clearly to the terminal console.
+    """
+    user = req.student.user
+    student = req.student
+    student_name = req.name or user.first_name or user.username
+
+    if status == 'approved':
+        subject = "Quizopedia - Profile Update Request Approved"
+        recipients = [req.email]
+        if old_email and old_email.lower() != req.email.lower():
+            if old_email not in recipients:
+                recipients.append(old_email)
+
+        message = (
+            f"Hello {student_name},\n\n"
+            f"Great news! Your profile update request has been APPROVED by the administrator.\n\n"
+            f"Updated Profile Details:\n"
+            f"  * Full Name:     {req.name}\n"
+            f"  * Email Address: {req.email}\n"
+            f"  * Phone Number:  {req.phone}\n\n"
+            f"These changes are now active on your Quizopedia account.\n\n"
+            f"If you did not request this update, please contact the administrator immediately.\n\n"
+            f"Best regards,\n"
+            f"Quizopedia Learning Platform"
+        )
+    else:
+        # Rejected / Cancelled
+        subject = "Quizopedia - Profile Update Request Cancelled / Rejected"
+        recipients = []
+        if user.email:
+            recipients.append(user.email)
+        if req.email and req.email not in recipients:
+            recipients.append(req.email)
+
+        reason_text = rejection_reason.strip() if rejection_reason else "No specific reason provided by administrator."
+        message = (
+            f"Hello {student_name},\n\n"
+            f"Your profile update request has been REVIEWED and CANCELLED / REJECTED by the administrator.\n\n"
+            f"Requested Changes:\n"
+            f"  * Requested Name:  {req.name}\n"
+            f"  * Requested Email: {req.email}\n"
+            f"  * Requested Phone: {req.phone}\n\n"
+            f"Reason for Rejection:\n"
+            f"  \"{reason_text}\"\n\n"
+            f"Your existing profile details remain active and unchanged:\n"
+            f"  * Current Name:  {user.first_name or user.username}\n"
+            f"  * Current Email: {user.email}\n"
+            f"  * Current Phone: {student.phone}\n\n"
+            f"If you have questions or wish to submit new details, please log in to your Quizopedia profile.\n\n"
+            f"Best regards,\n"
+            f"Quizopedia Learning Platform"
+        )
+
+    # 1. Print formatted notification clearly to terminal console
+    border = "=" * 65
+    safe_print("\n" + border)
+    if status == 'approved':
+        safe_print("[EMAIL NOTIFICATION - PROFILE APPROVED]")
+    else:
+        safe_print("[EMAIL NOTIFICATION - PROFILE REJECTED / CANCELLED]")
+    safe_print(f"Student:      {user.username} ({student_name})")
+    safe_print(f"Recipient(s): {', '.join(recipients)}")
+    safe_print(f"Subject:      {subject}")
+    safe_print("-" * 65)
+    for line in message.strip().splitlines():
+        safe_print(line)
+    safe_print(border + "\n")
+
+    # 2. Send email via Django's mail backend (console backend or SMTP)
+    try:
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@quizopedia.com')
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipients,
+            fail_silently=False,
+        )
+    except Exception as e:
+        safe_print(f"[EMAIL DELIVERY NOTE]: {e}")
+
 
 @admin_required
 def admin_dashboard(request):
@@ -27,6 +129,7 @@ def admin_dashboard(request):
             if User.objects.exclude(id=user.id).filter(email__iexact=req.email).exists():
                 errors.append(f"Cannot approve request. Email '{req.email}' is already in use by another user.")
             else:
+                old_email = user.email
                 user.first_name = req.name
                 user.email = req.email
                 user.save()
@@ -37,7 +140,9 @@ def admin_dashboard(request):
                 
                 req.status = 'approved'
                 req.save()
-                messages.success(request, f"Profile update request for '{user.username}' has been approved and applied!")
+                
+                send_profile_status_email(req, status='approved', old_email=old_email)
+                messages.success(request, f"Profile update request for '{user.username}' has been approved and applied! Notification email sent.")
                 return redirect('admin_dashboard')
                 
         elif action == 'reject':
@@ -45,7 +150,9 @@ def admin_dashboard(request):
             req.status = 'rejected'
             req.rejection_reason = rejection_reason or 'Rejected by administrator.'
             req.save()
-            messages.success(request, f"Profile update request for '{req.student.user.username}' has been rejected.")
+            
+            send_profile_status_email(req, status='rejected', rejection_reason=req.rejection_reason)
+            messages.success(request, f"Profile update request for '{req.student.user.username}' has been rejected. Notification email sent.")
             return redirect('admin_dashboard')
 
     total_students = Student.objects.count()
@@ -177,6 +284,7 @@ def profile_approvals(request):
             if User.objects.exclude(id=user.id).filter(email__iexact=req.email).exists():
                 errors.append(f"Cannot approve request. Email '{req.email}' is already in use by another user.")
             else:
+                old_email = user.email
                 user.first_name = req.name
                 user.email = req.email
                 user.save()
@@ -187,14 +295,20 @@ def profile_approvals(request):
                 
                 req.status = 'approved'
                 req.save()
-                success_msg = f"Profile update request for '{user.username}' has been approved."
+                
+                send_profile_status_email(req, status='approved', old_email=old_email)
+                messages.success(request, f"Profile update request for '{user.username}' has been approved and applied! Notification email sent.")
+                return redirect('admin_profile_approvals')
                 
         elif action == 'reject':
             rejection_reason = request.POST.get('rejection_reason', '').strip()
             req.status = 'rejected'
             req.rejection_reason = rejection_reason or 'Rejected by administrator.'
             req.save()
-            success_msg = f"Profile update request for '{req.student.user.username}' has been rejected."
+            
+            send_profile_status_email(req, status='rejected', rejection_reason=req.rejection_reason)
+            messages.success(request, f"Profile update request for '{req.student.user.username}' has been rejected. Notification email sent.")
+            return redirect('admin_profile_approvals')
             
     pending_requests = ProfileUpdateRequest.objects.filter(status='pending').order_by('-created_at')
     past_requests = ProfileUpdateRequest.objects.exclude(status='pending').order_by('-updated_at')[:15]
