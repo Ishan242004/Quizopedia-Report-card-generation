@@ -12,7 +12,8 @@ from .decorators import student_required
 import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
+from django.db.models import Avg, Q
+from django.core.paginator import Paginator
 
 def home_view(request):
     if request.user.is_authenticated:
@@ -368,6 +369,8 @@ def logout_view(request):
 def dashboard(request):
     student = getattr(request.user, 'student', None)
     current_view = request.GET.get('view', 'overview')
+    search_query = request.GET.get('search', '').strip()
+    page_number = request.GET.get('page', 1)
     
     # Calculate statistics
     completed_quizzes = student.report_cards.count() if student else 0
@@ -375,16 +378,32 @@ def dashboard(request):
     avg_score_formatted = f"{round(avg_score, 1)}%" if avg_score is not None else "0%"
     
     # Retrieve available quizzes (subjects) with question counts
-    available_subjects = []
-    for s in Subject.objects.filter(questions__isnull=False).distinct():
+    base_subjects = Subject.objects.filter(questions__isnull=False).distinct().order_by('name')
+    total_subjects_count = base_subjects.count()
+
+    filtered_subjects = base_subjects
+    if search_query:
+        filtered_subjects = filtered_subjects.filter(
+            Q(name__icontains=search_query) | Q(description__icontains=search_query)
+        ).distinct()
+
+    all_available_subjects = []
+    for s in filtered_subjects:
         total_q = s.questions.count()
-        available_subjects.append({
+        all_available_subjects.append({
             'id': s.id,
             'name': s.name,
             'description': s.description,
             'total_questions': total_q
         })
         
+    # Paginate with 6 subjects per page
+    paginator = Paginator(all_available_subjects, 6)
+    try:
+        available_subjects = paginator.get_page(page_number)
+    except Exception:
+        available_subjects = paginator.get_page(1)
+
     # Get recent progress / report cards for this student
     recent_progress = []
     if student:
@@ -395,8 +414,9 @@ def dashboard(request):
         'user': request.user,
         'completed_quizzes': completed_quizzes,
         'avg_score': avg_score_formatted,
-        'subjects_count': Subject.objects.filter(questions__isnull=False).distinct().count(),
+        'subjects_count': total_subjects_count,
         'available_subjects': available_subjects,
+        'search_query': search_query,
         'recent_progress': recent_progress,
         'current_view': current_view,
     }

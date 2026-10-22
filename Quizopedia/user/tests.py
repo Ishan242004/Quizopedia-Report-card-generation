@@ -1274,6 +1274,90 @@ class SubjectModelTests(TestCase):
         self.assertIn('updated_at', model_admin.readonly_fields)
 
 
+class SearchAndPaginationTests(TestCase):
+    """
+    Tests verifying search filtering and 6-per-page pagination in both
+    Student Available Quizzes and Admin Question Management.
+    """
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from .models import Student, Subject, Question
+
+        self.student_user = User.objects.create_user(username='student_page_test', email='page_student@example.com', password='password123')
+        self.student = Student.objects.create(user=self.student_user, phone='1234567890')
+
+        self.admin_user = User.objects.create_superuser(username='admin_page_test', email='page_admin@example.com', password='password123')
+
+        # Create 8 subjects with 1 question each
+        self.subjects = []
+        for i in range(1, 9):
+            subj = Subject.objects.create(name=f"Quiz Subject {i:02d}", description=f"Description for subject {i}")
+            Question.objects.create(subject=subj, question_text=f"Question text for subject {i}")
+            self.subjects.append(subj)
+
+    def test_student_available_quizzes_pagination_6_per_page(self):
+        """Student Available Quizzes should display 6 items per page with next/prev pagination."""
+        self.client.login(username='student_page_test', password='password123')
+        response = self.client.get(reverse('dashboard') + '?view=quizzes')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['available_subjects']), 6)
+        self.assertTrue(response.context['available_subjects'].has_next())
+        self.assertFalse(response.context['available_subjects'].has_previous())
+
+        # Page 2 should have the remaining 2 subjects
+        response_p2 = self.client.get(reverse('dashboard') + '?view=quizzes&page=2')
+        self.assertEqual(response_p2.status_code, 200)
+        self.assertEqual(len(response_p2.context['available_subjects']), 2)
+        self.assertTrue(response_p2.context['available_subjects'].has_previous())
+        self.assertFalse(response_p2.context['available_subjects'].has_next())
+
+    def test_student_available_quizzes_search(self):
+        """Student Available Quizzes search should filter results and display appropriate feedback."""
+        self.client.login(username='student_page_test', password='password123')
+        response = self.client.get(reverse('dashboard') + '?view=quizzes&search=Subject 03')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['available_subjects']), 1)
+        self.assertEqual(response.context['available_subjects'][0]['name'], 'Quiz Subject 03')
+
+        # Search with no match
+        response_empty = self.client.get(reverse('dashboard') + '?view=quizzes&search=NonExistentQuiz')
+        self.assertEqual(response_empty.status_code, 200)
+        self.assertEqual(len(response_empty.context['available_subjects']), 0)
+        self.assertContains(response_empty, 'No Quizzes Matched')
+
+    def test_admin_question_management_pagination_6_per_page(self):
+        """Admin Question Management should display 6 subjects per page with next/prev pagination."""
+        self.client.login(username='admin_page_test', password='password123')
+        response = self.client.get(reverse('question_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['subject_data']), 6)
+        self.assertTrue(response.context['subject_data'].has_next())
+        self.assertFalse(response.context['subject_data'].has_previous())
+
+        # Page 2 should have remaining 2 subjects
+        response_p2 = self.client.get(reverse('question_list') + '?page=2')
+        self.assertEqual(response_p2.status_code, 200)
+        self.assertEqual(len(response_p2.context['subject_data']), 2)
+        self.assertTrue(response_p2.context['subject_data'].has_previous())
+        self.assertFalse(response_p2.context['subject_data'].has_next())
+
+    def test_admin_question_management_search(self):
+        """Admin Question Management search should filter subjects by name, description, or question text."""
+        self.client.login(username='admin_page_test', password='password123')
+        response = self.client.get(reverse('question_list') + '?search=Subject 05')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['subject_data']), 1)
+        self.assertEqual(response.context['subject_data'][0]['subject'].name, 'Quiz Subject 05')
+
+        # Search with no match
+        response_empty = self.client.get(reverse('question_list') + '?search=NonExistentSubject')
+        self.assertEqual(response_empty.status_code, 200)
+        self.assertEqual(len(response_empty.context['subject_data']), 0)
+        self.assertContains(response_empty, 'No subjects found matching')
+
+
+
 
 
 

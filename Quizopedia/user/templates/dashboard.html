@@ -173,8 +173,42 @@
     </div>
   </div>
 
+  <!-- Search & Filter Controls -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+    <form method="GET" action="{% url 'dashboard' %}" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <input type="hidden" name="view" value="quizzes">
+      <div style="position: relative; flex: 1; min-width: 260px;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--text-muted); pointer-events: none;"></i>
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Search quizzes by subject name or description..."
+          style="width: 100%; height: 44px; padding: 0 1rem 0 2.75rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-subtle); background: var(--bg-canvas); font-size: 0.875rem; color: var(--text-main); font-family: inherit; outline: none; transition: all 0.2s;"
+          onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)';"
+          onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='none';">
+      </div>
+      <button type="submit" class="qp-btn qp-btn-primary" style="height: 44px; padding: 0 1.35rem; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.45rem;">
+        <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+        <span>Search</span>
+      </button>
+      {% if search_query %}
+      <a href="{% url 'dashboard' %}?view=quizzes" class="qp-btn qp-btn-outline" style="height: 44px; padding: 0 1.15rem; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-muted);">
+        <i data-lucide="x" style="width: 15px; height: 15px;"></i>
+        <span>Clear</span>
+      </a>
+      {% endif %}
+    </form>
+
+    {% if search_query %}
+    <div style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.825rem; color: var(--text-muted);">
+      <div>
+        Showing results for <span style="font-weight: 700; color: var(--text-main);">"{{ search_query }}"</span>
+        ({{ available_subjects.paginator.count }} quiz{{ available_subjects.paginator.count|pluralize:"zes" }} found)
+      </div>
+      <a href="{% url 'dashboard' %}?view=quizzes" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Reset to all quizzes</a>
+    </div>
+    {% endif %}
+  </div>
+
   {% if available_subjects %}
-  <!-- Available Quizzes Grid -->
+  <!-- Available Quizzes Grid (6 per page) -->
   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
     {% for subject in available_subjects %}
     <div class="qp-card" id="quiz-card-{{ subject.id }}" style="padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid var(--primary);">
@@ -212,16 +246,83 @@
     {% endfor %}
   </div>
 
+  <!-- Pagination Controls (6 items per page) -->
+  {% if available_subjects.paginator.num_pages > 1 %}
+  <div style="margin-top: 2.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+      Showing <span style="font-weight: 700; color: var(--text-main);">{{ available_subjects.start_index }}</span> to <span style="font-weight: 700; color: var(--text-main);">{{ available_subjects.end_index }}</span> of <span style="font-weight: 700; color: var(--text-main);">{{ available_subjects.paginator.count }}</span> quizzes
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.4rem;">
+      <!-- Previous Page -->
+      {% if available_subjects.has_previous %}
+      <a href="?view=quizzes{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ available_subjects.previous_page_number }}"
+        class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <i data-lucide="chevron-left" style="width: 15px; height: 15px;"></i>
+        <span>Previous</span>
+      </a>
+      {% else %}
+      <span class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem; opacity: 0.4; pointer-events: none; cursor: not-allowed;">
+        <i data-lucide="chevron-left" style="width: 15px; height: 15px;"></i>
+        <span>Previous</span>
+      </span>
+      {% endif %}
+
+      <!-- Page Numbers -->
+      {% for page_num in available_subjects.paginator.page_range %}
+        {% if page_num == available_subjects.number %}
+        <span style="min-width: 36px; height: 36px; padding: 0 0.5rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--primary); color: white; font-weight: 800; font-size: 0.825rem; box-shadow: var(--shadow-primary);">
+          {{ page_num }}
+        </span>
+        {% else %}
+        <a href="?view=quizzes{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ page_num }}"
+          style="min-width: 36px; height: 36px; padding: 0 0.5rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-main); font-weight: 600; font-size: 0.825rem; transition: all 0.2s;"
+          onmouseover="this.style.background='var(--primary-subtle)'; this.style.borderColor='var(--primary)';"
+          onmouseout="this.style.background='var(--bg-card)'; this.style.borderColor='var(--border-subtle)';">
+          {{ page_num }}
+        </a>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Next Page -->
+      {% if available_subjects.has_next %}
+      <a href="?view=quizzes{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ available_subjects.next_page_number }}"
+        class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+        <span>Next</span>
+        <i data-lucide="chevron-right" style="width: 15px; height: 15px;"></i>
+      </a>
+      {% else %}
+      <span class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem; opacity: 0.4; pointer-events: none; cursor: not-allowed;">
+        <span>Next</span>
+        <i data-lucide="chevron-right" style="width: 15px; height: 15px;"></i>
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   {% else %}
   <!-- Empty State -->
   <div class="qp-card" style="padding: 4rem 2rem; text-align: center;">
     <div style="width: 64px; height: 64px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--text-muted);">
-      <i data-lucide="folder-open" style="width: 32px; height: 32px;"></i>
+      <i data-lucide="{% if search_query %}search-x{% else %}folder-open{% endif %}" style="width: 32px; height: 32px;"></i>
     </div>
-    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No Quizzes Available</h3>
-    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 420px; margin: 0 auto;">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+      {% if search_query %}No Quizzes Matched "{{ search_query }}"{% else %}No Quizzes Available{% endif %}
+    </h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 440px; margin: 0 auto 1.5rem;">
+      {% if search_query %}
+      We couldn't find any subject quiz matching your query. Please try searching for different keywords or clear the filter.
+      {% else %}
       Check back shortly — new quizzes and subject questions will appear here as soon as they are published by the admin.
+      {% endif %}
     </p>
+    {% if search_query %}
+    <a href="{% url 'dashboard' %}?view=quizzes" class="qp-btn qp-btn-primary" style="display: inline-flex; margin: 0 auto;">
+      <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+      <span>Clear Search &amp; View All</span>
+    </a>
+    {% endif %}
   </div>
   {% endif %}
 </div>

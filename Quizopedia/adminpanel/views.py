@@ -13,6 +13,8 @@ from .forms import (
 )
 import re
 import sys
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 
 def safe_print(text):
@@ -323,17 +325,39 @@ def profile_approvals(request):
 
 @admin_required
 def question_list(request):
+    search_query = request.GET.get('search', '').strip()
+    page_number = request.GET.get('page', 1)
+
     # Group questions by subject — show each subject as a card
-    subjects = Subject.objects.filter(questions__isnull=False).distinct().order_by('name')
+    subjects_qs = Subject.objects.filter(questions__isnull=False).distinct().order_by('name')
+    total_subjects_count = subjects_qs.count()
+
+    if search_query:
+        subjects_qs = subjects_qs.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(questions__question_text__icontains=search_query)
+        ).distinct()
+
     subject_data = []
-    for subject in subjects:
+    for subject in subjects_qs:
         qs = subject.questions.all()
         subject_data.append({
             'subject': subject,
             'count': qs.count(),
         })
+
+    paginator = Paginator(subject_data, 6)
+    try:
+        page_obj = paginator.get_page(page_number)
+    except Exception:
+        page_obj = paginator.get_page(1)
+
     return render(request, 'adminpanel/question_list.html', {
-        'subject_data': subject_data
+        'subject_data': page_obj,
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'total_subjects_count': total_subjects_count,
     })
 
 

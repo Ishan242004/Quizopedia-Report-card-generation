@@ -31,7 +31,45 @@
 </div>
 {% endif %}
 
-<!-- Subject Cards Grid -->
+<!-- Search & Filter Controls -->
+<div class="mb-8 bg-white border border-[#eae8f7] rounded-[24px] p-4 sm:p-5 shadow-[0_10px_30px_-5px_rgba(124,92,245,0.06),0_2px_8px_rgba(0,0,0,0.02)]">
+  <form method="GET" action="{% url 'question_list' %}" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+    <div class="relative flex-1">
+      <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+      <input type="text" name="search" value="{{ search_query }}"
+        placeholder="Search question banks by subject name, description, or question text..."
+        class="w-full h-11 pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/60 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#7c5cf5] focus:bg-white focus:ring-2 focus:ring-[#7c5cf5]/20 transition-all duration-200">
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="submit"
+        class="h-11 px-5 rounded-xl font-bold text-xs sm:text-sm bg-[#7c5cf5] hover:bg-[#6d42e8] text-white flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(124,92,245,0.35)] transition-all duration-200 active:scale-95 shrink-0">
+        <i data-lucide="search" class="w-4 h-4"></i>
+        <span>Search</span>
+      </button>
+      {% if search_query %}
+      <a href="{% url 'question_list' %}"
+        class="h-11 px-4 rounded-xl font-bold text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center gap-1.5 transition-all duration-200 shrink-0">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        <span>Clear</span>
+      </a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if search_query %}
+  <div class="mt-3.5 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+    <div>
+      Showing results for <span class="font-bold text-slate-800">"{{ search_query }}"</span>
+      ({{ subject_data.paginator.count }} subject{{ subject_data.paginator.count|pluralize }} found)
+    </div>
+    <a href="{% url 'question_list' %}" class="text-[#7c5cf5] font-semibold hover:underline">
+      View all subjects
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Subject Cards Grid (6 per page) -->
 {% if subject_data %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
   {% for item in subject_data %}
@@ -52,7 +90,7 @@
           </svg>
         </div>
         {% elif 'django' in item.subject.name|lower %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7] border border-emerald-200/60 shadow-[0_10px_20px_-3px_rgba(16,185,129,0.35)] flex items-center justify-center shrink-0">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7] border border-emerald-200/60 shadow-[0_10px_20px_-3px_rgba(168,85,247,0.35)] flex items-center justify-center shrink-0">
           <i data-lucide="layers" class="w-6 h-6 text-[#16a34a]"></i>
         </div>
         {% elif 'math' in item.subject.name|lower %}
@@ -113,11 +151,78 @@
   {% endfor %}
 </div>
 
+<!-- Pagination Controls (6 items per page) -->
+{% if subject_data.paginator.num_pages > 1 %}
+<div class="mt-10 pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+  <div class="text-xs sm:text-sm text-slate-500 font-medium">
+    Showing <span class="font-bold text-slate-800">{{ subject_data.start_index }}</span> to <span class="font-bold text-slate-800">{{ subject_data.end_index }}</span> of <span class="font-bold text-slate-800">{{ subject_data.paginator.count }}</span> subjects
+  </div>
+
+  <div class="flex items-center gap-1.5">
+    <!-- Previous Page -->
+    {% if subject_data.has_previous %}
+    <a href="?{% if search_query %}search={{ search_query|urlencode }}&{% endif %}page={{ subject_data.previous_page_number }}"
+      class="h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      <span>Prev</span>
+    </a>
+    {% else %}
+    <span class="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-300 text-xs font-bold flex items-center gap-1 cursor-not-allowed">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      <span>Prev</span>
+    </span>
+    {% endif %}
+
+    <!-- Page Numbers -->
+    {% for page_num in subject_data.paginator.page_range %}
+      {% if page_num == subject_data.number %}
+      <span class="w-9 h-9 rounded-xl bg-[#7c5cf5] text-white text-xs font-extrabold flex items-center justify-center shadow-[0_4px_12px_rgba(124,92,245,0.35)]">
+        {{ page_num }}
+      </span>
+      {% else %}
+      <a href="?{% if search_query %}search={{ search_query|urlencode }}&{% endif %}page={{ page_num }}"
+        class="w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center justify-center transition hover:border-[#7c5cf5]/40 active:scale-95">
+        {{ page_num }}
+      </a>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if subject_data.has_next %}
+    <a href="?{% if search_query %}search={{ search_query|urlencode }}&{% endif %}page={{ subject_data.next_page_number }}"
+      class="h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95">
+      <span>Next</span>
+      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    {% else %}
+    <span class="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-300 text-xs font-bold flex items-center gap-1 cursor-not-allowed">
+      <span>Next</span>
+      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
 {% else %}
 <div class="glass-card rounded-[28px] p-12 text-center text-[var(--text-muted)] font-medium">
-  <i data-lucide="help-circle" class="w-12 h-12 mx-auto mb-4 text-[var(--text-muted)] opacity-50"></i>
-  <p class="text-lg mb-1">No questions found.</p>
-  <p class="text-xs">Click the "+ Add Question" button at the top to create your first question.</p>
+  <i data-lucide="{% if search_query %}search-x{% else %}help-circle{% endif %}" class="w-12 h-12 mx-auto mb-4 text-[var(--text-muted)] opacity-50"></i>
+  <p class="text-lg font-bold text-slate-800 mb-1">
+    {% if search_query %}No subjects found matching "{{ search_query }}"{% else %}No questions found.{% endif %}
+  </p>
+  <p class="text-xs text-slate-500 mb-4">
+    {% if search_query %}
+    Try searching for a different keyword or topic, or reset the search to view all subjects.
+    {% else %}
+    Click the "+ Add Question" button at the top to create your first question.
+    {% endif %}
+  </p>
+  {% if search_query %}
+  <a href="{% url 'question_list' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#7c5cf5] text-white text-xs font-bold shadow-md hover:bg-[#6d42e8] transition">
+    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+    <span>Clear Search &amp; View All</span>
+  </a>
+  {% endif %}
 </div>
 {% endif %}
 
