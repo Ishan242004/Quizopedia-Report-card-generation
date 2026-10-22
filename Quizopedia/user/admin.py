@@ -28,8 +28,11 @@ class ProfileUpdateRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
-    search_fields = ('name',)
+    list_display = ('id', 'name', 'description', 'created_at', 'updated_at')
+    list_filter = ('created_at',)
+    search_fields = ('name', 'description')
+    readonly_fields = ('id', 'created_at', 'updated_at')
+    ordering = ('name',)
 
 
 class OptionInline(admin.TabularInline):

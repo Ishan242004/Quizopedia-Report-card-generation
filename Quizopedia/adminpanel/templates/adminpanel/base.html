@@ -313,11 +313,6 @@
           {% endif %}
         </a>
 
-        <a href="{% url 'dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-xs font-bold text-indigo-700 transition">
-          <i data-lucide="compass" class="w-3.5 h-3.5"></i>
-          <span>View Student Site</span>
-        </a>
-
         <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
           <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-extrabold">
             {{ request.user.username|slice:":1"|upper }}

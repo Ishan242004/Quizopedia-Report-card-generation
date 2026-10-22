@@ -1,6 +1,8 @@
 from django.db import models
+from django.db.models.functions import Lower
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 import secrets
 
@@ -68,8 +70,42 @@ PendingProfileUpdate = ProfileUpdateRequest
 
 
 class Subject(models.Model):
-    name = models.CharField(max_length=150)
-    description = models.TextField(blank=True)
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=150, unique=True, verbose_name="Subject Name")
+    description = models.TextField(blank=True, verbose_name="Description")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Subject'
+        verbose_name_plural = 'Subjects'
+        constraints = [
+            models.UniqueConstraint(
+                Lower('name'),
+                name='unique_subject_name_case_insensitive'
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.name:
+            self.name = self.name.strip()
+            if not self.name:
+                raise ValidationError({'name': 'Subject name cannot be empty or blank whitespace.'})
+            # Check for case-insensitive duplicate
+            duplicate = Subject.objects.filter(name__iexact=self.name)
+            if self.pk:
+                duplicate = duplicate.exclude(pk=self.pk)
+            if duplicate.exists():
+                raise ValidationError({'name': f"A subject with the name '{self.name}' already exists."})
+        else:
+            raise ValidationError({'name': 'Subject name is required.'})
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
