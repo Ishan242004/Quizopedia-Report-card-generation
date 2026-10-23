@@ -241,6 +241,26 @@
       color: #818cf8;
     }
 
+    .sidebar-chevron {
+      width: 16px !important;
+      height: 16px !important;
+      transition: transform 0.2s ease, color 0.2s ease;
+      color: #94a3b8;
+    }
+
+    .sidebar-chevron.open {
+      transform: rotate(180deg) !important;
+      color: #818cf8;
+    }
+
+    .sidebar-link:hover .sidebar-chevron {
+      color: #ffffff;
+    }
+
+    .sidebar-link:hover .sidebar-chevron.open {
+      transform: rotate(180deg) scale(1.1) !important;
+    }
+
     .sidebar-sub-link {
       display: flex;
       align-items: center;
@@ -379,18 +399,20 @@
         {% endif %}
       </a>
 
-      <!-- Question Management with 2 sections: 4 Option MCQ & Question & Answer -->
-      <div class="space-y-1 pt-1 pb-1">
-        <a href="{% url 'question_list' %}?type=mcq"
-          class="sidebar-link flex items-center justify-between {% block active_questions %}{% endblock %}">
-          <div class="flex items-center gap-3">
-            <i data-lucide="book-open" class="w-4 h-4"></i>
-            <span>Question Management</span>
-          </div>
-        </a>
+      <!-- Question Management with dropdown: 4 Option MCQ & Question & Answer -->
+      <div class="space-y-1 pt-1 pb-1" id="questionMgmtGroup">
+        <button type="button"
+          id="questionMgmtDropdownBtn"
+          onclick="toggleQuestionDropdown(event)"
+          class="sidebar-link w-full flex items-center justify-between text-left border-0 bg-transparent cursor-pointer {% block active_questions %}{% endblock %}">
+          <span>Question Management</span>
+          <i data-lucide="chevron-down" id="questionMgmtChevron"
+            class="sidebar-chevron {% if '/questions/' in request.path %}open{% endif %}"></i>
+        </button>
 
-        <!-- 2 Distinct Sub-sections -->
-        <div class="pl-4 pr-1 space-y-1">
+        <!-- 2 Distinct Sub-sections (visible only when inside Question Management or toggled) -->
+        <div id="questionMgmtSubmenu"
+          class="pl-4 pr-1 space-y-1 {% if '/questions/' not in request.path %}hidden{% endif %}">
           <a href="{% url 'question_list' %}?type=mcq"
             class="sidebar-sub-link {% block active_mcq %}{% endblock %}" title="4 Option MCQ Quizzes">
             <div class="flex items-center gap-2 min-w-0">
@@ -502,6 +524,19 @@
 
   <script>
     lucide.createIcons();
+
+    // Toggle Question Management Dropdown
+    function toggleQuestionDropdown(e) {
+      if (e) e.preventDefault();
+      const submenu = document.getElementById('questionMgmtSubmenu');
+      const chevron = document.getElementById('questionMgmtChevron');
+      if (submenu) {
+        submenu.classList.toggle('hidden');
+      }
+      if (chevron) {
+        chevron.classList.toggle('open');
+      }
+    }
 
     // Mobile Sidebar Drawer Toggle
     const adminSidebar = document.getElementById('adminSidebar');
