@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
@@ -327,24 +328,47 @@ def profile_approvals(request):
 def question_list(request):
     search_query = request.GET.get('search', '').strip()
     page_number = request.GET.get('page', 1)
+    qtype = request.GET.get('type', '').strip().lower()
 
-    # Group questions by subject — show each subject as a card
-    subjects_qs = Subject.objects.filter(questions__isnull=False).distinct().order_by('name')
+    # Precalculate quiz counts for both sections (for tab badges and counters)
+    mcq_subjects_qs = Subject.objects.filter(questions__question_type='mcq').distinct()
+    qna_subjects_qs = Subject.objects.filter(questions__question_type='qna').distinct()
+
+    mcq_quizzes_count = mcq_subjects_qs.count()
+    qna_quizzes_count = qna_subjects_qs.count()
+    mcq_questions_count = Question.objects.filter(question_type='mcq').count()
+    qna_questions_count = Question.objects.filter(question_type='qna').count()
+
+    # If no type specified or invalid, choose sensible default:
+    # If there are MCQ quizzes, default to 'mcq'
+    # Otherwise if only QnA quizzes exist (e.g. test fixture), default to 'qna'
+    # Otherwise default to 'mcq'
+    if qtype not in ['mcq', 'qna']:
+        if mcq_quizzes_count > 0:
+            qtype = 'mcq'
+        elif qna_quizzes_count > 0:
+            qtype = 'qna'
+        else:
+            qtype = 'mcq'
+
+    # Filter subjects specifically belonging to the active section
+    subjects_qs = Subject.objects.filter(questions__question_type=qtype).distinct().order_by('name')
     total_subjects_count = subjects_qs.count()
 
     if search_query:
         subjects_qs = subjects_qs.filter(
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query) |
-            Q(questions__question_text__icontains=search_query)
+            Q(questions__question_text__icontains=search_query, questions__question_type=qtype)
         ).distinct()
 
     subject_data = []
     for subject in subjects_qs:
-        qs = subject.questions.all()
+        count = subject.questions.filter(question_type=qtype).count()
         subject_data.append({
             'subject': subject,
-            'count': qs.count(),
+            'count': count,
+            'qtype': qtype,
         })
 
     paginator = Paginator(subject_data, 6)
@@ -358,16 +382,34 @@ def question_list(request):
         'page_obj': page_obj,
         'search_query': search_query,
         'total_subjects_count': total_subjects_count,
+        'active_qtype': qtype,
+        'mcq_quizzes_count': mcq_quizzes_count,
+        'qna_quizzes_count': qna_quizzes_count,
+        'mcq_questions_count': mcq_questions_count,
+        'qna_questions_count': qna_questions_count,
     })
 
 
 @admin_required
 def subject_questions(request, pk):
     subject = get_object_or_404(Subject, id=pk)
-    questions = subject.questions.all().order_by('id')
+    qtype = request.GET.get('type', '').strip().lower()
+
+    if qtype in ['mcq', 'qna']:
+        questions = subject.questions.filter(question_type=qtype).order_by('id')
+    else:
+        questions = subject.questions.all().order_by('id')
+        if questions.filter(question_type='mcq').exists() and not questions.filter(question_type='qna').exists():
+            qtype = 'mcq'
+        elif questions.filter(question_type='qna').exists() and not questions.filter(question_type='mcq').exists():
+            qtype = 'qna'
+        else:
+            qtype = 'mcq'
+
     return render(request, 'adminpanel/subject_questions.html', {
         'subject': subject,
         'questions': questions,
+        'active_qtype': qtype,
     })
 
 
@@ -873,12 +915,15 @@ def question_delete(request, pk):
 @admin_required
 def subject_delete(request, pk):
     """Delete an entire quiz/subject and all its associated questions."""
+    qtype = request.GET.get('type') or request.POST.get('type') or ''
     if request.method == 'POST':
         subject = get_object_or_404(Subject, id=pk)
         subject_name = subject.name
         with transaction.atomic():
             subject.delete()
         messages.success(request, f"Quiz '{subject_name}' and all its questions deleted successfully.")
+    if qtype in ['mcq', 'qna']:
+        return redirect(f"{reverse('question_list')}?type={qtype}")
     return redirect('question_list')
 
 

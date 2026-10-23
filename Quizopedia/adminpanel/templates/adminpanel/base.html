@@ -47,6 +47,22 @@
       --input-placeholder: #94a3b8;
       --table-header-bg: #f8fafc;
 
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-card-subtle: #f8fafc;
+      --border-subtle: #e2e8f0;
+      --primary-subtle: #eef2ff;
+      --primary-light: #c7d2fe;
+      --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+      --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+      --shadow-primary: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+
       --sidebar-width: 270px;
       --header-height: 72px;
     }
@@ -80,6 +96,98 @@
     .glass-card:hover {
       box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
       border-color: #cbd5e1;
+    }
+
+    /* Student Theme Matching Components */
+    .qp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .qp-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    .qp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      line-height: 1.2;
+      text-decoration: none;
+    }
+
+    .qp-btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-primary);
+    }
+
+    .qp-btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px -4px rgba(99, 102, 241, 0.45);
+    }
+
+    .qp-btn-success {
+      background: #059669;
+      color: white;
+      box-shadow: 0 8px 24px -4px rgba(5, 150, 105, 0.35);
+    }
+
+    .qp-btn-success:hover {
+      background: #047857;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px -4px rgba(5, 150, 105, 0.45);
+    }
+
+    .qp-btn-outline {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .qp-btn-outline:hover {
+      background: var(--bg-card-subtle);
+      border-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .qp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-size: 0.725rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .qp-badge-primary {
+      background: var(--primary-subtle);
+      color: var(--primary);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .qp-badge-success {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
     }
 
     .sidebar-link {
@@ -130,6 +238,35 @@
     }
 
     .sidebar-link.active i {
+      color: #818cf8;
+    }
+
+    .sidebar-sub-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .sidebar-sub-link:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .sidebar-sub-link.active {
+      background: rgba(99, 102, 241, 0.18);
+      color: #ffffff;
+      font-weight: 700;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+    }
+
+    .sidebar-sub-link.active i {
       color: #818cf8;
     }
 
@@ -242,10 +379,45 @@
         {% endif %}
       </a>
 
-      <a href="{% url 'question_list' %}"
-        class="sidebar-link {% block active_questions %}{% endblock %}">
-        <span>Question Banks</span>
-      </a>
+      <!-- Question Management with 2 sections: 4 Option MCQ & Question & Answer -->
+      <div class="space-y-1 pt-1 pb-1">
+        <a href="{% url 'question_list' %}?type=mcq"
+          class="sidebar-link flex items-center justify-between {% block active_questions %}{% endblock %}">
+          <div class="flex items-center gap-3">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>Question Management</span>
+          </div>
+        </a>
+
+        <!-- 2 Distinct Sub-sections -->
+        <div class="pl-4 pr-1 space-y-1">
+          <a href="{% url 'question_list' %}?type=mcq"
+            class="sidebar-sub-link {% block active_mcq %}{% endblock %}" title="4 Option MCQ Quizzes">
+            <div class="flex items-center gap-2 min-w-0">
+              <i data-lucide="list-checks" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+              <span class="truncate">4 Option MCQ</span>
+            </div>
+            {% if sidebar_mcq_count %}
+            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-indigo-500/20 text-indigo-300 shrink-0">
+              {{ sidebar_mcq_count }}
+            </span>
+            {% endif %}
+          </a>
+
+          <a href="{% url 'question_list' %}?type=qna"
+            class="sidebar-sub-link {% block active_qna %}{% endblock %}" title="Question & Answer Quizzes">
+            <div class="flex items-center gap-2 min-w-0">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+              <span class="truncate">Question &amp; Answer</span>
+            </div>
+            {% if sidebar_qna_count %}
+            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-emerald-500/20 text-emerald-300 shrink-0">
+              {{ sidebar_qna_count }}
+            </span>
+            {% endif %}
+          </a>
+        </div>
+      </div>
 
       <a href="{% url 'admin_report_cards' %}"
         class="sidebar-link {% block active_report_cards %}{% endblock %}">

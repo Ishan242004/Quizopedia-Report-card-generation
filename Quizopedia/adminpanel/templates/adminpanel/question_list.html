@@ -1,21 +1,53 @@
 {% extends 'adminpanel/base.html' %}
 
-{% block title %}Question Management - Quizopedia Admin{% endblock %}
+{% block title %}{% if active_qtype == 'mcq' %}4 Option MCQ{% else %}Question & Answer{% endif %} - Question Management - Quizopedia Admin{% endblock %}
 
 {% block active_questions %}active{% endblock %}
+{% block active_mcq %}{% if active_qtype == 'mcq' %}active{% endif %}{% endblock %}
+{% block active_qna %}{% if active_qtype == 'qna' %}active{% endif %}{% endblock %}
 
-{% block breadcrumb %}Question Management{% endblock %}
+{% block breadcrumb %}
+  Question Management / {% if active_qtype == 'mcq' %}4 Option MCQ{% else %}Question & Answer{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<!-- Page Header -->
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
   <div>
-    <h1 class="text-3xl font-extrabold tracking-tight mb-2 text-[var(--text-main)]">Question Management</h1>
-    <p class="text-[var(--text-muted)] text-sm">Browse question sets organized by subject. Click "View" to see all questions in a subject.</p>
+    <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem;
+      {% if active_qtype == 'mcq' %}background: #eef2ff; color: #4f46e5; border: 1px solid rgba(99,102,241,0.25);{% else %}background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;{% endif %}">
+      {% if active_qtype == 'mcq' %}
+        <i data-lucide="list-checks" style="width: 13px; height: 13px;"></i>
+        <span>4 Option MCQ Section</span>
+      {% else %}
+        <i data-lucide="message-square" style="width: 13px; height: 13px;"></i>
+        <span>Question &amp; Answer Section</span>
+      {% endif %}
+    </div>
+    <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em;">
+      {% if active_qtype == 'mcq' %}4 Option MCQ Quizzes{% else %}Question &amp; Answer Quizzes{% endif %}
+    </h1>
+    <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+      {% if active_qtype == 'mcq' %}
+        Browse and manage multiple-choice quizzes with 4 options and answer keys.
+      {% else %}
+        Browse and manage direct question &amp; answer quizzes with concise answers.
+      {% endif %}
+    </p>
   </div>
-  <div>
-    <a href="{% url 'question_add' %}" class="cta-btn px-5 py-3 rounded-xl font-bold text-sm text-white flex items-center gap-1.5 shadow-lg">
-      <i data-lucide="plus" class="w-4 h-4"></i> Add Question
+
+  <div style="display: flex; align-items: center; gap: 0.75rem;">
+    {% if active_qtype == 'mcq' %}
+    <a href="{% url 'question_add_mcq' %}" class="qp-btn qp-btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.25rem;">
+      <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+      <span>Add 4 Option MCQ</span>
     </a>
+    {% else %}
+    <a href="{% url 'question_add_qna' %}" class="qp-btn qp-btn-success" style="font-size: 0.85rem; padding: 0.65rem 1.25rem;">
+      <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+      <span>Add Q&amp;A Quiz</span>
+    </a>
+    {% endif %}
   </div>
 </div>
 
@@ -23,127 +55,212 @@
 {% if messages %}
 <div class="mb-6 space-y-2">
   {% for message in messages %}
-  <div class="flex items-start gap-2.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-    <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-400"></i>
+  <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1.25rem; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 600; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
+    <i data-lucide="check-circle" style="width: 16px; height: 16px; flex-shrink: 0; color: #10b981;"></i>
     <span>{{ message }}</span>
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
-<!-- Search & Filter Controls -->
-<div class="mb-8 bg-white border border-[#eae8f7] rounded-[24px] p-4 sm:p-5 shadow-[0_10px_30px_-5px_rgba(124,92,245,0.06),0_2px_8px_rgba(0,0,0,0.02)]">
-  <form method="GET" action="{% url 'question_list' %}" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-    <div class="relative flex-1">
-      <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+<!-- Section Switcher Tabs: 4 Option MCQ and Question & Answer -->
+<div style="margin-bottom: 2rem; padding: 0.4rem; border-radius: var(--radius-lg); background: #f1f5f9; border: 1px solid var(--border-subtle); display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.5rem;">
+  <!-- Option 1: 4 Option MCQ Tab -->
+  <a href="{% url 'question_list' %}?type=mcq"
+    style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.15rem; border-radius: var(--radius-md); text-decoration: none; transition: all 0.2s;
+    {% if active_qtype == 'mcq' %}
+      background: #ffffff; color: #1e1b4b; box-shadow: var(--shadow-sm); border: 1px solid rgba(99,102,241,0.25);
+    {% else %}
+      color: var(--text-muted);
+    {% endif %}">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        {% if active_qtype == 'mcq' %}
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+        {% else %}
+          background: #e2e8f0; color: #64748b;
+        {% endif %}">
+        <i data-lucide="list-checks" style="width: 20px; height: 20px;"></i>
+      </div>
+      <div>
+        <div style="font-size: 0.925rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+          <span>4 Option MCQ</span>
+          {% if active_qtype == 'mcq' %}
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #6366f1;"></span>
+          {% endif %}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+          Multiple Choice Questions
+        </div>
+      </div>
+    </div>
+    <span class="qp-badge {% if active_qtype == 'mcq' %}qp-badge-primary{% else %}qp-badge-outline{% endif %}" style="font-size: 0.75rem; font-weight: 800;">
+      {{ mcq_quizzes_count }} Quiz{{ mcq_quizzes_count|pluralize:"zes" }}
+    </span>
+  </a>
+
+  <!-- Option 2: Question & Answer Tab -->
+  <a href="{% url 'question_list' %}?type=qna"
+    style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.15rem; border-radius: var(--radius-md); text-decoration: none; transition: all 0.2s;
+    {% if active_qtype == 'qna' %}
+      background: #ffffff; color: #064e3b; box-shadow: var(--shadow-sm); border: 1px solid rgba(16,185,129,0.3);
+    {% else %}
+      color: var(--text-muted);
+    {% endif %}">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        {% if active_qtype == 'qna' %}
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.35);
+        {% else %}
+          background: #e2e8f0; color: #64748b;
+        {% endif %}">
+        <i data-lucide="message-square" style="width: 20px; height: 20px;"></i>
+      </div>
+      <div>
+        <div style="font-size: 0.925rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+          <span>Question &amp; Answer</span>
+          {% if active_qtype == 'qna' %}
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+          {% endif %}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+          Direct Q&amp;A / Short Answers
+        </div>
+      </div>
+    </div>
+    <span class="qp-badge {% if active_qtype == 'qna' %}qp-badge-success{% else %}qp-badge-outline{% endif %}" style="font-size: 0.75rem; font-weight: 800;">
+      {{ qna_quizzes_count }} Quiz{{ qna_quizzes_count|pluralize:"zes" }}
+    </span>
+  </a>
+</div>
+
+<!-- Search & Filter Controls (Matching Student Dashboard Search Bar) -->
+<div class="qp-card" style="padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
+  <form method="GET" action="{% url 'question_list' %}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+    <input type="hidden" name="type" value="{{ active_qtype }}">
+    <div style="position: relative; flex: 1; min-width: 260px;">
+      <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--text-muted); pointer-events: none;"></i>
       <input type="text" name="search" value="{{ search_query }}"
-        placeholder="Search question banks by subject name, description, or question text..."
-        class="w-full h-11 pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/60 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#7c5cf5] focus:bg-white focus:ring-2 focus:ring-[#7c5cf5]/20 transition-all duration-200">
+        placeholder="{% if active_qtype == 'mcq' %}Search 4 Option MCQ quizzes by subject name or description...{% else %}Search Question & Answer quizzes by subject name or description...{% endif %}"
+        style="width: 100%; height: 44px; padding: 0 1rem 0 2.75rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-subtle); background: var(--bg-canvas); font-size: 0.875rem; color: var(--text-main); font-family: inherit; outline: none; transition: all 0.2s;"
+        onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)';"
+        onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='none';">
     </div>
-    <div class="flex items-center gap-2">
-      <button type="submit"
-        class="h-11 px-5 rounded-xl font-bold text-xs sm:text-sm bg-[#7c5cf5] hover:bg-[#6d42e8] text-white flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(124,92,245,0.35)] transition-all duration-200 active:scale-95 shrink-0">
-        <i data-lucide="search" class="w-4 h-4"></i>
-        <span>Search</span>
-      </button>
-      {% if search_query %}
-      <a href="{% url 'question_list' %}"
-        class="h-11 px-4 rounded-xl font-bold text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center gap-1.5 transition-all duration-200 shrink-0">
-        <i data-lucide="x" class="w-3.5 h-3.5"></i>
-        <span>Clear</span>
-      </a>
-      {% endif %}
-    </div>
+    <button type="submit" class="qp-btn {% if active_qtype == 'mcq' %}qp-btn-primary{% else %}qp-btn-success{% endif %}" style="height: 44px; padding: 0 1.35rem; font-size: 0.85rem; font-weight: 700;">
+      <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+      <span>Search</span>
+    </button>
+    {% if search_query %}
+    <a href="{% url 'question_list' %}?type={{ active_qtype }}" class="qp-btn qp-btn-outline" style="height: 44px; padding: 0 1.15rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+      <i data-lucide="x" style="width: 15px; height: 15px;"></i>
+      <span>Clear</span>
+    </a>
+    {% endif %}
   </form>
 
   {% if search_query %}
-  <div class="mt-3.5 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+  <div style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.825rem; color: var(--text-muted);">
     <div>
-      Showing results for <span class="font-bold text-slate-800">"{{ search_query }}"</span>
-      ({{ subject_data.paginator.count }} subject{{ subject_data.paginator.count|pluralize }} found)
+      Showing results for <span style="font-weight: 700; color: var(--text-main);">"{{ search_query }}"</span> in {% if active_qtype == 'mcq' %}4 Option MCQ{% else %}Question &amp; Answer{% endif %}
+      ({{ subject_data.paginator.count }} quiz{{ subject_data.paginator.count|pluralize:"zes" }} found)
     </div>
-    <a href="{% url 'question_list' %}" class="text-[#7c5cf5] font-semibold hover:underline">
-      View all subjects
+    <a href="{% url 'question_list' %}?type={{ active_qtype }}" style="color: var(--primary); font-weight: 600; text-decoration: underline;">
+      Reset to all {% if active_qtype == 'mcq' %}MCQ{% else %}Q&amp;A{% endif %} quizzes
     </a>
   </div>
   {% endif %}
 </div>
 
-<!-- Subject Cards Grid (6 per page) -->
+<!-- Available Quizzes Grid (Exact matching Student UI Card) -->
 {% if subject_data %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
   {% for item in subject_data %}
-  <div class="rounded-[28px] p-6 sm:p-7 flex flex-col gap-4 bg-white border border-[#eae8f7] shadow-[0_12px_32px_-6px_rgba(124,92,245,0.08),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_16px_40px_-6px_rgba(124,92,245,0.14)] hover:border-[#7c5cf5]/40 transition-all duration-300 group">
-    <!-- Top Row: Icon + Title/Subtitle + Pill Badge -->
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3.5 min-w-0">
-        <!-- Dynamic Subject Icon Badge with soft glowing colored shadow -->
-        {% if 'html' in item.subject.name|lower or 'web' in item.subject.name|lower %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#fff3eb] to-[#ffe5d6] border border-orange-200/60 shadow-[0_10px_20px_-3px_rgba(249,115,22,0.4)] flex items-center justify-center shrink-0">
-          <span class="font-extrabold text-[#ea580c] text-lg font-mono tracking-tighter">&lt;/&gt;</span>
-        </div>
-        {% elif 'python' in item.subject.name|lower %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#fefce8] to-[#fef3a0] border border-yellow-200/70 shadow-[0_10px_20px_-3px_rgba(234,179,8,0.4)] flex items-center justify-center shrink-0">
-          <svg class="w-7 h-7" viewBox="0 0 128 128" fill="none">
-            <path d="M63.4 8C38.2 8 39.8 19 39.8 19l.03 11.4h24v3.4H30.4S14 31.9 14 57.3c0 25.4 14.3 24.5 14.3 24.5h8.5v-12s-.5-14.3 14-14.3h24s13.5.2 13.5-13.1V21.1S88.6 8 63.4 8zm-13.7 7.4a4.1 4.1 0 1 1 0 8.2 4.1 4.1 0 0 1 0-8.2z" fill="#3776AB"/>
-            <path d="M64.6 120c25.2 0 23.6-11 23.6-11l-.03-11.4h-24v-3.4h33.4s16.4 1.9 16.4-23.5c0-25.4-14.3-24.5-14.3-24.5h-8.5v12s.5 14.3-14 14.3h-24s-13.5-.2-13.5 13.1v21.8S39.4 120 64.6 120zm13.7-7.4a4.1 4.1 0 1 1 0-8.2 4.1 4.1 0 0 1 0 8.2z" fill="#FFD438"/>
-          </svg>
-        </div>
-        {% elif 'django' in item.subject.name|lower %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7] border border-emerald-200/60 shadow-[0_10px_20px_-3px_rgba(168,85,247,0.35)] flex items-center justify-center shrink-0">
-          <i data-lucide="layers" class="w-6 h-6 text-[#16a34a]"></i>
-        </div>
-        {% elif 'math' in item.subject.name|lower %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#eef2ff] to-[#e0e7ff] border border-indigo-200/60 shadow-[0_10px_20px_-3px_rgba(99,102,241,0.35)] flex items-center justify-center shrink-0">
-          <i data-lucide="calculator" class="w-6 h-6 text-[#4f46e5]"></i>
-        </div>
-        {% elif 'science' in item.subject.name|lower or 'physics' in item.subject.name|lower %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#faf5ff] to-[#f3e8ff] border border-purple-200/60 shadow-[0_10px_20px_-3px_rgba(168,85,247,0.35)] flex items-center justify-center shrink-0">
-          <i data-lucide="atom" class="w-6 h-6 text-[#9333ea]"></i>
-        </div>
-        {% else %}
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#f0f9ff] to-[#e0f2fe] border border-blue-200/60 shadow-[0_10px_20px_-3px_rgba(59,130,246,0.35)] flex items-center justify-center shrink-0">
-          <i data-lucide="book-open" class="w-6 h-6 text-[#2563eb]"></i>
-        </div>
-        {% endif %}
-
-        <!-- Subject Name & Question Count -->
-        <div class="min-w-0 flex-1">
-          <h2 class="text-[17px] font-extrabold text-[#0f172a] tracking-tight leading-snug truncate" title="{{ item.subject.name }}">
+  <div class="qp-card" id="quiz-card-{{ item.subject.id }}"
+    style="padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid {% if active_qtype == 'mcq' %}var(--primary){% else %}#10b981{% endif %};">
+    <div>
+      <!-- Card Header: Title + Qs Count Badge -->
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; color: {% if active_qtype == 'mcq' %}var(--primary){% else %}#059669{% endif %};">
+            {% if active_qtype == 'mcq' %}
+            <i data-lucide="list-checks" style="width: 12px; height: 12px;"></i>
+            <span>4 Option MCQ</span>
+            {% else %}
+            <i data-lucide="message-square" style="width: 12px; height: 12px;"></i>
+            <span>Question &amp; Answer</span>
+            {% endif %}
+          </div>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); line-height: 1.3;">
             {{ item.subject.name }}
-          </h2>
-          <p class="text-[13px] text-[#64748b] font-medium mt-0.5">
-            {{ item.count }} Question{{ item.count|pluralize }}
-          </p>
+          </h3>
         </div>
+        <span class="qp-badge {% if active_qtype == 'mcq' %}qp-badge-primary{% else %}qp-badge-success{% endif %}" style="flex-shrink: 0;">
+          {{ item.count }} Qs
+        </span>
       </div>
 
-      <!-- Top Right Count Pill Badge -->
-      <span class="inline-flex items-center justify-center min-w-[34px] px-2.5 py-1 rounded-full text-xs font-bold bg-[#ede9fe] text-[#7c5cf5] shrink-0">
-        {{ item.count }}
-      </span>
+      <!-- Description Paragraph -->
+      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem; min-height: 2.5rem;">
+        {{ item.subject.description|default:"Test your skills and challenge your conceptual mastery in this quiz." }}
+      </p>
+
+      <!-- Meta Info Row (Clock, Instant Grading, Total Questions) -->
+      <div style="display: flex; align-items: center; gap: 1.25rem; font-size: 0.775rem; color: var(--text-muted); padding: 0.75rem 0; border-top: 1px solid var(--border-subtle); margin-bottom: 1.25rem;">
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+          <i data-lucide="clock" style="width: 14px; height: 14px; color: {% if active_qtype == 'mcq' %}var(--primary){% else %}#10b981{% endif %};"></i>
+          ~{{ item.count|add:item.count }} mins
+        </span>
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+          <i data-lucide="award" style="width: 14px; height: 14px; color: #10b981;"></i>
+          Instant Grading
+        </span>
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem; margin-left: auto;">
+          <i data-lucide="help-circle" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+          {{ item.count }} Question{{ item.count|pluralize }}
+        </span>
+      </div>
     </div>
 
-    <!-- Divider & Action Buttons (Exact match to image) -->
-    <div class="pt-4 border-t border-[#f1f5f9] flex items-center gap-2.5 sm:gap-3">
-      <!-- 1. View Button (Solid Vibrant Indigo/Purple) -->
-      <a href="{% url 'subject_questions' item.subject.id %}"
-        class="flex-1 h-[42px] rounded-[16px] font-bold text-xs sm:text-[13px] bg-[#6366f1] hover:bg-[#5457e5] text-white flex items-center justify-center gap-1.5 shadow-[0_4px_14px_rgba(99,102,241,0.38)] transition-all duration-200 active:scale-95">
-        <i data-lucide="eye" class="w-4 h-4 text-white"></i> View
+    <!-- Admin Action Buttons Row -->
+    <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+      <!-- 1. View Questions (Solid prominent button matching student Start Quiz) -->
+      <a href="{% url 'subject_questions' item.subject.id %}?type={{ active_qtype }}"
+        class="qp-btn {% if active_qtype == 'mcq' %}qp-btn-primary{% else %}qp-btn-success{% endif %}"
+        style="flex: 1; height: 42px; justify-content: center; font-size: 0.85rem; font-weight: 700;">
+        <i data-lucide="eye" style="width: 15px; height: 15px;"></i>
+        <span>View Questions</span>
       </a>
 
-      <!-- 2. + Add Button (Clean White with subtle border) -->
+      <!-- 2. + Add Button (Outline button matching student) -->
+      {% if active_qtype == 'mcq' %}
       <a href="{% url 'question_add_mcq' %}?subject={{ item.subject.name|urlencode }}"
-        class="flex-1 h-[42px] rounded-[16px] font-bold text-xs sm:text-[13px] bg-white hover:bg-slate-50 text-[#334155] border border-[#e2e8f0] flex items-center justify-center gap-1.5 shadow-sm transition-all duration-200 active:scale-95">
-        <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[2.5] text-[#475569]"></i> Add
+        class="qp-btn qp-btn-outline"
+        style="height: 42px; padding: 0 1rem; font-size: 0.85rem; font-weight: 700; color: var(--text-main);"
+        title="Add MCQ Question">
+        <i data-lucide="plus" style="width: 15px; height: 15px;"></i>
+        <span>Add</span>
       </a>
+      {% else %}
+      <a href="{% url 'question_add_qna' %}?subject={{ item.subject.name|urlencode }}"
+        class="qp-btn qp-btn-outline"
+        style="height: 42px; padding: 0 1rem; font-size: 0.85rem; font-weight: 700; color: var(--text-main);"
+        title="Add Q&A Question">
+        <i data-lucide="plus" style="width: 15px; height: 15px;"></i>
+        <span>Add</span>
+      </a>
+      {% endif %}
 
-      <!-- 3. Delete Button (Soft Peach / Pink with Rose Text) -->
-      <form method="POST" action="{% url 'subject_delete' item.subject.id %}" onsubmit="return confirm('Are you sure you want to delete the entire quiz \'{{ item.subject.name|escapejs }}\' and all its {{ item.count }} questions? This cannot be undone.');" class="flex-1 m-0 p-0">
+      <!-- 3. Delete Button (Clean soft danger icon button) -->
+      <form method="POST" action="{% url 'subject_delete' item.subject.id %}?type={{ active_qtype }}"
+        onsubmit="return confirm('Are you sure you want to delete the entire quiz \'{{ item.subject.name|escapejs }}\' and all its questions? This cannot be undone.');"
+        style="margin: 0; padding: 0;">
         {% csrf_token %}
+        <input type="hidden" name="type" value="{{ active_qtype }}">
         <button type="submit"
-          class="w-full h-[42px] rounded-[16px] font-bold text-xs sm:text-[13px] bg-[#ffe4e6] hover:bg-[#fecdd3] text-[#e11d48] border border-[#fecdd3]/70 flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-95" title="Delete entire quiz">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-[#e11d48]"></i> Delete
+          class="qp-btn"
+          style="height: 42px; width: 42px; padding: 0; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: var(--radius-md);"
+          title="Delete Entire Quiz">
+          <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
         </button>
       </form>
     </div>
@@ -151,37 +268,41 @@
   {% endfor %}
 </div>
 
-<!-- Pagination Controls (6 items per page) -->
+<!-- Pagination Controls (Matching Student Dashboard Pagination) -->
 {% if subject_data.paginator.num_pages > 1 %}
-<div class="mt-10 pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-  <div class="text-xs sm:text-sm text-slate-500 font-medium">
-    Showing <span class="font-bold text-slate-800">{{ subject_data.start_index }}</span> to <span class="font-bold text-slate-800">{{ subject_data.end_index }}</span> of <span class="font-bold text-slate-800">{{ subject_data.paginator.count }}</span> subjects
+<div style="margin-top: 2.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+  <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+    Showing <span style="font-weight: 700; color: var(--text-main);">{{ subject_data.start_index }}</span> to <span style="font-weight: 700; color: var(--text-main);">{{ subject_data.end_index }}</span> of <span style="font-weight: 700; color: var(--text-main);">{{ subject_data.paginator.count }}</span> quizzes in {% if active_qtype == 'mcq' %}4 Option MCQ{% else %}Question &amp; Answer{% endif %}
   </div>
 
-  <div class="flex items-center gap-1.5">
+  <div style="display: flex; align-items: center; gap: 0.4rem;">
     <!-- Previous Page -->
     {% if subject_data.has_previous %}
-    <a href="?{% if search_query %}search={{ search_query|urlencode }}&{% endif %}page={{ subject_data.previous_page_number }}"
-      class="h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95">
-      <i data-lucide="chevron-left" class="w-4 h-4"></i>
-      <span>Prev</span>
+    <a href="?type={{ active_qtype }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ subject_data.previous_page_number }}"
+      class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+      <i data-lucide="chevron-left" style="width: 15px; height: 15px;"></i>
+      <span>Previous</span>
     </a>
     {% else %}
-    <span class="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-300 text-xs font-bold flex items-center gap-1 cursor-not-allowed">
-      <i data-lucide="chevron-left" class="w-4 h-4"></i>
-      <span>Prev</span>
+    <span class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem; opacity: 0.4; pointer-events: none; cursor: not-allowed;">
+      <i data-lucide="chevron-left" style="width: 15px; height: 15px;"></i>
+      <span>Previous</span>
     </span>
     {% endif %}
 
     <!-- Page Numbers -->
     {% for page_num in subject_data.paginator.page_range %}
       {% if page_num == subject_data.number %}
-      <span class="w-9 h-9 rounded-xl bg-[#7c5cf5] text-white text-xs font-extrabold flex items-center justify-center shadow-[0_4px_12px_rgba(124,92,245,0.35)]">
+      <span style="min-width: 36px; height: 36px; padding: 0 0.5rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm);
+        {% if active_qtype == 'mcq' %}background: var(--primary); box-shadow: var(--shadow-primary);{% else %}background: #059669; box-shadow: 0 8px 24px -4px rgba(5,150,105,0.35);{% endif %}
+        color: white; font-weight: 800; font-size: 0.825rem;">
         {{ page_num }}
       </span>
       {% else %}
-      <a href="?{% if search_query %}search={{ search_query|urlencode }}&{% endif %}page={{ page_num }}"
-        class="w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center justify-center transition hover:border-[#7c5cf5]/40 active:scale-95">
+      <a href="?type={{ active_qtype }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ page_num }}"
+        style="min-width: 36px; height: 36px; padding: 0 0.5rem; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-main); font-weight: 600; font-size: 0.825rem; transition: all 0.2s;"
+        onmouseover="this.style.background='var(--primary-subtle)'; this.style.borderColor='var(--primary)';"
+        onmouseout="this.style.background='var(--bg-card)'; this.style.borderColor='var(--border-subtle)';">
         {{ page_num }}
       </a>
       {% endif %}
@@ -189,15 +310,15 @@
 
     <!-- Next Page -->
     {% if subject_data.has_next %}
-    <a href="?{% if search_query %}search={{ search_query|urlencode }}&{% endif %}page={{ subject_data.next_page_number }}"
-      class="h-9 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95">
+    <a href="?type={{ active_qtype }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ subject_data.next_page_number }}"
+      class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem;">
       <span>Next</span>
-      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      <i data-lucide="chevron-right" style="width: 15px; height: 15px;"></i>
     </a>
     {% else %}
-    <span class="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-300 text-xs font-bold flex items-center gap-1 cursor-not-allowed">
+    <span class="qp-btn qp-btn-outline" style="padding: 0.45rem 0.85rem; font-size: 0.825rem; display: inline-flex; align-items: center; gap: 0.35rem; opacity: 0.4; pointer-events: none; cursor: not-allowed;">
       <span>Next</span>
-      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      <i data-lucide="chevron-right" style="width: 15px; height: 15px;"></i>
     </span>
     {% endif %}
   </div>
@@ -205,22 +326,41 @@
 {% endif %}
 
 {% else %}
-<div class="glass-card rounded-[28px] p-12 text-center text-[var(--text-muted)] font-medium">
-  <i data-lucide="{% if search_query %}search-x{% else %}help-circle{% endif %}" class="w-12 h-12 mx-auto mb-4 text-[var(--text-muted)] opacity-50"></i>
-  <p class="text-lg font-bold text-slate-800 mb-1">
-    {% if search_query %}No subjects found matching "{{ search_query }}"{% else %}No questions found.{% endif %}
-  </p>
-  <p class="text-xs text-slate-500 mb-4">
+<!-- Empty State (Matching Student UI Empty Card) -->
+<div class="qp-card" style="padding: 4rem 2rem; text-align: center;">
+  <div style="width: 64px; height: 64px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--text-muted);">
+    <i data-lucide="{% if search_query %}search-x{% else %}folder-open{% endif %}" style="width: 32px; height: 32px;"></i>
+  </div>
+  <h2 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
     {% if search_query %}
-    Try searching for a different keyword or topic, or reset the search to view all subjects.
+      No subjects found matching "{{ search_query }}"
     {% else %}
-    Click the "+ Add Question" button at the top to create your first question.
+      No {% if active_qtype == 'mcq' %}4 Option MCQ{% else %}Question &amp; Answer{% endif %} quizzes available yet.
+    {% endif %}
+  </h2>
+  <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 440px; margin: 0 auto 1.5rem;">
+    {% if search_query %}
+      Try searching for a different keyword or topic, or clear the search to view all {% if active_qtype == 'mcq' %}MCQ{% else %}Q&amp;A{% endif %} quizzes.
+    {% elif active_qtype == 'mcq' %}
+      Create your first multiple-choice quiz with 4 options (A, B, C, D) and answer keys.
+    {% else %}
+      Create your first Question &amp; Answer quiz with direct question and answer formats.
     {% endif %}
   </p>
   {% if search_query %}
-  <a href="{% url 'question_list' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#7c5cf5] text-white text-xs font-bold shadow-md hover:bg-[#6d42e8] transition">
-    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+  <a href="{% url 'question_list' %}?type={{ active_qtype }}" class="qp-btn qp-btn-primary" style="display: inline-flex; margin: 0 auto;">
+    <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
     <span>Clear Search &amp; View All</span>
+  </a>
+  {% elif active_qtype == 'mcq' %}
+  <a href="{% url 'question_add_mcq' %}" class="qp-btn qp-btn-primary" style="display: inline-flex; margin: 0 auto;">
+    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+    <span>Add 4 Option MCQ Quiz</span>
+  </a>
+  {% else %}
+  <a href="{% url 'question_add_qna' %}" class="qp-btn qp-btn-success" style="display: inline-flex; margin: 0 auto;">
+    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+    <span>Add Question &amp; Answer Quiz</span>
   </a>
   {% endif %}
 </div>

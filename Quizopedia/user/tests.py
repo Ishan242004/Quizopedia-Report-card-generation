@@ -1357,6 +1357,92 @@ class SearchAndPaginationTests(TestCase):
         self.assertContains(response_empty, 'No subjects found matching')
 
 
+class QuestionManagementSectionsTests(TestCase):
+    """
+    Tests verifying the two separate sections under Question Management:
+    - 4 Option MCQ section (only displays MCQ quizzes)
+    - Question & Answer section (only displays Q&A quizzes)
+    """
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from .models import Subject, Question
+
+        self.admin = User.objects.create_superuser(username='sec_admin', email='sec_admin@example.com', password='password123')
+
+        # 1. Subject with MCQ questions only
+        self.mcq_subject = Subject.objects.create(name='Python MCQs Quiz', description='Multiple choice questions')
+        Question.objects.create(
+            subject=self.mcq_subject,
+            question_type='mcq',
+            question_text='What is the output of print(2**3)?',
+            option_a='6',
+            option_b='8',
+            option_c='9',
+            option_d='None',
+            correct_option='B'
+        )
+        Question.objects.create(
+            subject=self.mcq_subject,
+            question_type='mcq',
+            question_text='Which keyword defines a function?',
+            option_a='def',
+            option_b='function',
+            option_c='fun',
+            option_d='define',
+            correct_option='A'
+        )
+
+        # 2. Subject with Q&A questions only
+        self.qna_subject = Subject.objects.create(name='Python Direct QnA Quiz', description='Short answer direct questions')
+        Question.objects.create(
+            subject=self.qna_subject,
+            question_type='qna',
+            question_text='What is PEP 8 in Python?',
+            option_a='Python Enhancement Proposal for code style guide.',
+            correct_option='A'
+        )
+
+    def test_mcq_section_only_displays_mcq_quizzes(self):
+        self.client.login(username='sec_admin', password='password123')
+        response = self.client.get(reverse('question_list') + '?type=mcq')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['active_qtype'], 'mcq')
+        self.assertEqual(len(response.context['subject_data']), 1)
+        self.assertEqual(response.context['subject_data'][0]['subject'].name, 'Python MCQs Quiz')
+        self.assertEqual(response.context['subject_data'][0]['count'], 2)
+        self.assertContains(response, 'Python MCQs Quiz')
+        self.assertNotContains(response, 'Python Direct QnA Quiz')
+        self.assertContains(response, '4 Option MCQ')
+
+    def test_qna_section_only_displays_qna_quizzes(self):
+        self.client.login(username='sec_admin', password='password123')
+        response = self.client.get(reverse('question_list') + '?type=qna')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['active_qtype'], 'qna')
+        self.assertEqual(len(response.context['subject_data']), 1)
+        self.assertEqual(response.context['subject_data'][0]['subject'].name, 'Python Direct QnA Quiz')
+        self.assertEqual(response.context['subject_data'][0]['count'], 1)
+        self.assertContains(response, 'Python Direct QnA Quiz')
+        self.assertNotContains(response, 'Python MCQs Quiz')
+        self.assertContains(response, 'Question &amp; Answer')
+
+    def test_subject_questions_view_filters_by_section_type(self):
+        self.client.login(username='sec_admin', password='password123')
+        # View MCQ quiz questions
+        response_mcq = self.client.get(reverse('subject_questions', kwargs={'pk': self.mcq_subject.id}) + '?type=mcq')
+        self.assertEqual(response_mcq.status_code, 200)
+        self.assertEqual(response_mcq.context['active_qtype'], 'mcq')
+        self.assertEqual(len(response_mcq.context['questions']), 2)
+
+        # View QnA quiz questions
+        response_qna = self.client.get(reverse('subject_questions', kwargs={'pk': self.qna_subject.id}) + '?type=qna')
+        self.assertEqual(response_qna.status_code, 200)
+        self.assertEqual(response_qna.context['active_qtype'], 'qna')
+        self.assertEqual(len(response_qna.context['questions']), 1)
+
+
+
 
 
 

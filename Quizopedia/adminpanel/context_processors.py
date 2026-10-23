@@ -1,7 +1,17 @@
-from user.models import ProfileUpdateRequest
+from user.models import ProfileUpdateRequest, Subject
 
 def pending_approvals_count(request):
     if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
         count = ProfileUpdateRequest.objects.filter(status='pending').count()
-        return {'pending_approvals_count': count}
-    return {'pending_approvals_count': 0}
+        mcq_count = Subject.objects.filter(questions__question_type='mcq').distinct().count()
+        qna_count = Subject.objects.filter(questions__question_type='qna').distinct().count()
+        return {
+            'pending_approvals_count': count,
+            'sidebar_mcq_count': mcq_count,
+            'sidebar_qna_count': qna_count,
+        }
+    return {
+        'pending_approvals_count': 0,
+        'sidebar_mcq_count': 0,
+        'sidebar_qna_count': 0,
+    }
