@@ -800,13 +800,6 @@
 
         <!-- Topbar Right Actions -->
         <div class="qp-topbar-actions">
-          {% if available_subjects %}
-          <a href="{% url 'quiz_attempt' available_subjects.0.id %}" class="qp-btn-accent" id="topbarStartQuizBtn">
-            <i data-lucide="play" style="width:14px;height:14px;fill:currentColor;"></i>
-            <span>Start Quiz</span>
-          </a>
-          {% endif %}
-
           <a href="{% url 'profile' %}" class="qp-btn qp-btn-outline" style="padding:0.5rem 0.9rem;font-size:0.8125rem;">
             <i data-lucide="user" style="width:15px;height:15px;"></i>
             <span>{{ user.username }}</span>
