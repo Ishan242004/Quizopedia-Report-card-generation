@@ -262,6 +262,348 @@
       border-color: #cbd5e1;
     }
 
+    /* Solutions & Answer Breakdown Section */
+    .solutions-section {
+      margin-top: 2.75rem;
+      padding-top: 2.25rem;
+      border-top: 2px dashed #e2e8f0;
+    }
+
+    .solutions-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .solutions-title-group h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .solutions-title-group p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: inline-flex;
+      background: #f1f5f9;
+      padding: 0.3rem;
+      border-radius: 14px;
+      gap: 0.25rem;
+    }
+
+    .filter-tab-btn {
+      padding: 0.45rem 0.9rem;
+      font-size: 0.775rem;
+      font-weight: 700;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+    }
+
+    .filter-tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .filter-tab-btn.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .filter-tab-btn.tab-correct.active {
+      color: #059669;
+    }
+
+    .filter-tab-btn.tab-wrong.active {
+      color: #dc2626;
+    }
+
+    /* Review Card */
+    .review-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .review-card.status-correct {
+      border-color: #86efac;
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 18%);
+    }
+
+    .review-card.status-wrong {
+      border-color: #fca5a5;
+      background: linear-gradient(180deg, #fef2f2 0%, #ffffff 18%);
+    }
+
+    .review-card.status-skipped {
+      border-color: #e2e8f0;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 18%);
+    }
+
+    .review-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .q-number-pill {
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .pill-correct {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .pill-wrong {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .pill-skipped {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .q-status-badge {
+      font-size: 0.775rem;
+      font-weight: 700;
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-status-correct {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .badge-status-wrong {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .badge-status-skipped {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    .review-question-text {
+      font-size: 1.025rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.45;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Options Review Rows (for MCQ) */
+    .review-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .review-option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.8rem 1.1rem;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      transition: all 0.15s ease;
+    }
+
+    .option-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .option-letter-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e2e8f0;
+      color: #475569;
+      flex-shrink: 0;
+    }
+
+    .option-text-span {
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    /* Option States */
+    .review-option-row.opt-correct_selected {
+      border-color: #10b981;
+      background: #ecfdf5;
+      box-shadow: 0 0 0 1px #10b981;
+    }
+    .review-option-row.opt-correct_selected .option-letter-badge {
+      background: #10b981;
+      color: white;
+    }
+    .review-option-row.opt-correct_selected .option-text-span {
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .review-option-row.opt-correct {
+      border-color: #10b981;
+      background: #f0fdf4;
+      border-style: solid;
+    }
+    .review-option-row.opt-correct .option-letter-badge {
+      background: #10b981;
+      color: white;
+    }
+    .review-option-row.opt-correct .option-text-span {
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .review-option-row.opt-incorrect_selected {
+      border-color: #ef4444;
+      background: #fef2f2;
+      box-shadow: 0 0 0 1px #ef4444;
+    }
+    .review-option-row.opt-incorrect_selected .option-letter-badge {
+      background: #ef4444;
+      color: white;
+    }
+    .review-option-row.opt-incorrect_selected .option-text-span {
+      font-weight: 700;
+      color: #991b1b;
+    }
+
+    .review-option-row.opt-neutral {
+      border-color: #e2e8f0;
+      background: #ffffff;
+      opacity: 0.85;
+    }
+
+    /* Answer Verdict Tags */
+    .answer-tag {
+      font-size: 0.725rem;
+      font-weight: 700;
+      padding: 0.3rem 0.65rem;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .tag-correct-user {
+      background: #10b981;
+      color: white;
+    }
+
+    .tag-correct-key {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .tag-wrong-user {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Q&A Short Answer Review */
+    .qna-compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .qna-compare-box {
+      padding: 1.1rem;
+      border-radius: 12px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .qna-compare-box.box-correct {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .qna-compare-box.box-wrong {
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+
+    .qna-compare-box.box-key {
+      border-color: #c7d2fe;
+      background: #eef2ff;
+    }
+
+    .qna-box-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .qna-box-content {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
     /* Print Styles */
     @media print {
       body {
@@ -285,6 +627,10 @@
         background: #312e81 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+      }
+      .review-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
     }
 
@@ -421,6 +767,159 @@
         </div>
       </div>
 
+      <!-- Solutions & Answer Breakdown Section -->
+      <section class="solutions-section" id="quizReviewSection">
+        <div class="solutions-header">
+          <div class="solutions-title-group">
+            <h2>
+              <i data-lucide="list-checks" style="width: 22px; height: 22px; color: var(--primary);"></i>
+              Quiz Solutions &amp; Answer Breakdown
+            </h2>
+            <p>
+              Detailed review of all questions. Correct answers and your mistakes are clearly highlighted.
+            </p>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="filter-tabs no-print" role="tablist">
+            <button type="button" class="filter-tab-btn active" data-filter="all">
+              All Questions ({{ report_card.total_questions }})
+            </button>
+            <button type="button" class="filter-tab-btn tab-correct" data-filter="correct">
+              <i data-lucide="check" style="width: 13px; height: 13px;"></i>
+              Correct ({{ report_card.correct_answers }})
+            </button>
+            <button type="button" class="filter-tab-btn tab-wrong" data-filter="wrong">
+              <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+              Wrong ({{ report_card.wrong_answers }})
+            </button>
+            {% if report_card.skipped_questions > 0 %}
+            <button type="button" class="filter-tab-btn" data-filter="skipped">
+              <i data-lucide="minus" style="width: 13px; height: 13px;"></i>
+              Skipped ({{ report_card.skipped_questions }})
+            </button>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if report_card.answers.all %}
+          <div class="solutions-list" id="solutionsList">
+            {% for ans in report_card.answers.all %}
+              <div class="review-card {% if ans.is_correct %}status-correct{% elif ans.is_attempted %}status-wrong{% else %}status-skipped{% endif %}"
+                   data-status="{% if ans.is_correct %}correct{% elif ans.is_attempted %}wrong{% else %}skipped{% endif %}">
+                
+                <div class="review-card-head">
+                  <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <span class="q-number-pill {% if ans.is_correct %}pill-correct{% elif ans.is_attempted %}pill-wrong{% else %}pill-skipped{% endif %}">
+                      Question {{ ans.order }}
+                    </span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+                      {% if ans.question_type == 'mcq' %}Multiple Choice (MCQ){% else %}Short Answer (Q&amp;A){% endif %}
+                    </span>
+                  </div>
+
+                  <div>
+                    {% if ans.is_correct %}
+                      <span class="q-status-badge badge-status-correct">
+                        <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                        Correct (+10 Marks)
+                      </span>
+                    {% elif ans.is_attempted %}
+                      <span class="q-status-badge badge-status-wrong">
+                        <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+                        Incorrect (0 Marks)
+                      </span>
+                    {% else %}
+                      <span class="q-status-badge badge-status-skipped">
+                        <i data-lucide="minus-circle" style="width: 14px; height: 14px;"></i>
+                        Not Attempted / Skipped (0 Marks)
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="review-question-text">
+                  {{ ans.question_text }}
+                </div>
+
+                {% if ans.question_type == 'mcq' %}
+                  <!-- MCQ Options breakdown -->
+                  <div class="review-options-list">
+                    {% for opt in ans.options_list %}
+                      <div class="review-option-row opt-{{ opt.status }}">
+                        <div class="option-content">
+                          <span class="option-letter-badge">{{ opt.letter }}</span>
+                          <span class="option-text-span">{{ opt.text }}</span>
+                        </div>
+
+                        {% if opt.status == 'correct_selected' %}
+                          <span class="answer-tag tag-correct-user">
+                            <i data-lucide="check-check" style="width: 13px; height: 13px;"></i>
+                            Your Answer (Correct)
+                          </span>
+                        {% elif opt.status == 'correct' %}
+                          <span class="answer-tag tag-correct-key">
+                            <i data-lucide="check" style="width: 13px; height: 13px;"></i>
+                            Correct Answer
+                          </span>
+                        {% elif opt.status == 'incorrect_selected' %}
+                          <span class="answer-tag tag-wrong-user">
+                            <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+                            Your Answer (Wrong)
+                          </span>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                {% else %}
+                  <!-- Q&A text breakdown -->
+                  <div class="qna-compare-grid">
+                    <div class="qna-compare-box {% if ans.is_correct %}box-correct{% elif ans.is_attempted %}box-wrong{% else %}box-neutral{% endif %}">
+                      <span class="qna-box-label" style="{% if ans.is_correct %}color: #15803d;{% elif ans.is_attempted %}color: #b91c1c;{% else %}color: #64748b;{% endif %}">
+                        {% if ans.is_correct %}
+                          <i data-lucide="check" style="width: 13px; height: 13px;"></i>
+                          Your Answer (Correct)
+                        {% elif ans.is_attempted %}
+                          <i data-lucide="x" style="width: 13px; height: 13px;"></i>
+                          Your Answer (Wrong)
+                        {% else %}
+                          <i data-lucide="minus" style="width: 13px; height: 13px;"></i>
+                          Your Answer (Skipped)
+                        {% endif %}
+                      </span>
+                      <div class="qna-box-content">
+                        {% if ans.is_attempted %}
+                          {{ ans.student_answer }}
+                        {% else %}
+                          <em style="color: #94a3b8; font-weight: normal;">(No answer submitted)</em>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <div class="qna-compare-box box-key">
+                      <span class="qna-box-label" style="color: #4338ca;">
+                        <i data-lucide="check-check" style="width: 13px; height: 13px;"></i>
+                        Correct Expected Answer
+                      </span>
+                      <div class="qna-box-content" style="color: #312e81;">
+                        {{ ans.correct_answer_text }}
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 14px; border: 1px dashed #cbd5e1; color: var(--text-muted); font-size: 0.9rem;">
+            <i data-lucide="info" style="width: 24px; height: 24px; color: var(--primary); margin: 0 auto 0.5rem; display: block;"></i>
+            Detailed question-by-question breakdown was not recorded for this past quiz attempt. New quiz attempts will automatically record and show all answers here.
+          </div>
+        {% endif %}
+      </section>
+
       <!-- Bottom Action Row -->
       <div class="action-row no-print">
         <button onclick="window.print()" class="btn btn-outline">
@@ -439,6 +938,25 @@
 
   <script>
     lucide.createIcons();
+
+    // Filter tabs for quiz solutions review
+    document.querySelectorAll('.filter-tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-tab-btn').forEach(function(b) {
+          b.classList.remove('active');
+        });
+        this.classList.add('active');
+        var filter = this.getAttribute('data-filter');
+
+        document.querySelectorAll('.review-card').forEach(function(card) {
+          if (filter === 'all' || card.getAttribute('data-status') === filter) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
   </script>
 </body>
 

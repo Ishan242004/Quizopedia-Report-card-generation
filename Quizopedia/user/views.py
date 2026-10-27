@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
-from .models import Student, ProfileUpdateRequest, Subject, Question, ReportCard, StudentOTP
+from .models import Student, ProfileUpdateRequest, Subject, Question, ReportCard, StudentOTP, ReportCardAnswer
 from .decorators import student_required
 import re
 from django.core.validators import validate_email
@@ -521,23 +521,61 @@ def quiz_attempt(request, subject_id):
     if request.method == 'POST':
         attempted_count = 0
         correct_count = 0
+        answer_records = []
         
-        for q in questions:
+        for idx, q in enumerate(questions, start=1):
             ans_key = f"question_{q.id}"
             student_answer = request.POST.get(ans_key, '').strip()
+            is_attempted = bool(student_answer)
+            is_correct = False
+            student_ans_text = ""
+            correct_ans_letter = ""
+            correct_ans_text = ""
             
-            if student_answer:
-                attempted_count += 1
+            if q.question_type == 'mcq':
+                correct_ans_letter = (q.correct_option or 'A').strip().upper()
+                opt_map = {
+                    'A': q.option_a or '',
+                    'B': q.option_b or '',
+                    'C': q.option_c or '',
+                    'D': q.option_d or '',
+                }
+                correct_ans_text = opt_map.get(correct_ans_letter, '')
                 
-                if q.question_type == 'mcq':
-                    # MCQ: Compare selected option letter (A/B/C/D) with correct_option
-                    if student_answer.upper() == q.correct_option:
+                if is_attempted:
+                    attempted_count += 1
+                    student_ans_letter = student_answer.strip().upper()
+                    student_ans_text = opt_map.get(student_ans_letter, student_answer)
+                    if student_ans_letter == correct_ans_letter:
+                        is_correct = True
                         correct_count += 1
-                else:
-                    # Q&A: Compare answer text with option_a (the stored answer)
-                    correct_text = q.option_a.strip()
-                    if student_answer.lower() == correct_text.lower():
+            else:
+                # Q&A: text question
+                correct_ans_letter = ""
+                correct_ans_text = (q.option_a or '').strip()
+                if is_attempted:
+                    attempted_count += 1
+                    student_ans_text = student_answer
+                    if student_answer.lower() == correct_ans_text.lower():
+                        is_correct = True
                         correct_count += 1
+            
+            answer_records.append(ReportCardAnswer(
+                question=q,
+                question_text=q.question_text,
+                question_type=q.question_type,
+                option_a=q.option_a or '',
+                option_b=q.option_b or '',
+                option_c=q.option_c or '',
+                option_d=q.option_d or '',
+                student_answer=student_answer,
+                student_answer_text=student_ans_text,
+                correct_answer=correct_ans_letter if q.question_type == 'mcq' else correct_ans_text,
+                correct_answer_text=correct_ans_text,
+                is_correct=is_correct,
+                is_attempted=is_attempted,
+                order=idx,
+            ))
                     
         total_questions = questions.count()
         wrong_answers = attempted_count - correct_count
@@ -557,19 +595,24 @@ def quiz_attempt(request, subject_id):
         else:
             grade = 'F'
             
-        # Create the ReportCard record
-        report_card = ReportCard.objects.create(
-            student=student,
-            subject=subject,
-            total_questions=total_questions,
-            attempted_questions=attempted_count,
-            correct_answers=correct_count,
-            wrong_answers=wrong_answers,
-            total_marks=total_marks,
-            obtained_marks=obtained_marks,
-            percentage=percentage,
-            result_grade=grade
-        )
+        with transaction.atomic():
+            # Create the ReportCard record
+            report_card = ReportCard.objects.create(
+                student=student,
+                subject=subject,
+                total_questions=total_questions,
+                attempted_questions=attempted_count,
+                correct_answers=correct_count,
+                wrong_answers=wrong_answers,
+                total_marks=total_marks,
+                obtained_marks=obtained_marks,
+                percentage=percentage,
+                result_grade=grade
+            )
+            
+            for ans in answer_records:
+                ans.report_card = report_card
+            ReportCardAnswer.objects.bulk_create(answer_records)
         
         messages.success(request, f"Quiz submitted successfully! Your score: {percentage}% ({grade})")
         return redirect('report_card_view', pk=report_card.id)
@@ -612,7 +655,11 @@ def grade_descriptive_answer(question_text, student_answer):
 @student_required
 def report_card_view(request, pk):
     student = get_object_or_404(Student, user=request.user)
-    report_card = get_object_or_404(ReportCard, id=pk, student=student)
+    report_card = get_object_or_404(
+        ReportCard.objects.prefetch_related('answers'),
+        id=pk,
+        student=student
+    )
     return render(request, 'report_card.html', {
         'student': student,
         'report_card': report_card,

@@ -963,7 +963,7 @@ def admin_report_cards(request):
 
 @admin_required
 def admin_report_card_detail(request, pk):
-    report_card = get_object_or_404(ReportCard, id=pk)
+    report_card = get_object_or_404(ReportCard.objects.prefetch_related('answers'), id=pk)
     return render(request, 'adminpanel/report_card_detail.html', {
         'report_card': report_card
     })

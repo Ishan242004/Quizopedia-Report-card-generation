@@ -799,6 +799,160 @@ class SampleReportCardQuizDataTests(TestCase):
         self.assertEqual(report_card.percentage, 100.0)
         self.assertEqual(report_card.result_grade, 'A')
 
+    def test_quiz_attempt_stores_and_displays_correct_and_wrong_answers(self):
+        """Verify quiz completion records both correct and wrong answers and renders them on report card."""
+        from django.core.management import call_command
+        from .models import Subject, Question, Student, ReportCard, ReportCardAnswer
+        from django.contrib.auth.models import User
+        from django.urls import reverse
+
+        call_command('populate_sample_quiz_data')
+
+        user = User.objects.create_user(username='test_detailed_quiz', email='detailed@example.com', password='password123')
+        student = Student.objects.create(user=user, phone='9876543210')
+        self.client.login(username='test_detailed_quiz', password='password123')
+
+        subject = Subject.objects.get(name='Python Programming')
+        questions = list(Question.objects.filter(subject=subject).order_by('id'))
+        self.assertEqual(len(questions), 2)
+
+        # Question 0: answer CORRECT
+        # Question 1: answer WRONG (pick option different from correct_option)
+        wrong_opt = 'B' if questions[1].correct_option != 'B' else 'C'
+        post_data = {
+            f"question_{questions[0].id}": questions[0].correct_option,
+            f"question_{questions[1].id}": wrong_opt,
+        }
+        response = self.client.post(reverse('quiz_attempt', args=[subject.id]), post_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        report_card = ReportCard.objects.filter(student=student, subject=subject).first()
+        self.assertIsNotNone(report_card)
+
+        # Verify ReportCard summary
+        self.assertEqual(report_card.correct_answers, 1)
+        self.assertEqual(report_card.wrong_answers, 1)
+        self.assertEqual(report_card.total_questions, 2)
+
+        # Verify ReportCardAnswer records
+        answers = list(report_card.answers.all().order_by('order'))
+        self.assertEqual(len(answers), 2)
+
+        # Q1 (Correct)
+        ans1 = answers[0]
+        self.assertTrue(ans1.is_correct)
+        self.assertTrue(ans1.is_attempted)
+        self.assertEqual(ans1.student_answer.upper(), questions[0].correct_option)
+        self.assertEqual(ans1.correct_answer.upper(), questions[0].correct_option)
+
+        # Q2 (Wrong)
+        ans2 = answers[1]
+        self.assertFalse(ans2.is_correct)
+        self.assertTrue(ans2.is_attempted)
+        self.assertEqual(ans2.student_answer.upper(), wrong_opt)
+        self.assertEqual(ans2.correct_answer.upper(), questions[1].correct_option)
+
+        # Check options list formatting
+        opt_list = ans2.options_list
+        self.assertEqual(len(opt_list), 4)
+        selected_opt = next(o for o in opt_list if o['is_selected'])
+        self.assertEqual(selected_opt['letter'], wrong_opt)
+        self.assertEqual(selected_opt['status'], 'incorrect_selected')
+
+        correct_opt = next(o for o in opt_list if o['is_correct'])
+        self.assertEqual(correct_opt['letter'], questions[1].correct_option)
+        self.assertEqual(correct_opt['status'], 'correct')
+
+        # Check HTML content
+        content = response.content.decode('utf-8')
+        self.assertIn("Quiz Solutions &amp; Answer Breakdown", content)
+        self.assertIn("Your Answer (Correct)", content)
+        self.assertIn("Your Answer (Wrong)", content)
+        self.assertIn("Correct Answer", content)
+
+    def test_quiz_attempt_qna_and_skipped_and_admin_detail_inspection(self):
+        """Verify Q&A questions, skipped questions, and admin inspection view."""
+        from .models import Subject, Question, Student, ReportCard, ReportCardAnswer
+        from django.contrib.auth.models import User
+        from django.urls import reverse
+
+        user = User.objects.create_user(username='qna_student', email='qna@example.com', password='password123')
+        student = Student.objects.create(user=user, phone='9876543210')
+
+        admin_user = User.objects.create_superuser(username='admin_inspector', email='admin@example.com', password='adminpass123')
+
+        subject = Subject.objects.create(name='Physics')
+        q1 = Question.objects.create(
+            subject=subject,
+            question_type='qna',
+            question_text='What is the unit of force?',
+            option_a='Newton',
+        )
+        q2 = Question.objects.create(
+            subject=subject,
+            question_type='qna',
+            question_text='What is the speed of light approx in m/s?',
+            option_a='3x10^8',
+        )
+        q3 = Question.objects.create(
+            subject=subject,
+            question_type='mcq',
+            question_text='Is mass a scalar quantity?',
+            option_a='Yes',
+            option_b='No',
+            option_c='Maybe',
+            option_d='None',
+            correct_option='A',
+        )
+
+        self.client.login(username='qna_student', password='password123')
+
+        # Answer q1 correctly, answer q2 incorrectly, leave q3 skipped
+        post_data = {
+            f"question_{q1.id}": "Newton",
+            f"question_{q2.id}": "Wrong Answer",
+            f"question_{q3.id}": "",  # skipped
+        }
+        response = self.client.post(reverse('quiz_attempt', args=[subject.id]), post_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        report_card = ReportCard.objects.get(student=student, subject=subject)
+        self.assertEqual(report_card.total_questions, 3)
+        self.assertEqual(report_card.attempted_questions, 2)
+        self.assertEqual(report_card.correct_answers, 1)
+        self.assertEqual(report_card.wrong_answers, 1)
+        self.assertEqual(report_card.skipped_questions, 1)
+
+        answers = list(report_card.answers.all().order_by('order'))
+        self.assertEqual(len(answers), 3)
+
+        # q1: correct
+        self.assertTrue(answers[0].is_correct)
+        self.assertTrue(answers[0].is_attempted)
+        self.assertEqual(answers[0].student_answer, "Newton")
+        self.assertEqual(answers[0].correct_answer_text, "Newton")
+
+        # q2: wrong
+        self.assertFalse(answers[1].is_correct)
+        self.assertTrue(answers[1].is_attempted)
+        self.assertEqual(answers[1].student_answer, "Wrong Answer")
+        self.assertEqual(answers[1].correct_answer_text, "3x10^8")
+
+        # q3: skipped
+        self.assertFalse(answers[2].is_attempted)
+        self.assertFalse(answers[2].is_correct)
+
+        # Now test admin report card detail inspection
+        self.client.logout()
+        self.client.login(username='admin_inspector', password='adminpass123')
+        admin_resp = self.client.get(reverse('admin_report_card_detail', args=[report_card.id]))
+        self.assertEqual(admin_resp.status_code, 200)
+        admin_content = admin_resp.content.decode('utf-8')
+        self.assertIn("Student Answers &amp; Solutions Inspection", admin_content)
+        self.assertIn("What is the unit of force?", admin_content)
+        self.assertIn("Newton", admin_content)
+        self.assertIn("Wrong Answer", admin_content)
+
 
 class StudentOTPFlowTests(TestCase):
     """

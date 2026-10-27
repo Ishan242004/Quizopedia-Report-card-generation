@@ -153,4 +153,163 @@
     </div>
   </div>
 </div>
+
+<!-- Detailed Question Answers Breakdown Inspection -->
+<div class="mt-8 glass-card rounded-[28px] p-6 sm:p-8 bg-white border border-slate-200/80 shadow-md">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+    <div>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+          <i data-lucide="list-checks" class="w-4 h-4"></i>
+        </div>
+        <h2 class="text-lg font-extrabold text-slate-900">Student Answers &amp; Solutions Inspection</h2>
+      </div>
+      <p class="text-xs text-slate-500 mt-1">
+        Detailed review of all questions. Correct answers and student's selections are clearly displayed.
+      </p>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="inline-flex p-1 bg-slate-100 rounded-xl gap-1 text-xs font-bold" id="adminFilterTabs">
+      <button type="button" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm admin-tab-btn active" data-filter="all">
+        All Questions ({{ report_card.total_questions }})
+      </button>
+      <button type="button" class="px-3 py-1.5 rounded-lg text-emerald-700 hover:text-emerald-800 admin-tab-btn" data-filter="correct">
+        ✓ Correct ({{ report_card.correct_answers }})
+      </button>
+      <button type="button" class="px-3 py-1.5 rounded-lg text-rose-700 hover:text-rose-800 admin-tab-btn" data-filter="wrong">
+        ✗ Wrong ({{ report_card.wrong_answers }})
+      </button>
+      {% if report_card.skipped_questions > 0 %}
+      <button type="button" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-800 admin-tab-btn" data-filter="skipped">
+        — Skipped ({{ report_card.skipped_questions }})
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if report_card.answers.all %}
+    <div class="mt-6 space-y-4" id="adminAnswersList">
+      {% for ans in report_card.answers.all %}
+        <div class="p-5 rounded-2xl border transition-all admin-ans-card {% if ans.is_correct %}border-emerald-200 bg-emerald-50/20{% elif ans.is_attempted %}border-rose-200 bg-rose-50/20{% else %}border-slate-200 bg-slate-50/40{% endif %}"
+             data-status="{% if ans.is_correct %}correct{% elif ans.is_attempted %}wrong{% else %}skipped{% endif %}">
+          
+          <div class="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-md text-xs font-extrabold {% if ans.is_correct %}bg-emerald-100 text-emerald-800{% elif ans.is_attempted %}bg-rose-100 text-rose-800{% else %}bg-slate-200 text-slate-700{% endif %}">
+                Question {{ ans.order }}
+              </span>
+              <span class="text-xs text-slate-400 font-semibold">
+                {% if ans.question_type == 'mcq' %}Multiple Choice (MCQ){% else %}Short Answer (Q&amp;A){% endif %}
+              </span>
+            </div>
+
+            <div>
+              {% if ans.is_correct %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Correct (+10 Marks)
+                </span>
+              {% elif ans.is_attempted %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                  <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Incorrect (0 Marks)
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                  <i data-lucide="minus-circle" class="w-3.5 h-3.5"></i> Skipped (0 Marks)
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <p class="text-sm sm:text-base font-bold text-slate-900 leading-relaxed mb-4">
+            {{ ans.question_text }}
+          </p>
+
+          {% if ans.question_type == 'mcq' %}
+            <div class="space-y-2">
+              {% for opt in ans.options_list %}
+                <div class="flex items-center justify-between gap-3 p-3 rounded-xl border text-xs sm:text-sm font-medium {% if opt.status == 'correct_selected' %}border-emerald-400 bg-emerald-50 text-emerald-950 font-bold{% elif opt.status == 'correct' %}border-emerald-300 bg-emerald-50/70 text-emerald-900 font-bold{% elif opt.status == 'incorrect_selected' %}border-rose-400 bg-rose-50 text-rose-950 font-bold{% else %}border-slate-200 bg-white text-slate-700{% endif %}">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-7 h-7 rounded-lg flex items-center justify-center font-extrabold text-xs flex-shrink-0 {% if opt.status == 'correct_selected' or opt.status == 'correct' %}bg-emerald-600 text-white{% elif opt.status == 'incorrect_selected' %}bg-rose-600 text-white{% else %}bg-slate-100 text-slate-600{% endif %}">
+                      {{ opt.letter }}
+                    </span>
+                    <span>{{ opt.text }}</span>
+                  </div>
+
+                  <div class="flex-shrink-0">
+                    {% if opt.status == 'correct_selected' %}
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-bold">
+                        <i data-lucide="check-check" class="w-3 h-3"></i> Student Answer (Correct)
+                      </span>
+                    {% elif opt.status == 'correct' %}
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold">
+                        <i data-lucide="check" class="w-3 h-3"></i> Correct Answer
+                      </span>
+                    {% elif opt.status == 'incorrect_selected' %}
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-bold">
+                        <i data-lucide="x" class="w-3 h-3"></i> Student Answer (Wrong)
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-3.5 rounded-xl border text-xs sm:text-sm {% if ans.is_correct %}border-emerald-300 bg-emerald-50/50{% elif ans.is_attempted %}border-rose-300 bg-rose-50/50{% else %}border-slate-200 bg-slate-50{% endif %}">
+                <span class="block text-[11px] font-bold uppercase tracking-wider mb-1 {% if ans.is_correct %}text-emerald-700{% elif ans.is_attempted %}text-rose-700{% else %}text-slate-500{% endif %}">
+                  Student's Submitted Answer
+                </span>
+                <div class="font-semibold text-slate-900">
+                  {% if ans.is_attempted %}{{ ans.student_answer }}{% else %}<span class="italic text-slate-400">Not Attempted</span>{% endif %}
+                </div>
+              </div>
+              <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 text-xs sm:text-sm">
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-indigo-700 mb-1">
+                  Expected Correct Answer
+                </span>
+                <div class="font-bold text-indigo-950">
+                  {{ ans.correct_answer_text }}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-6 p-8 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+      <i data-lucide="info" class="w-5 h-5 mx-auto mb-2 text-indigo-500"></i>
+      Question breakdown was not recorded for this historical quiz attempt.
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    var tabs = document.querySelectorAll('.admin-tab-btn');
+    tabs.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        tabs.forEach(function(t) {
+          t.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-sm');
+        });
+        btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm');
+
+        var filter = btn.getAttribute('data-filter');
+        var cards = document.querySelectorAll('.admin-ans-card');
+        cards.forEach(function(card) {
+          if (filter === 'all' || card.getAttribute('data-status') === filter) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
 {% endblock %}

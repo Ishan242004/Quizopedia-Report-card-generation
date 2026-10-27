@@ -197,8 +197,80 @@ class ReportCard(models.Model):
     result_grade = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def skipped_questions(self):
+        return max(0, self.total_questions - self.attempted_questions)
+
     def __str__(self):
         return f"Report Card: {self.student.user.username} - {self.subject.name}"
+
+
+class ReportCardAnswer(models.Model):
+    report_card = models.ForeignKey(ReportCard, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, blank=True, related_name='report_answers')
+    question_text = models.TextField()
+    question_type = models.CharField(max_length=3, choices=Question.QUESTION_TYPE_CHOICES, default='mcq')
+    option_a = models.CharField(max_length=255, blank=True, default="")
+    option_b = models.CharField(max_length=255, blank=True, default="")
+    option_c = models.CharField(max_length=255, blank=True, default="")
+    option_d = models.CharField(max_length=255, blank=True, default="")
+    student_answer = models.TextField(blank=True, default="")
+    student_answer_text = models.TextField(blank=True, default="")
+    correct_answer = models.TextField(blank=True, default="")
+    correct_answer_text = models.TextField(blank=True, default="")
+    is_correct = models.BooleanField(default=False)
+    is_attempted = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = 'Report Card Answer'
+        verbose_name_plural = 'Report Card Answers'
+
+    def __str__(self):
+        status = "Correct" if self.is_correct else ("Wrong" if self.is_attempted else "Skipped")
+        return f"Q{self.order}: {status} ({self.report_card})"
+
+    @property
+    def options_list(self):
+        """Returns structured list of options with selection and correctness flags."""
+        if self.question_type != 'mcq':
+            return []
+
+        opts = []
+        raw_options = [
+            ('A', self.option_a),
+            ('B', self.option_b),
+            ('C', self.option_c),
+            ('D', self.option_d),
+        ]
+
+        correct_letter = (self.correct_answer or '').strip().upper()
+        selected_letter = (self.student_answer or '').strip().upper() if self.is_attempted else None
+
+        for letter, text in raw_options:
+            if not text:
+                continue
+            is_correct = (letter == correct_letter)
+            is_selected = (letter == selected_letter)
+
+            if is_correct and is_selected:
+                status = 'correct_selected'
+            elif is_correct:
+                status = 'correct'
+            elif is_selected:
+                status = 'incorrect_selected'
+            else:
+                status = 'neutral'
+
+            opts.append({
+                'letter': letter,
+                'text': text,
+                'is_correct': is_correct,
+                'is_selected': is_selected,
+                'status': status,
+            })
+        return opts
 
 
 class StudentOTP(models.Model):
