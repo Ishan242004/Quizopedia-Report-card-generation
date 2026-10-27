@@ -144,33 +144,33 @@
     <!-- Student Request Status Notice -->
     {% if latest_request %}
       {% if latest_request.status == 'pending' %}
-      <div style="margin-bottom: 1.5rem; padding: 1.15rem 1.25rem; border-radius: var(--radius-md); background: #fffbeb; border: 1.5px solid #fde68a; color: #92400e;">
-        <div style="font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+      <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: #fffbeb; border: 1.5px solid #fde68a; color: #92400e;">
+        <div style="font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
           <i data-lucide="clock" style="width: 18px; height: 18px; color: #d97706; flex-shrink: 0;"></i>
-          <span>Student Request Status: Pending Admin Approval</span>
+          <span>Request Pending Approval</span>
         </div>
-        <p style="font-size: 0.8125rem; line-height: 1.5; color: #b45309;">
-          Aapki profile update request admin ke review ke liye pending hai. Jab tak admin approve nahi karta, tab tak original profile unchanged rahegi.
+        <p style="font-size: 0.8125rem; line-height: 1.4; color: #b45309;">
+          Your profile update request is pending admin review.
         </p>
       </div>
       {% elif latest_request.status == 'approved' %}
-      <div style="margin-bottom: 1.5rem; padding: 1.15rem 1.25rem; border-radius: var(--radius-md); background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46;">
-        <div style="font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+      <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46;">
+        <div style="font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
           <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #059669; flex-shrink: 0;"></i>
-          <span>Student Request Status: Admin Approved</span>
+          <span>Request Approved</span>
         </div>
-        <p style="font-size: 0.8125rem; line-height: 1.5; color: #047857;">
-          Admin ne aapki update request approve kar di hai. Nayi details aapki original profile me successfully apply ho chuki hain.
+        <p style="font-size: 0.8125rem; line-height: 1.4; color: #047857;">
+          Your profile update has been approved and applied.
         </p>
       </div>
       {% elif latest_request.status == 'rejected' %}
-      <div style="margin-bottom: 1.5rem; padding: 1.15rem 1.25rem; border-radius: var(--radius-md); background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b;">
-        <div style="font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+      <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b;">
+        <div style="font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
           <i data-lucide="alert-octagon" style="width: 18px; height: 18px; color: #dc2626; flex-shrink: 0;"></i>
-          <span>Student Request Status: Admin Rejected</span>
+          <span>Request Rejected</span>
         </div>
-        <p style="font-size: 0.8125rem; line-height: 1.5; color: #b91c1c;">
-          Admin ne aapki update request reject kar di hai{% if latest_request.rejection_reason %} (Reason: <strong>{{ latest_request.rejection_reason }}</strong>){% endif %}. Original details hi active hain.
+        <p style="font-size: 0.8125rem; line-height: 1.4; color: #b91c1c;">
+          Your profile update was rejected{% if latest_request.rejection_reason %} (Reason: <strong>{{ latest_request.rejection_reason }}</strong>){% endif %}.
         </p>
       </div>
       {% endif %}
