@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, ProfileUpdateRequest, Subject, Question, Option, StudentOTP
+from .models import Student, ProfileUpdateRequest, Subject, Question, Option, StudentOTP, Contact
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -60,5 +60,14 @@ class StudentOTPAdmin(admin.ModelAdmin):
     list_display = ('student', 'otp', 'created_at', 'expires_at', 'is_used')
     list_filter = ('is_used',)
     search_fields = ('student__user__username', 'otp')
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'sender_name', 'sender_email', 'student', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('subject', 'sender_name', 'sender_email', 'message', 'student__user__username')
+    readonly_fields = ('created_at', 'updated_at')
+    ordering = ('-created_at',)
 
 

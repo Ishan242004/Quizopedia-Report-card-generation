@@ -3,6 +3,7 @@ from django.db.models.functions import Lower
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.utils import timezone
 import secrets
 
@@ -38,6 +39,10 @@ class Student(models.Model):
             self.user.email = value
             if not self.user._state.adding:
                 self.user.save()
+
+    @property
+    def contacts(self):
+        return self.contact_messages.all()
 
     def delete(self, *args, **kwargs):
         user = self.user
@@ -304,6 +309,240 @@ class StudentOTP(models.Model):
     def is_valid(self):
         """Returns True if the OTP is unexpired and has not been used."""
         return not self.is_used and not self.is_expired
+
+
+class ContactQuerySet(models.QuerySet):
+    """Custom QuerySet for Contact supporting aliases and case-normalized status filtering."""
+    def _translate_aliases(self, kwargs):
+        new_kwargs = {}
+        for k, v in kwargs.items():
+            if k == 'status' and isinstance(v, str):
+                v = v.strip().lower()
+            if k == 'name' or k.startswith('name__'):
+                new_kwargs['sender_' + k] = v
+            elif k == 'email' or k.startswith('email__'):
+                new_kwargs['sender_' + k] = v
+            elif k == 'timestamp' or k.startswith('timestamp__'):
+                new_kwargs['created_at' + k[9:]] = v
+            else:
+                new_kwargs[k] = v
+        return new_kwargs
+
+    def filter(self, *args, **kwargs):
+        return super().filter(*args, **self._translate_aliases(kwargs))
+
+    def exclude(self, *args, **kwargs):
+        return super().exclude(*args, **self._translate_aliases(kwargs))
+
+    def get(self, *args, **kwargs):
+        return super().get(*args, **self._translate_aliases(kwargs))
+
+
+class Contact(models.Model):
+    """
+    Model storing messages and inquiries submitted by students.
+    """
+    STATUS_NEW = 'new'
+    STATUS_IN_PROGRESS = 'in_progress'
+    STATUS_RESOLVED = 'resolved'
+    STATUS_CLOSED = 'closed'
+
+    STATUS_CHOICES = [
+        (STATUS_NEW, 'New'),
+        (STATUS_IN_PROGRESS, 'In Progress'),
+        (STATUS_RESOLVED, 'Resolved'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='contact_messages',
+        verbose_name="Student"
+    )
+    sender_name = models.CharField(max_length=150, verbose_name="Sender Name")
+    sender_email = models.EmailField(max_length=254, verbose_name="Sender Email")
+    subject = models.CharField(max_length=255, verbose_name="Subject")
+    message = models.TextField(verbose_name="Message")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_NEW,
+        verbose_name="Status"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+    objects = models.Manager.from_queryset(ContactQuerySet)()
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Contact Message'
+        verbose_name_plural = 'Contact Messages'
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(status__in=['new', 'in_progress', 'resolved', 'closed']),
+                name='valid_contact_status'
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['status'], name='contact_status_idx'),
+            models.Index(fields=['-created_at'], name='contact_created_at_idx'),
+            models.Index(fields=['student', '-created_at'], name='contact_student_created_idx'),
+        ]
+
+    def __init__(self, *args, **kwargs):
+        if 'name' in kwargs and 'sender_name' not in kwargs:
+            kwargs['sender_name'] = kwargs.pop('name')
+        if 'email' in kwargs and 'sender_email' not in kwargs:
+            kwargs['sender_email'] = kwargs.pop('email')
+        if 'status' in kwargs and isinstance(kwargs['status'], str):
+            kwargs['status'] = kwargs['status'].strip().lower()
+        super().__init__(*args, **kwargs)
+
+    @property
+    def name(self):
+        return self.sender_name
+
+    @name.setter
+    def name(self, value):
+        self.sender_name = value
+
+    @property
+    def email(self):
+        return self.sender_email
+
+    @email.setter
+    def email(self, value):
+        self.sender_email = value
+
+    @property
+    def timestamp(self):
+        return self.created_at
+
+    @property
+    def user(self):
+        return self.student.user if self.student else None
+
+    @property
+    def is_new(self):
+        return self.status == self.STATUS_NEW
+
+    @property
+    def is_resolved(self):
+        return self.status == self.STATUS_RESOLVED
+
+    @property
+    def is_closed(self):
+        return self.status == self.STATUS_CLOSED
+
+    @property
+    def is_in_progress(self):
+        return self.status == self.STATUS_IN_PROGRESS
+
+    def mark_resolved(self, save=True):
+        self.status = self.STATUS_RESOLVED
+        if save:
+            self.save(update_fields=['status', 'updated_at'])
+
+    def mark_in_progress(self, save=True):
+        self.status = self.STATUS_IN_PROGRESS
+        if save:
+            self.save(update_fields=['status', 'updated_at'])
+
+    def mark_closed(self, save=True):
+        self.status = self.STATUS_CLOSED
+        if save:
+            self.save(update_fields=['status', 'updated_at'])
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        # Auto-populate sender_name from student if omitted
+        if not self.sender_name and self.student_id:
+            try:
+                self.sender_name = self.student.name or self.student.username
+            except Exception:
+                pass
+
+        # Auto-populate sender_email from student if omitted
+        if not self.sender_email and self.student_id:
+            try:
+                self.sender_email = self.student.email
+            except Exception:
+                pass
+
+        if not self.student_id and not getattr(self, 'student', None):
+            errors['student'] = 'Student association is required.'
+
+        if self.sender_name:
+            self.sender_name = self.sender_name.strip()
+        if not self.sender_name:
+            errors['sender_name'] = 'Sender name is required.'
+
+        if self.sender_email:
+            self.sender_email = self.sender_email.strip()
+            try:
+                validate_email(self.sender_email)
+            except ValidationError:
+                errors['sender_email'] = 'Enter a valid email address.'
+        else:
+            errors['sender_email'] = 'Sender email is required.'
+
+        if self.subject:
+            self.subject = self.subject.strip()
+        if not self.subject:
+            errors['subject'] = 'Subject is required.'
+
+        if self.message:
+            self.message = self.message.strip()
+        if not self.message:
+            errors['message'] = 'Message content is required.'
+
+        if self.status:
+            self.status = str(self.status).strip().lower()
+            valid_statuses = [choice[0] for choice in self.STATUS_CHOICES]
+            if self.status not in valid_statuses:
+                errors['status'] = f"Invalid status '{self.status}'. Must be one of: {', '.join(valid_statuses)}."
+        else:
+            self.status = self.STATUS_NEW
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        if not self.sender_name and self.student_id:
+            try:
+                self.sender_name = self.student.name or self.student.username
+            except Exception:
+                pass
+        if not self.sender_email and self.student_id:
+            try:
+                self.sender_email = self.student.email
+            except Exception:
+                pass
+        if self.sender_name:
+            self.sender_name = self.sender_name.strip()
+        if self.sender_email:
+            self.sender_email = self.sender_email.strip()
+        if self.subject:
+            self.subject = self.subject.strip()
+        if self.message:
+            self.message = self.message.strip()
+        if self.status:
+            self.status = str(self.status).strip().lower()
+        else:
+            self.status = self.STATUS_NEW
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        sender = self.sender_name or (self.student.user.username if self.student else "Unknown")
+        return f"Contact: {self.subject} ({sender}) - [{self.get_status_display()}]"
+
+
+# Model Alias to support ContactMessage terminology
+ContactMessage = Contact
 
 
 

@@ -1596,6 +1596,204 @@ class QuestionManagementSectionsTests(TestCase):
         self.assertEqual(len(response_qna.context['questions']), 1)
 
 
+class ContactModelTests(TestCase):
+    """Unit tests for Contact model: creation, retrieval, validation, constraints, and admin registration."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from .models import Student
+        self.user = User.objects.create_user(
+            username='student_contact',
+            first_name='Contact Student',
+            email='student_contact@example.com',
+            password='password123'
+        )
+        self.student = Student.objects.create(user=self.user, phone='1234567890')
+
+    def test_contact_creation_and_retrieval(self):
+        """Test saving and retrieving contact messages with full fields."""
+        from .models import Contact
+        contact = Contact.objects.create(
+            student=self.student,
+            sender_name='Contact Student',
+            sender_email='student_contact@example.com',
+            subject='Inquiry about Report Card',
+            message='Can you please review the grading for Question 2?',
+            status='new'
+        )
+
+        # Retrieve by id
+        retrieved = Contact.objects.get(id=contact.id)
+        self.assertEqual(retrieved.subject, 'Inquiry about Report Card')
+        self.assertEqual(retrieved.sender_name, 'Contact Student')
+        self.assertEqual(retrieved.sender_email, 'student_contact@example.com')
+        self.assertEqual(retrieved.message, 'Can you please review the grading for Question 2?')
+        self.assertEqual(retrieved.status, 'new')
+        self.assertEqual(retrieved.student, self.student)
+        self.assertIsNotNone(retrieved.created_at)
+        self.assertIsNotNone(retrieved.updated_at)
+        self.assertIn('Inquiry about Report Card', str(retrieved))
+
+    def test_contact_relationship_to_student(self):
+        """Verify student relationship via related_name and reverse queries."""
+        from .models import Contact
+        contact = Contact.objects.create(
+            student=self.student,
+            subject='Question Subject',
+            message='Question details here.'
+        )
+        # Access via related_name
+        self.assertIn(contact, self.student.contact_messages.all())
+        # Access via contacts helper property
+        self.assertIn(contact, self.student.contacts)
+        # Access user from contact
+        self.assertEqual(contact.user, self.user)
+
+    def test_contact_auto_populates_name_and_email(self):
+        """If sender_name or sender_email omitted, auto-populate from student profile."""
+        from .models import Contact
+        contact = Contact.objects.create(
+            student=self.student,
+            subject='Auto Populated',
+            message='Message without explicit sender details'
+        )
+        self.assertEqual(contact.sender_name, 'Contact Student')
+        self.assertEqual(contact.sender_email, 'student_contact@example.com')
+
+    def test_contact_aliases_and_properties(self):
+        """Verify name, email, and timestamp aliases work for access and instantiation."""
+        from .models import Contact
+        contact = Contact.objects.create(
+            student=self.student,
+            name='Alias Name',
+            email='alias@example.com',
+            subject='Alias Test',
+            message='Testing alias support'
+        )
+        self.assertEqual(contact.sender_name, 'Alias Name')
+        self.assertEqual(contact.name, 'Alias Name')
+        self.assertEqual(contact.sender_email, 'alias@example.com')
+        self.assertEqual(contact.email, 'alias@example.com')
+        self.assertEqual(contact.timestamp, contact.created_at)
+
+        # Filtering with aliases
+        self.assertEqual(Contact.objects.filter(name='Alias Name').count(), 1)
+        self.assertEqual(Contact.objects.filter(email='alias@example.com').count(), 1)
+
+    def test_contact_status_choices_and_methods(self):
+        """Test status transitions, case insensitivity, and helper methods."""
+        from .models import Contact
+        contact = Contact.objects.create(
+            student=self.student,
+            subject='Status Lifecycle',
+            message='Testing status flows',
+            status='New'  # Capitalized to test case normalization
+        )
+        self.assertEqual(contact.status, 'new')
+        self.assertTrue(contact.is_new)
+        self.assertFalse(contact.is_resolved)
+
+        # Status transition to in_progress
+        contact.mark_in_progress()
+        contact.refresh_from_db()
+        self.assertTrue(contact.is_in_progress)
+
+        # Status transition to resolved
+        contact.mark_resolved()
+        contact.refresh_from_db()
+        self.assertEqual(contact.status, 'resolved')
+        self.assertTrue(contact.is_resolved)
+
+        # Status transition to closed
+        contact.mark_closed()
+        contact.refresh_from_db()
+        self.assertTrue(contact.is_closed)
+
+        # Case-insensitive query filter
+        contact.status = 'new'
+        contact.save()
+        self.assertEqual(Contact.objects.filter(status='Resolved').count(), 0)
+        contact.mark_resolved()
+        self.assertEqual(Contact.objects.filter(status='Resolved').count(), 1)
+
+    def test_contact_validation_missing_student(self):
+        """Contact must require an authenticated student (anonymous senders not supported)."""
+        from .models import Contact
+        from django.core.exceptions import ValidationError
+        contact = Contact(
+            subject='No Student',
+            message='Anonymous attempt',
+            sender_name='Anon',
+            sender_email='anon@example.com'
+        )
+        with self.assertRaises(ValidationError):
+            contact.full_clean()
+
+    def test_contact_validation_empty_fields(self):
+        """Validation raises errors for empty subject, message, or invalid email."""
+        from .models import Contact
+        from django.core.exceptions import ValidationError
+
+        # Empty subject
+        c1 = Contact(student=self.student, subject='   ', message='Valid message')
+        with self.assertRaises(ValidationError):
+            c1.full_clean()
+
+        # Empty message
+        c2 = Contact(student=self.student, subject='Valid subject', message='   ')
+        with self.assertRaises(ValidationError):
+            c2.full_clean()
+
+        # Invalid email
+        c3 = Contact(
+            student=self.student,
+            sender_name='Test',
+            sender_email='invalid-email-format',
+            subject='Valid',
+            message='Valid'
+        )
+        with self.assertRaises(ValidationError):
+            c3.full_clean()
+
+        # Invalid status
+        c4 = Contact(
+            student=self.student,
+            subject='Valid',
+            message='Valid',
+            status='unknown_status'
+        )
+        with self.assertRaises(ValidationError):
+            c4.full_clean()
+
+    def test_contact_cascade_delete(self):
+        """Deleting student cascades and removes associated contact messages."""
+        from .models import Contact, Student
+        contact = Contact.objects.create(
+            student=self.student,
+            subject='To be deleted',
+            message='Cascade test'
+        )
+        contact_id = contact.id
+        self.student.delete()
+        self.assertFalse(Contact.objects.filter(id=contact_id).exists())
+
+    def test_contact_registered_in_admin(self):
+        """Verify Contact model is registered in Django admin with required attributes."""
+        from django.contrib import admin
+        from .models import Contact
+        self.assertIn(Contact, admin.site._registry)
+        contact_admin = admin.site._registry[Contact]
+        self.assertIn('subject', contact_admin.list_display)
+        self.assertIn('status', contact_admin.list_filter)
+        self.assertIn('sender_email', contact_admin.search_fields)
+
+    def test_model_alias_and_no_duplicates(self):
+        """Verify ContactMessage alias refers to Contact and no duplicate models exist."""
+        from .models import Contact, ContactMessage
+        self.assertIs(Contact, ContactMessage)
+
+
+
 
 
 
