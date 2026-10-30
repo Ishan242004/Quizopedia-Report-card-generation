@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
-from user.models import Student, ProfileUpdateRequest, Subject, Question, ReportCard
+from user.models import Student, ProfileUpdateRequest, Subject, Question, ReportCard, Contact
 from user.decorators import admin_required
 from .forms import (
     QuestionForm, QuestionEditForm,
@@ -121,8 +121,15 @@ def admin_dashboard(request):
     errors = []
     success_msg = None
 
-    # Handle quick approve / reject directly from dashboard if requested
+    # Handle quick actions directly from dashboard
     if request.method == 'POST' and 'action' in request.POST:
+        if request.POST.get('action') == 'resolve_contact':
+            contact_id = request.POST.get('contact_id')
+            contact_item = get_object_or_404(Contact, id=contact_id)
+            contact_item.status = Contact.STATUS_RESOLVED
+            contact_item.save()
+            messages.success(request, f"Inquiry from '{contact_item.sender_name}' has been marked as resolved.")
+            return redirect('admin_dashboard')
         action = request.POST.get('action')
         request_id = request.POST.get('request_id')
         req = get_object_or_404(ProfileUpdateRequest, id=request_id)
@@ -162,6 +169,9 @@ def admin_dashboard(request):
     subject_count = Subject.objects.filter(questions__isnull=False).distinct().count()
     report_card_count = ReportCard.objects.count()
     question_count = Question.objects.count()
+    contact_count = Contact.objects.count()
+    new_contact_count = Contact.objects.filter(status='new').count()
+    recent_contact_messages = Contact.objects.select_related('student__user').order_by('-created_at')[:5]
     
     pending_profile_requests = ProfileUpdateRequest.objects.filter(status='pending').order_by('-created_at')
     
@@ -170,6 +180,9 @@ def admin_dashboard(request):
         'question_count': question_count,
         'subject_count': subject_count,
         'report_card_count': report_card_count,
+        'contact_count': contact_count,
+        'new_contact_count': new_contact_count,
+        'recent_contact_messages': recent_contact_messages,
         'pending_profile_requests': pending_profile_requests,
         'errors': errors,
         'success': success_msg,
@@ -976,3 +989,76 @@ def admin_report_card_delete(request, pk):
         report_card.delete()
         messages.success(request, "Report card deleted successfully.")
     return redirect('admin_report_cards')
+
+
+# =============================================================================
+# STUDENT INQUIRIES & CONTACT MESSAGES
+# =============================================================================
+
+@admin_required
+def admin_contact_messages(request):
+    """
+    Displays student contact queries / support messages.
+    Allows filtering by status (all, new, in_progress, resolved, closed),
+    searching across sender, subject, message, and student username,
+    and updating inquiry status or deleting messages.
+    """
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        contact_id = request.POST.get('contact_id')
+        contact_obj = get_object_or_404(Contact, id=contact_id)
+
+        if action == 'update_status':
+            new_status = request.POST.get('status', '').strip().lower()
+            valid_statuses = [c[0] for c in Contact.STATUS_CHOICES]
+            if new_status in valid_statuses:
+                contact_obj.status = new_status
+                contact_obj.save()
+                messages.success(request, f"Inquiry #{contact_obj.id} status changed to '{contact_obj.get_status_display()}'.")
+            else:
+                messages.error(request, f"Invalid status selection '{new_status}'.")
+        elif action == 'delete_contact':
+            contact_obj.delete()
+            messages.success(request, f"Inquiry #{contact_id} deleted successfully.")
+
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        return redirect('admin_contact_messages')
+
+    status_filter = request.GET.get('status', 'all').strip().lower()
+    search_query = request.GET.get('q', '').strip()
+
+    contacts_qs = Contact.objects.select_related('student__user').order_by('-created_at')
+
+    if status_filter in ['new', 'in_progress', 'resolved', 'closed']:
+        contacts_qs = contacts_qs.filter(status=status_filter)
+
+    if search_query:
+        contacts_qs = contacts_qs.filter(
+            Q(sender_name__icontains=search_query) |
+            Q(sender_email__icontains=search_query) |
+            Q(subject__icontains=search_query) |
+            Q(message__icontains=search_query) |
+            Q(student__user__username__icontains=search_query)
+        )
+
+    paginator = Paginator(contacts_qs, 12)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    status_counts = {
+        'all': Contact.objects.count(),
+        'new': Contact.objects.filter(status='new').count(),
+        'in_progress': Contact.objects.filter(status='in_progress').count(),
+        'resolved': Contact.objects.filter(status='resolved').count(),
+        'closed': Contact.objects.filter(status='closed').count(),
+    }
+
+    return render(request, 'adminpanel/contact_messages.html', {
+        'contacts': page_obj,
+        'status_counts': status_counts,
+        'current_status': status_filter,
+        'search_query': search_query,
+        'status_choices': Contact.STATUS_CHOICES,
+    })

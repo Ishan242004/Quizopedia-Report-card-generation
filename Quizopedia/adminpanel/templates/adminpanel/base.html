@@ -446,6 +446,16 @@
         <span>Student Report Cards</span>
       </a>
 
+      <a href="{% url 'admin_contact_messages' %}"
+        class="sidebar-link flex items-center justify-between {% block active_contacts %}{% endblock %}">
+        <span>Student Inquiries</span>
+        {% if new_contacts_count > 0 %}
+        <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-indigo-500 text-white shadow-sm animate-pulse">
+          {{ new_contacts_count }}
+        </span>
+        {% endif %}
+      </a>
+
       <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-3 pt-4 mb-1">Configuration</span>
 
       <a href="{% url 'admin_profile' %}"
@@ -495,6 +505,18 @@
       </div>
 
       <div class="flex items-center gap-4">
+        <!-- Student Inquiries Quick Link -->
+        <a href="{% url 'admin_contact_messages' %}"
+          class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition flex items-center justify-center"
+          title="{% if new_contacts_count > 0 %}{{ new_contacts_count }} New Student Inquiries{% else %}Student Inquiries{% endif %}">
+          <i data-lucide="message-square" class="w-5 h-5 {% if new_contacts_count > 0 %}text-indigo-600{% endif %}"></i>
+          {% if new_contacts_count > 0 %}
+          <span class="absolute top-1 right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-extrabold text-white shadow-sm ring-2 ring-white animate-pulse">
+            {{ new_contacts_count }}
+          </span>
+          {% endif %}
+        </a>
+
         <!-- Notification Bell for Pending Profile Approvals -->
         <a href="{% url 'admin_profile_approvals' %}"
           class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition flex items-center justify-center"

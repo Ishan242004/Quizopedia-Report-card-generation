@@ -19,4 +19,5 @@ urlpatterns = [
     path('admin-dashboard/report-cards/', views.admin_report_cards, name='admin_report_cards'),
     path('admin-dashboard/report-card/<int:pk>/', views.admin_report_card_detail, name='admin_report_card_detail'),
     path('admin-dashboard/report-card/<int:pk>/delete/', views.admin_report_card_delete, name='admin_report_card_delete'),
+    path('admin-dashboard/contacts/', views.admin_contact_messages, name='admin_contact_messages'),
 ]
