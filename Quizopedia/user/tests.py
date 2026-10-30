@@ -1793,6 +1793,96 @@ class ContactModelTests(TestCase):
         self.assertIs(Contact, ContactMessage)
 
 
+class ContactViewTests(TestCase):
+    """Integration tests for the student contact form view and submission flow."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from .models import Student, Subject
+        self.user = User.objects.create_user(
+            username='contact_tester',
+            first_name='Contact Tester',
+            email='tester@example.com',
+            password='password123'
+        )
+        self.student = Student.objects.create(user=self.user, phone='9876543210')
+        self.subject = Subject.objects.create(name='Python Programming', description='Python fundamentals')
+
+    def test_contact_view_unauthenticated_redirect(self):
+        """Unauthenticated user is redirected to login."""
+        response = self.client.get(reverse('contact'))
+        self.assertRedirects(response, reverse('login') + '?next=' + reverse('contact'))
+
+    def test_contact_view_get_authenticated(self):
+        """Authenticated student receives 200 OK and contact.html template."""
+        self.client.login(username='contact_tester', password='password123')
+        response = self.client.get(reverse('contact'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'contact.html')
+        self.assertContains(response, 'Python Programming')
+        self.assertContains(response, 'tester@example.com')
+
+    def test_contact_view_post_success(self):
+        """Student submits contact form with subject and message -> saved to Contact model."""
+        from .models import Contact
+        self.client.login(username='contact_tester', password='password123')
+        response = self.client.post(reverse('contact'), {
+            'subject': 'Python Programming',
+            'message': 'I have a doubt regarding lists in python.'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Your message has been sent successfully!')
+        
+        # Check database
+        self.assertEqual(Contact.objects.count(), 1)
+        contact = Contact.objects.first()
+        self.assertEqual(contact.student, self.student)
+        self.assertEqual(contact.sender_name, 'Contact Tester')
+        self.assertEqual(contact.sender_email, 'tester@example.com')
+        self.assertEqual(contact.subject, 'Python Programming')
+        self.assertEqual(contact.message, 'I have a doubt regarding lists in python.')
+        self.assertEqual(contact.status, 'new')
+
+    def test_contact_view_post_custom_subject(self):
+        """Student submits contact form with Other choice and custom subject."""
+        from .models import Contact
+        self.client.login(username='contact_tester', password='password123')
+        response = self.client.post(reverse('contact'), {
+            'subject': 'Other',
+            'custom_subject': 'Account Credential Issue',
+            'message': 'Cannot reset my password properly.'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        contact = Contact.objects.get(subject='Account Credential Issue')
+        self.assertEqual(contact.message, 'Cannot reset my password properly.')
+
+    def test_contact_view_post_validation_error(self):
+        """Empty message or missing subject stays on page and displays error."""
+        from .models import Contact
+        self.client.login(username='contact_tester', password='password123')
+
+        # Empty message
+        response = self.client.post(reverse('contact'), {
+            'subject': 'Python Programming',
+            'message': ''
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Please enter your message.')
+        self.assertEqual(Contact.objects.count(), 0)
+
+        # Missing subject
+        response_sub = self.client.post(reverse('contact'), {
+            'subject': '',
+            'message': 'Valid message here.'
+        })
+        self.assertEqual(response_sub.status_code, 200)
+        self.assertContains(response_sub, 'Please select or enter a subject for your query.')
+        self.assertEqual(Contact.objects.count(), 0)
+
+
+
 
 
 

@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
 from django.db import transaction
-from .models import Student, ProfileUpdateRequest, Subject, Question, ReportCard, StudentOTP, ReportCardAnswer
+from .models import Student, ProfileUpdateRequest, Subject, Question, ReportCard, StudentOTP, ReportCardAnswer, Contact
 from .decorators import student_required
 import re
 from django.core.validators import validate_email
@@ -512,6 +512,7 @@ def profile_view(request):
         'form_email': form_email,
         'form_phone': form_phone,
     })
+
 @student_required
 def quiz_attempt(request, subject_id):
     student = get_object_or_404(Student, user=request.user)
@@ -663,4 +664,73 @@ def report_card_view(request, pk):
     return render(request, 'report_card.html', {
         'student': student,
         'report_card': report_card,
+    })
+
+
+@student_required
+def contact_view(request):
+    """
+    Student-facing contact view allowing students to select a subject,
+    write a query or feedback message, and submit it for administrative review.
+    """
+    student = get_object_or_404(Student, user=request.user)
+    subjects = Subject.objects.all().order_by('name')
+    errors = []
+
+    selected_subject = request.GET.get('subject', '').strip()
+    form_subject = selected_subject
+    form_message = ''
+    form_custom_subject = ''
+
+    if request.method == 'POST':
+        subject_choice = request.POST.get('subject', '').strip()
+        custom_subject = request.POST.get('custom_subject', '').strip()
+        message_text = request.POST.get('message', '').strip()
+
+        form_subject = subject_choice
+        form_custom_subject = custom_subject
+        form_message = message_text
+
+        # Determine subject title
+        if subject_choice == 'Other':
+            final_subject = custom_subject
+        else:
+            final_subject = subject_choice
+
+        if not final_subject:
+            errors.append("Please select or enter a subject for your query.")
+        if not message_text:
+            errors.append("Please enter your message.")
+
+        if not errors:
+            contact = Contact(
+                student=student,
+                sender_name=student.name or request.user.first_name or request.user.username,
+                sender_email=request.user.email,
+                subject=final_subject,
+                message=message_text,
+                status=Contact.STATUS_NEW,
+            )
+            try:
+                contact.full_clean()
+                contact.save()
+                messages.success(request, "Your message has been sent successfully! Our team will get back to you shortly.")
+                return redirect('contact')
+            except ValidationError as e:
+                if hasattr(e, 'message_dict'):
+                    for field, msgs in e.message_dict.items():
+                        errors.extend(msgs)
+                else:
+                    errors.append(str(e))
+
+    recent_messages = Contact.objects.filter(student=student).order_by('-created_at')[:10]
+
+    return render(request, 'contact.html', {
+        'student': student,
+        'subjects': subjects,
+        'errors': errors,
+        'form_subject': form_subject,
+        'form_custom_subject': form_custom_subject,
+        'form_message': form_message,
+        'recent_messages': recent_messages,
     })

@@ -1,0 +1,282 @@
+{% extends 'base_student.html' %}
+{% load static %}
+
+{% block title %}Contact &amp; Support — Quizopedia{% endblock %}
+{% block meta_description %}Submit your questions, subject inquiries, or feedback to Quizopedia platform instructors.{% endblock %}
+{% block nav_active_contact %}active{% endblock %}
+{% block breadcrumb_title %}Contact &amp; Support{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">
+    Student Support &amp; Inquiries
+  </h1>
+  <p style="font-size: 0.875rem; color: var(--text-muted);">
+    Have a doubt regarding a quiz subject, question grading, or account issue? Send your message to the administration.
+  </p>
+</div>
+
+<!-- Main Two-Column Layout -->
+<div style="display: grid; grid-template-columns: 360px 1fr; gap: 2rem; align-items: start;">
+
+  <!-- Left Column: Student Identity & Inquiries History -->
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+    <!-- Student Sender Card -->
+    <div class="qp-card" style="padding: 1.75rem; text-align: center; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: -50px; right: -50px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%); pointer-events: none;"></div>
+
+      <div style="width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.75rem; font-weight: 800; box-shadow: 0 10px 25px -4px rgba(79, 70, 229, 0.4); border: 3px solid white;">
+        {{ student.username|default:request.user.username|slice:":1"|upper }}
+      </div>
+
+      <h2 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+        {{ request.user.first_name|default:student.username|default:request.user.username }}
+      </h2>
+      <span class="qp-badge qp-badge-primary" style="margin-bottom: 1.25rem;">
+        <i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i>
+        Verified Student
+      </span>
+
+      <!-- Sender Info List -->
+      <div style="display: flex; flex-direction: column; gap: 0.85rem; text-align: left; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.8125rem;">
+        <div>
+          <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block;">Registered Email</span>
+          <span style="font-weight: 600; color: var(--text-main); font-size: 0.875rem; word-break: break-all;">
+            {{ request.user.email }}
+          </span>
+        </div>
+        <div>
+          <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block;">Phone</span>
+          <span style="font-weight: 600; color: var(--text-main); font-size: 0.875rem;">
+            {{ student.phone|default:'Not provided' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Guidance Tip -->
+    <div class="qp-card" style="padding: 1.25rem; background: #f8fafc; border: 1.5px dashed var(--border-subtle);">
+      <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+        <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i data-lucide="help-circle" style="width: 17px; height: 17px;"></i>
+        </div>
+        <div>
+          <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">How it works</h4>
+          <p style="font-size: 0.785rem; color: var(--text-muted); line-height: 1.45;">
+            Select the subject associated with your inquiry. Your message will be sent to the administrator panel with your verified student profile.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Inquiries History -->
+    <div class="qp-card" style="padding: 1.5rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 0.45rem;">
+          <i data-lucide="clock" style="width: 15px; height: 15px; color: var(--primary);"></i>
+          <span>My Recent Queries</span>
+        </h3>
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
+          {{ recent_messages.count }} Total
+        </span>
+      </div>
+
+      {% if recent_messages %}
+      <div style="display: flex; flex-direction: column; gap: 0.85rem; max-height: 380px; overflow-y: auto; padding-right: 0.25rem;">
+        {% for msg in recent_messages %}
+        <div style="padding: 0.85rem 1rem; border-radius: var(--radius-sm); background: var(--bg-canvas); border: 1px solid var(--border-subtle); transition: all 0.2s ease;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
+            <strong style="font-size: 0.8125rem; color: var(--text-main); line-height: 1.3;" title="{{ msg.subject }}">
+              {{ msg.subject|truncatechars:28 }}
+            </strong>
+            {% if msg.status == 'new' %}
+            <span class="qp-badge qp-badge-warning" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">New</span>
+            {% elif msg.status == 'in_progress' %}
+            <span class="qp-badge qp-badge-primary" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">In Review</span>
+            {% elif msg.status == 'resolved' %}
+            <span class="qp-badge qp-badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">Resolved</span>
+            {% else %}
+            <span class="qp-badge" style="background:#e2e8f0;color:#475569;font-size: 0.65rem; padding: 0.15rem 0.5rem;">Closed</span>
+            {% endif %}
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.4rem;">
+            {{ msg.message|truncatechars:65 }}
+          </p>
+          <span style="font-size: 0.685rem; color: var(--text-light); display: block;">
+            {{ msg.created_at|date:"M d, Y • h:i A" }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align: center; padding: 1.5rem 0.5rem; color: var(--text-muted);">
+        <i data-lucide="message-square-dashed" style="width: 28px; height: 28px; color: var(--text-light); margin: 0 auto 0.5rem; display: block;"></i>
+        <p style="font-size: 0.8125rem;">No previous messages submitted yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Right Column: Contact Form Card -->
+  <div class="qp-card" style="padding: 2.25rem;">
+    <!-- Form Header -->
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+      <div style="width: 42px; height: 42px; border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <i data-lucide="send" style="width: 20px; height: 20px;"></i>
+      </div>
+      <div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Send a Message</h2>
+        <p style="font-size: 0.8125rem; color: var(--text-muted);">Choose a subject, type your message, and our instructors will respond promptly.</p>
+      </div>
+    </div>
+
+    <!-- Error Alerts -->
+    {% if errors %}
+    <div style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; font-size: 0.85rem;">
+      <div style="font-weight: 700; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+        <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+        <span>Please correct the following:</span>
+      </div>
+      <ul style="padding-left: 1.5rem; margin: 0;">
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Contact Form -->
+    <form method="POST" id="studentContactForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      {% csrf_token %}
+
+      <!-- Pre-filled Student Details (Readonly Confirmation) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: var(--bg-canvas); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <div>
+          <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.2rem;">Sender Name</label>
+          <span style="font-weight: 600; color: var(--text-main); font-size: 0.875rem;">
+            {{ request.user.first_name|default:student.username }}
+          </span>
+        </div>
+        <div>
+          <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.2rem;">Sender Email</label>
+          <span style="font-weight: 600; color: var(--text-main); font-size: 0.875rem; word-break: break-all;">
+            {{ request.user.email }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Field 1: Subject Selection -->
+      <div>
+        <label for="subjectSelect" style="display: block; font-size: 0.785rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.45rem;">
+          Select Subject / Topic <span style="color: #ef4444;">*</span>
+        </label>
+        <div style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; transition: all 0.2s ease;" id="subjectShell">
+          <i data-lucide="book-open" style="position: absolute; left: 1rem; width: 18px; height: 18px; color: var(--text-light); pointer-events: none;"></i>
+          <select name="subject" id="subjectSelect" required style="width: 100%; height: 2.95rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none; cursor: pointer;">
+            <option value="" disabled {% if not form_subject %}selected{% endif %}>-- Choose a Subject or Query Category --</option>
+            
+            {% if subjects %}
+            <optgroup label="Academic Subjects">
+              {% for subj in subjects %}
+              <option value="{{ subj.name }}" {% if form_subject == subj.name %}selected{% endif %}>
+                {{ subj.name }}
+              </option>
+              {% endfor %}
+            </optgroup>
+            {% endif %}
+
+            <optgroup label="General Query Topics">
+              <option value="Report Card / Grading Query" {% if form_subject == 'Report Card / Grading Query' %}selected{% endif %}>
+                Report Card / Grading Query
+              </option>
+              <option value="Technical Support" {% if form_subject == 'Technical Support' %}selected{% endif %}>
+                Technical Support
+              </option>
+              <option value="General Inquiry" {% if form_subject == 'General Inquiry' %}selected{% endif %}>
+                General Inquiry
+              </option>
+              <option value="Other" {% if form_subject == 'Other' %}selected{% endif %}>
+                Other (Specify Below)
+              </option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Field 1b: Custom Subject (Conditional on "Other") -->
+      <div id="customSubjectGroup" style="display: {% if form_subject == 'Other' %}block{% else %}none{% endif %};">
+        <label for="custom_subject" style="display: block; font-size: 0.785rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.45rem;">
+          Specific Subject Title <span style="color: #ef4444;">*</span>
+        </label>
+        <div style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff;">
+          <i data-lucide="edit-2" style="position: absolute; left: 1rem; width: 18px; height: 18px; color: var(--text-light); pointer-events: none;"></i>
+          <input type="text" name="custom_subject" id="custom_subject" value="{{ form_custom_subject }}" placeholder="Enter custom subject title..." style="width: 100%; height: 2.95rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none;">
+        </div>
+      </div>
+
+      <!-- Field 2: Message Textarea -->
+      <div>
+        <label for="message" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.785rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.45rem;">
+          <span>Your Message / Query <span style="color: #ef4444;">*</span></span>
+          <span style="font-size: 0.725rem; font-weight: 500; text-transform: none; color: var(--text-muted);" id="charCount">0 characters</span>
+        </label>
+        <div style="border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; padding: 0.75rem 1rem; transition: all 0.2s ease;" id="messageShell">
+          <textarea name="message" id="message" rows="6" placeholder="Describe your question or message clearly (e.g. doubt in a quiz question, issue with results, etc.)..." required style="width: 100%; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none; resize: vertical; line-height: 1.5;">{{ form_message }}</textarea>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 0.5rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem;">
+          <i data-lucide="shield" style="width: 14px; height: 14px; color: #10b981;"></i>
+          Submitted directly to Quizopedia Admin Team
+        </span>
+        <button type="submit" class="qp-btn qp-btn-primary" style="padding: 0.75rem 1.85rem; font-size: 0.9rem; font-weight: 700;">
+          <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+          <span>Send Message</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Dynamic handling of "Other" subject
+  const subjectSelect = document.getElementById('subjectSelect');
+  const customSubjectGroup = document.getElementById('customSubjectGroup');
+  const customSubjectInput = document.getElementById('custom_subject');
+  const messageArea = document.getElementById('message');
+  const charCount = document.getElementById('charCount');
+
+  if (subjectSelect && customSubjectGroup) {
+    subjectSelect.addEventListener('change', function() {
+      if (this.value === 'Other') {
+        customSubjectGroup.style.display = 'block';
+        customSubjectInput.setAttribute('required', 'required');
+        customSubjectInput.focus();
+      } else {
+        customSubjectGroup.style.display = 'none';
+        customSubjectInput.removeAttribute('required');
+      }
+    });
+  }
+
+  // Live character counter
+  if (messageArea && charCount) {
+    const updateCount = () => {
+      const len = messageArea.value.length;
+      charCount.textContent = `${len} character${len === 1 ? '' : 's'}`;
+    };
+    messageArea.addEventListener('input', updateCount);
+    updateCount();
+  }
+</script>
+{% endblock %}
+
