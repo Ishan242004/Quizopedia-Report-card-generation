@@ -670,35 +670,27 @@ def report_card_view(request, pk):
 @student_required
 def contact_view(request):
     """
-    Student-facing contact view allowing students to select a subject,
+    Student-facing contact view allowing students to select from all available subjects,
     write a query or feedback message, and submit it for administrative review.
     """
     student = get_object_or_404(Student, user=request.user)
-    subjects = Subject.objects.all().order_by('name')
+    # Retrieve only available quizzes (subjects that have questions)
+    subjects = Subject.objects.filter(questions__isnull=False).distinct().order_by('name')
     errors = []
 
     selected_subject = request.GET.get('subject', '').strip()
     form_subject = selected_subject
     form_message = ''
-    form_custom_subject = ''
 
     if request.method == 'POST':
-        subject_choice = request.POST.get('subject', '').strip()
-        custom_subject = request.POST.get('custom_subject', '').strip()
+        subject_name = request.POST.get('subject', '').strip()
         message_text = request.POST.get('message', '').strip()
 
-        form_subject = subject_choice
-        form_custom_subject = custom_subject
+        form_subject = subject_name
         form_message = message_text
 
-        # Determine subject title
-        if subject_choice == 'Other':
-            final_subject = custom_subject
-        else:
-            final_subject = subject_choice
-
-        if not final_subject:
-            errors.append("Please select or enter a subject for your query.")
+        if not subject_name:
+            errors.append("Please select a subject from the list.")
         if not message_text:
             errors.append("Please enter your message.")
 
@@ -707,7 +699,7 @@ def contact_view(request):
                 student=student,
                 sender_name=student.name or request.user.first_name or request.user.username,
                 sender_email=request.user.email,
-                subject=final_subject,
+                subject=subject_name,
                 message=message_text,
                 status=Contact.STATUS_NEW,
             )
@@ -730,7 +722,6 @@ def contact_view(request):
         'subjects': subjects,
         'errors': errors,
         'form_subject': form_subject,
-        'form_custom_subject': form_custom_subject,
         'form_message': form_message,
         'recent_messages': recent_messages,
     })

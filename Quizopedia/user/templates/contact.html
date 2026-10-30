@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Contact &amp; Support — Quizopedia{% endblock %}
-{% block meta_description %}Submit your questions, subject inquiries, or feedback to Quizopedia platform instructors.{% endblock %}
+{% block meta_description %}Submit your questions or inquiries regarding your quiz subjects.{% endblock %}
 {% block nav_active_contact %}active{% endblock %}
 {% block breadcrumb_title %}Contact &amp; Support{% endblock %}
 
@@ -13,7 +13,7 @@
     Student Support &amp; Inquiries
   </h1>
   <p style="font-size: 0.875rem; color: var(--text-muted);">
-    Have a doubt regarding a quiz subject, question grading, or account issue? Send your message to the administration.
+    Have a doubt regarding a quiz subject or question? Select the subject and send your message to the administration.
   </p>
 </div>
 
@@ -65,7 +65,7 @@
         <div>
           <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">How it works</h4>
           <p style="font-size: 0.785rem; color: var(--text-muted); line-height: 1.45;">
-            Select the subject associated with your inquiry. Your message will be sent to the administrator panel with your verified student profile.
+            Choose the subject from the list of all available subjects and type your message. The instructor will review your query.
           </p>
         </div>
       </div>
@@ -129,7 +129,7 @@
       </div>
       <div>
         <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Send a Message</h2>
-        <p style="font-size: 0.8125rem; color: var(--text-muted);">Choose a subject, type your message, and our instructors will respond promptly.</p>
+        <p style="font-size: 0.8125rem; color: var(--text-muted);">Select your subject, type your message, and submit your query directly to instructors.</p>
       </div>
     </div>
 
@@ -168,52 +168,23 @@
         </div>
       </div>
 
-      <!-- Field 1: Subject Selection -->
+      <!-- Field 1: Subject Selection (Contains only all subjects from database) -->
       <div>
         <label for="subjectSelect" style="display: block; font-size: 0.785rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.45rem;">
-          Select Subject / Topic <span style="color: #ef4444;">*</span>
+          Select Subject <span style="color: #ef4444;">*</span>
         </label>
         <div style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff; transition: all 0.2s ease;" id="subjectShell">
           <i data-lucide="book-open" style="position: absolute; left: 1rem; width: 18px; height: 18px; color: var(--text-light); pointer-events: none;"></i>
           <select name="subject" id="subjectSelect" required style="width: 100%; height: 2.95rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none; cursor: pointer;">
-            <option value="" disabled {% if not form_subject %}selected{% endif %}>-- Choose a Subject or Query Category --</option>
-            
-            {% if subjects %}
-            <optgroup label="Academic Subjects">
-              {% for subj in subjects %}
-              <option value="{{ subj.name }}" {% if form_subject == subj.name %}selected{% endif %}>
-                {{ subj.name }}
-              </option>
-              {% endfor %}
-            </optgroup>
-            {% endif %}
-
-            <optgroup label="General Query Topics">
-              <option value="Report Card / Grading Query" {% if form_subject == 'Report Card / Grading Query' %}selected{% endif %}>
-                Report Card / Grading Query
-              </option>
-              <option value="Technical Support" {% if form_subject == 'Technical Support' %}selected{% endif %}>
-                Technical Support
-              </option>
-              <option value="General Inquiry" {% if form_subject == 'General Inquiry' %}selected{% endif %}>
-                General Inquiry
-              </option>
-              <option value="Other" {% if form_subject == 'Other' %}selected{% endif %}>
-                Other (Specify Below)
-              </option>
-            </optgroup>
+            <option value="" disabled {% if not form_subject %}selected{% endif %}>-- Select an Available Quiz / Subject --</option>
+            {% for subj in subjects %}
+            <option value="{{ subj.name }}" {% if form_subject == subj.name %}selected{% endif %}>
+              {{ subj.name }}
+            </option>
+            {% empty %}
+            <option value="" disabled>No subjects available</option>
+            {% endfor %}
           </select>
-        </div>
-      </div>
-
-      <!-- Field 1b: Custom Subject (Conditional on "Other") -->
-      <div id="customSubjectGroup" style="display: {% if form_subject == 'Other' %}block{% else %}none{% endif %};">
-        <label for="custom_subject" style="display: block; font-size: 0.785rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.45rem;">
-          Specific Subject Title <span style="color: #ef4444;">*</span>
-        </label>
-        <div style="position: relative; display: flex; align-items: center; border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); background: #ffffff;">
-          <i data-lucide="edit-2" style="position: absolute; left: 1rem; width: 18px; height: 18px; color: var(--text-light); pointer-events: none;"></i>
-          <input type="text" name="custom_subject" id="custom_subject" value="{{ form_custom_subject }}" placeholder="Enter custom subject title..." style="width: 100%; height: 2.95rem; padding: 0 1rem 0 2.85rem; border: none; background: transparent; font-family: inherit; font-size: 0.875rem; color: var(--text-main); outline: none;">
         </div>
       </div>
 
@@ -248,27 +219,10 @@
 
 {% block extra_scripts %}
 <script>
-  // Dynamic handling of "Other" subject
-  const subjectSelect = document.getElementById('subjectSelect');
-  const customSubjectGroup = document.getElementById('customSubjectGroup');
-  const customSubjectInput = document.getElementById('custom_subject');
+  // Live character counter
   const messageArea = document.getElementById('message');
   const charCount = document.getElementById('charCount');
 
-  if (subjectSelect && customSubjectGroup) {
-    subjectSelect.addEventListener('change', function() {
-      if (this.value === 'Other') {
-        customSubjectGroup.style.display = 'block';
-        customSubjectInput.setAttribute('required', 'required');
-        customSubjectInput.focus();
-      } else {
-        customSubjectGroup.style.display = 'none';
-        customSubjectInput.removeAttribute('required');
-      }
-    });
-  }
-
-  // Live character counter
   if (messageArea && charCount) {
     const updateCount = () => {
       const len = messageArea.value.length;
@@ -279,4 +233,3 @@
   }
 </script>
 {% endblock %}
-

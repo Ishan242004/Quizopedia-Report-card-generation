@@ -1798,7 +1798,7 @@ class ContactViewTests(TestCase):
 
     def setUp(self):
         from django.contrib.auth.models import User
-        from .models import Student, Subject
+        from .models import Student, Subject, Question
         self.user = User.objects.create_user(
             username='contact_tester',
             first_name='Contact Tester',
@@ -1807,6 +1807,8 @@ class ContactViewTests(TestCase):
         )
         self.student = Student.objects.create(user=self.user, phone='9876543210')
         self.subject = Subject.objects.create(name='Python Programming', description='Python fundamentals')
+        Question.objects.create(subject=self.subject, question_text='What is a list?')
+        self.empty_subject = Subject.objects.create(name='Empty Subject No Quiz', description='No questions yet')
 
     def test_contact_view_unauthenticated_redirect(self):
         """Unauthenticated user is redirected to login."""
@@ -1820,6 +1822,7 @@ class ContactViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'contact.html')
         self.assertContains(response, 'Python Programming')
+        self.assertNotContains(response, 'Empty Subject No Quiz')
         self.assertContains(response, 'tester@example.com')
 
     def test_contact_view_post_success(self):
@@ -1844,19 +1847,20 @@ class ContactViewTests(TestCase):
         self.assertEqual(contact.message, 'I have a doubt regarding lists in python.')
         self.assertEqual(contact.status, 'new')
 
-    def test_contact_view_post_custom_subject(self):
-        """Student submits contact form with Other choice and custom subject."""
-        from .models import Contact
+    def test_contact_view_post_another_subject(self):
+        """Student selects another subject from the database subjects list."""
+        from .models import Contact, Subject, Question
+        math_subj = Subject.objects.create(name='Mathematics', description='Math fundamentals')
+        Question.objects.create(subject=math_subj, question_text='What is 2+2?')
         self.client.login(username='contact_tester', password='password123')
         response = self.client.post(reverse('contact'), {
-            'subject': 'Other',
-            'custom_subject': 'Account Credential Issue',
-            'message': 'Cannot reset my password properly.'
+            'subject': 'Mathematics',
+            'message': 'Question on calculus formula.'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        contact = Contact.objects.get(subject='Account Credential Issue')
-        self.assertEqual(contact.message, 'Cannot reset my password properly.')
+        contact = Contact.objects.get(subject='Mathematics')
+        self.assertEqual(contact.message, 'Question on calculus formula.')
 
     def test_contact_view_post_validation_error(self):
         """Empty message or missing subject stays on page and displays error."""
@@ -1878,7 +1882,7 @@ class ContactViewTests(TestCase):
             'message': 'Valid message here.'
         })
         self.assertEqual(response_sub.status_code, 200)
-        self.assertContains(response_sub, 'Please select or enter a subject for your query.')
+        self.assertContains(response_sub, 'Please select a subject from the list.')
         self.assertEqual(Contact.objects.count(), 0)
 
 
