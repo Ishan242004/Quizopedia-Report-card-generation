@@ -1886,6 +1886,115 @@ class ContactViewTests(TestCase):
         self.assertEqual(Contact.objects.count(), 0)
 
 
+class AdminContactReplyTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from .models import Student, Subject, Question, Contact
+        from django.core import mail
+
+        # Create admin user
+        self.admin_user = User.objects.create_superuser(
+            username='admin_tester',
+            email='admin@quizopedia.com',
+            password='adminpassword123'
+        )
+
+        # Create student user
+        self.student_user = User.objects.create_user(
+            username='student_inquiry_user',
+            email='student_inquiry@example.com',
+            first_name='Aarav',
+            password='password123'
+        )
+        self.student = Student.objects.create(user=self.student_user, phone='9876543210')
+
+        # Create subject and question
+        self.subject = Subject.objects.create(name='Django Web Development')
+        Question.objects.create(subject=self.subject, question_text='What is an MVT architecture?')
+
+        # Create contact message from student
+        self.contact = Contact.objects.create(
+            student=self.student,
+            sender_name='Aarav',
+            sender_email='student_inquiry@example.com',
+            subject='Django Web Development',
+            message='Can you explain the difference between function views and class based views?',
+            status='new'
+        )
+
+    def test_admin_reply_sends_email_to_student(self):
+        """Admin replies to student inquiry, and an email is dispatched directly to the student's email."""
+        from django.core import mail
+        from .models import Contact
+
+        self.client.login(username='admin_tester', password='adminpassword123')
+        
+        reply_text = 'Function views are simple python functions, whereas CBVs provide inheritance and mixins.'
+        response = self.client.post(reverse('admin_contact_messages'), {
+            'action': 'reply_contact',
+            'contact_id': self.contact.id,
+            'reply_subject': 'Re: Django Web Development Query',
+            'reply_message': reply_text,
+            'status': 'resolved',
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Reply email sent successfully to student_inquiry@example.com!')
+
+        # Verify email was sent via Django mail backend
+        self.assertEqual(len(mail.outbox), 1)
+        sent_email = mail.outbox[0]
+        self.assertIn('student_inquiry@example.com', sent_email.to)
+        self.assertEqual(sent_email.subject, 'Re: Django Web Development Query')
+        self.assertIn(reply_text, sent_email.body)
+        self.assertIn('Aarav', sent_email.body)
+        self.assertIn(self.contact.message, sent_email.body)
+
+        # Verify Database updates
+        self.contact.refresh_from_db()
+        self.assertEqual(self.contact.admin_reply, reply_text)
+        self.assertEqual(self.contact.status, 'resolved')
+        self.assertIsNotNone(self.contact.replied_at)
+        self.assertEqual(self.contact.replied_by, self.admin_user)
+        self.assertTrue(self.contact.is_replied)
+
+    def test_student_can_see_admin_reply_on_contact_page(self):
+        """After admin replies, student sees the reply text on their contact support page."""
+        from .models import Contact
+
+        # Admin sets a reply
+        self.contact.admin_reply = 'Here is the detailed solution to your query.'
+        self.contact.status = 'resolved'
+        self.contact.save()
+
+        self.client.login(username='student_inquiry_user', password='password123')
+        response = self.client.get(reverse('contact'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Instructor's Email Reply:")
+        self.assertContains(response, 'Here is the detailed solution to your query.')
+
+    def test_dashboard_reply_action_sends_email(self):
+        """Admin can also reply directly from the main executive dashboard."""
+        from django.core import mail
+        from .models import Contact
+
+        self.client.login(username='admin_tester', password='adminpassword123')
+        response = self.client.post(reverse('admin_dashboard'), {
+            'action': 'reply_contact',
+            'contact_id': self.contact.id,
+            'reply_subject': 'Quick Reply from Dashboard',
+            'reply_message': 'Got your query from dashboard. Here is the reply.',
+            'status': 'resolved',
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Reply email sent successfully')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('student_inquiry@example.com', mail.outbox[0].to)
+        self.assertIn('Got your query from dashboard', mail.outbox[0].body)
+
+
+
 
 
 

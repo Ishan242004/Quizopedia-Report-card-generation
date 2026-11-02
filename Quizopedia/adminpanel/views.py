@@ -16,6 +16,7 @@ import re
 import sys
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.utils import timezone
 
 
 def safe_print(text):
@@ -116,6 +117,82 @@ def send_profile_status_email(req, status, rejection_reason='', old_email=None):
         safe_print(f"[EMAIL DELIVERY NOTE]: {e}")
 
 
+def send_contact_reply_email(contact_obj, reply_message, reply_subject=None, admin_user=None):
+    """
+    Sends an email reply to the student's email regarding their submitted contact inquiry,
+    and prints the formatted email clearly to the terminal console.
+    """
+    student_name = contact_obj.sender_name
+    if not student_name and contact_obj.student:
+        student_name = contact_obj.student.name or contact_obj.student.username
+    if not student_name:
+        student_name = "Student"
+
+    recipient_email = (contact_obj.sender_email or '').strip()
+    if not recipient_email and contact_obj.student:
+        recipient_email = (contact_obj.student.email or '').strip()
+
+    recipients = [recipient_email] if recipient_email else []
+
+    if not reply_subject or not reply_subject.strip():
+        reply_subject = f"Quizopedia Support: Re - {contact_obj.subject}"
+    else:
+        reply_subject = reply_subject.strip()
+
+    admin_display_name = "Quizopedia Support Team"
+    if admin_user:
+        admin_display_name = admin_user.first_name or admin_user.username or admin_display_name
+
+    created_str = contact_obj.created_at.strftime('%b %d, %Y at %I:%M %p') if contact_obj.created_at else "Earlier"
+
+    message = (
+        f"Dear {student_name},\n\n"
+        f"Thank you for contacting Quizopedia Support.\n\n"
+        f"An instructor / administrator has reviewed your inquiry and replied:\n"
+        f"----------------------------------------------------------------------\n"
+        f"{reply_message.strip()}\n"
+        f"----------------------------------------------------------------------\n\n"
+        f"Details of Your Original Inquiry:\n"
+        f"  * Subject:   {contact_obj.subject}\n"
+        f"  * Submitted: {created_str}\n"
+        f"  * Message:   \"{contact_obj.message}\"\n\n"
+        f"If you have further questions or need additional assistance, you can submit a new message anytime.\n\n"
+        f"Best regards,\n"
+        f"{admin_display_name}\n"
+        f"Quizopedia Learning Platform"
+    )
+
+    # 1. Print formatted notification clearly to terminal console
+    border = "=" * 65
+    safe_print("\n" + border)
+    safe_print("[EMAIL NOTIFICATION - STUDENT CONTACT REPLY]")
+    safe_print(f"Recipient(s): {', '.join(recipients)}")
+    safe_print(f"Subject:      {reply_subject}")
+    safe_print(f"Student:      {student_name} ({getattr(contact_obj.student, 'username', 'N/A')})")
+    if admin_user:
+        safe_print(f"Replied By:   {admin_user.username}")
+    safe_print("-" * 65)
+    for line in message.strip().splitlines():
+        safe_print(line)
+    safe_print(border + "\n")
+
+    # 2. Send email via Django's mail backend
+    try:
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@quizopedia.com')
+        if recipients:
+            send_mail(
+                subject=reply_subject,
+                message=message,
+                from_email=from_email,
+                recipient_list=recipients,
+                fail_silently=False,
+            )
+        return True, None
+    except Exception as e:
+        safe_print(f"[EMAIL DELIVERY NOTE]: {e}")
+        return False, str(e)
+
+
 @admin_required
 def admin_dashboard(request):
     errors = []
@@ -129,6 +206,29 @@ def admin_dashboard(request):
             contact_item.status = Contact.STATUS_RESOLVED
             contact_item.save()
             messages.success(request, f"Inquiry from '{contact_item.sender_name}' has been marked as resolved.")
+            return redirect('admin_dashboard')
+
+        if request.POST.get('action') == 'reply_contact':
+            contact_id = request.POST.get('contact_id')
+            contact_item = get_object_or_404(Contact, id=contact_id)
+            reply_message = request.POST.get('reply_message', '').strip()
+            reply_subject = request.POST.get('reply_subject', '').strip()
+            new_status = request.POST.get('status', 'resolved').strip().lower()
+
+            if not reply_message:
+                messages.error(request, "Reply message cannot be empty.")
+            else:
+                sent_ok, err = send_contact_reply_email(contact_item, reply_message, reply_subject, request.user)
+                contact_item.admin_reply = reply_message
+                contact_item.replied_at = timezone.now()
+                contact_item.replied_by = request.user
+                if new_status in [c[0] for c in Contact.STATUS_CHOICES]:
+                    contact_item.status = new_status
+                else:
+                    contact_item.status = Contact.STATUS_RESOLVED
+                contact_item.save()
+                recip = contact_item.sender_email or (contact_item.student.email if contact_item.student else 'student')
+                messages.success(request, f"Reply email sent successfully to {recip}!")
             return redirect('admin_dashboard')
         action = request.POST.get('action')
         request_id = request.POST.get('request_id')
@@ -1020,6 +1120,25 @@ def admin_contact_messages(request):
         elif action == 'delete_contact':
             contact_obj.delete()
             messages.success(request, f"Inquiry #{contact_id} deleted successfully.")
+        elif action == 'reply_contact':
+            reply_message = request.POST.get('reply_message', '').strip()
+            reply_subject = request.POST.get('reply_subject', '').strip()
+            new_status = request.POST.get('status', 'resolved').strip().lower()
+
+            if not reply_message:
+                messages.error(request, "Reply message cannot be empty.")
+            else:
+                sent_ok, err = send_contact_reply_email(contact_obj, reply_message, reply_subject, request.user)
+                contact_obj.admin_reply = reply_message
+                contact_obj.replied_at = timezone.now()
+                contact_obj.replied_by = request.user
+                if new_status in [c[0] for c in Contact.STATUS_CHOICES]:
+                    contact_obj.status = new_status
+                else:
+                    contact_obj.status = Contact.STATUS_RESOLVED
+                contact_obj.save()
+                recip = contact_obj.sender_email or (contact_obj.student.email if contact_obj.student else 'student')
+                messages.success(request, f"Reply email sent successfully to {recip}! Inquiry status updated to '{contact_obj.get_status_display()}'.")
 
         referer = request.META.get('HTTP_REFERER')
         if referer:

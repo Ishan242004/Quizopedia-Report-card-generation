@@ -64,10 +64,15 @@ class StudentOTPAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'sender_name', 'sender_email', 'student', 'status', 'created_at')
-    list_filter = ('status', 'created_at')
-    search_fields = ('subject', 'sender_name', 'sender_email', 'message', 'student__user__username')
-    readonly_fields = ('created_at', 'updated_at')
+    list_display = ('subject', 'sender_name', 'sender_email', 'student', 'status', 'has_reply', 'replied_at', 'created_at')
+    list_filter = ('status', 'created_at', 'replied_at')
+    search_fields = ('subject', 'sender_name', 'sender_email', 'message', 'admin_reply', 'student__user__username')
+    readonly_fields = ('created_at', 'updated_at', 'replied_at')
     ordering = ('-created_at',)
+
+    def has_reply(self, obj):
+        return bool(obj.admin_reply)
+    has_reply.boolean = True
+    has_reply.short_description = 'Replied'
 
 

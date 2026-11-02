@@ -372,6 +372,16 @@ class Contact(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+    admin_reply = models.TextField(blank=True, null=True, verbose_name="Admin Reply")
+    replied_at = models.DateTimeField(blank=True, null=True, verbose_name="Replied At")
+    replied_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='contact_replies',
+        verbose_name="Replied By"
+    )
 
     objects = models.Manager.from_queryset(ContactQuerySet)()
 
@@ -427,6 +437,10 @@ class Contact(models.Model):
     @property
     def is_new(self):
         return self.status == self.STATUS_NEW
+
+    @property
+    def is_replied(self):
+        return bool(self.admin_reply)
 
     @property
     def is_resolved(self):

@@ -13,7 +13,7 @@
       <span>Student Inquiries &amp; Messages</span>
     </h1>
     <p class="text-slate-500 text-sm mt-0.5">
-      Review and manage questions, feedback, and support inquiries sent by students.
+      Review questions submitted by students and reply directly to their registered email address.
     </p>
   </div>
   <div class="flex items-center gap-2.5">
@@ -146,13 +146,13 @@
 <!-- Contact Messages Table Card -->
 <div class="glass-card overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="w-full text-left text-sm border-collapse min-w-[840px]">
+    <table class="w-full text-left text-sm border-collapse min-w-[880px]">
       <thead>
         <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
           <th class="px-6 py-4">ID</th>
           <th class="px-6 py-4">Student / Sender</th>
           <th class="px-6 py-4">Subject</th>
-          <th class="px-6 py-4">Message</th>
+          <th class="px-6 py-4">Message &amp; Status</th>
           <th class="px-6 py-4">Status</th>
           <th class="px-6 py-4">Date</th>
           <th class="px-6 py-4 text-right">Actions</th>
@@ -189,13 +189,34 @@
             </span>
           </td>
 
-          <!-- Message Preview & Full Modal Trigger -->
+          <!-- Message Preview & Reply Badge -->
           <td class="px-6 py-4 align-top text-xs max-w-sm">
             <p class="text-slate-700 line-clamp-2 leading-relaxed">{{ contact.message }}</p>
+            
+            {% if contact.is_replied %}
+            <div class="mt-2 p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px]">
+              <div class="flex items-center gap-1 font-bold mb-0.5 text-emerald-900">
+                <i data-lucide="check-check" class="w-3 h-3 text-emerald-600"></i>
+                <span>Replied to student's email:</span>
+              </div>
+              <p class="line-clamp-1 italic text-emerald-700">"{{ contact.admin_reply }}"</p>
+            </div>
+            {% endif %}
+
             <button type="button"
-                    onclick="openMessageModal({{ contact.id }}, '{{ contact.sender_name|escapejs }}', '{{ contact.sender_email|escapejs }}', '{{ contact.student.user.username|default:''|escapejs }}', '{{ contact.subject|escapejs }}', `{{ contact.message|escapejs }}`, '{{ contact.status }}', '{{ contact.created_at|date:"M d, Y H:i" }}')"
-                    class="mt-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
-              <i data-lucide="eye" class="w-3 h-3"></i> Read Full Message
+                    class="open-modal-btn mt-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition"
+                    data-id="{{ contact.id }}"
+                    data-sender-name="{{ contact.sender_name|default:'' }}"
+                    data-sender-email="{{ contact.sender_email|default:'' }}"
+                    data-username="{{ contact.student.user.username|default:'' }}"
+                    data-subject="{{ contact.subject|default:'' }}"
+                    data-message="{{ contact.message|default:'' }}"
+                    data-status="{{ contact.status }}"
+                    data-date="{{ contact.created_at|date:'M d, Y H:i' }}"
+                    data-reply="{{ contact.admin_reply|default:'' }}"
+                    data-replied-at="{{ contact.replied_at|date:'M d, Y H:i'|default:'' }}"
+                    onclick="openMessageModalFromBtn(this)">
+              <i data-lucide="eye" class="w-3 h-3"></i> View Full Details &amp; Reply
             </button>
           </td>
 
@@ -232,14 +253,34 @@
 
           <!-- Actions -->
           <td class="px-6 py-4 align-top text-right whitespace-nowrap">
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex items-center justify-end gap-1.5">
+              <!-- Direct Reply Button (Opens Email Reply Modal) -->
+              <button type="button"
+                      class="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-xs"
+                      data-id="{{ contact.id }}"
+                      data-sender-name="{{ contact.sender_name|default:'' }}"
+                      data-sender-email="{{ contact.sender_email|default:'' }}"
+                      data-username="{{ contact.student.user.username|default:'' }}"
+                      data-subject="{{ contact.subject|default:'' }}"
+                      data-message="{{ contact.message|default:'' }}"
+                      data-status="{{ contact.status }}"
+                      data-date="{{ contact.created_at|date:'M d, Y H:i' }}"
+                      data-reply="{{ contact.admin_reply|default:'' }}"
+                      data-replied-at="{{ contact.replied_at|date:'M d, Y H:i'|default:'' }}"
+                      onclick="openMessageModalFromBtn(this, true)"
+                      title="Reply directly to student's email">
+                <i data-lucide="reply" class="w-3.5 h-3.5"></i>
+                <span>Reply</span>
+              </button>
+
               <!-- Quick Status Change Form -->
               <form method="POST" class="inline">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_status">
                 <input type="hidden" name="contact_id" value="{{ contact.id }}">
                 <select name="status" onchange="this.form.submit()"
-                        class="px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer">
+                        class="px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                        title="Update Status">
                   {% for s_val, s_label in status_choices %}
                   <option value="{{ s_val }}" {% if contact.status == s_val %}selected{% endif %}>
                     {{ s_label }}
@@ -248,20 +289,13 @@
                 </select>
               </form>
 
-              <!-- Mail to Student -->
-              <a href="mailto:{{ contact.sender_email }}?subject=Re:%20Quizopedia%20Inquiry%20-%20{{ contact.subject|urlencode }}"
-                 class="w-7 h-7 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 flex items-center justify-center transition"
-                 title="Send Reply Email to {{ contact.sender_email }}">
-                <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-              </a>
-
               <!-- Delete Action -->
               <form method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete inquiry #{{ contact.id }} from {{ contact.sender_name }}?');">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="delete_contact">
                 <input type="hidden" name="contact_id" value="{{ contact.id }}">
                 <button type="submit"
-                        class="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 flex items-center justify-center transition"
+                        class="w-7 h-7 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 flex items-center justify-center transition"
                         title="Delete Inquiry">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
@@ -336,10 +370,10 @@
 </div>
 
 <!-- ========================================================================
-     DETAILED MESSAGE MODAL
+     DETAILED MESSAGE & EMAIL REPLY MODAL
      ======================================================================== -->
 <div id="messageDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+  <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-8">
     <!-- Modal Header -->
     <div class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-indigo-100 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
@@ -357,59 +391,102 @@
     </div>
 
     <!-- Modal Body -->
-    <div class="p-6 space-y-4">
+    <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
       <!-- Sender Info Card -->
-      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 gap-3 text-xs">
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         <div>
-          <span class="text-slate-400 font-semibold block">Sender Name:</span>
+          <span class="text-slate-400 font-semibold block">Student / Sender:</span>
           <span class="font-bold text-slate-800 block text-sm" id="modalSenderName"></span>
         </div>
         <div>
-          <span class="text-slate-400 font-semibold block">Sender Email:</span>
-          <span class="font-bold text-slate-800 block" id="modalSenderEmail"></span>
+          <span class="text-slate-400 font-semibold block">Destination Email:</span>
+          <span class="font-bold text-indigo-700 block" id="modalSenderEmail"></span>
         </div>
         <div>
-          <span class="text-slate-400 font-semibold block">Student Username:</span>
-          <span class="font-bold text-indigo-700 block" id="modalUsername"></span>
+          <span class="text-slate-400 font-semibold block">Registered Username:</span>
+          <span class="font-bold text-slate-800 block" id="modalUsername"></span>
         </div>
         <div>
-          <span class="text-slate-400 font-semibold block">Submitted On:</span>
+          <span class="text-slate-400 font-semibold block">Submitted Date:</span>
           <span class="font-bold text-slate-700 block" id="modalDate"></span>
         </div>
       </div>
 
-      <!-- Message Content -->
+      <!-- Original Message Box -->
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Full Message:</label>
-        <div class="p-4 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line" id="modalBodyText"></div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
+          <i data-lucide="help-circle" class="w-3.5 h-3.5 text-indigo-500"></i>
+          <span>Student's Message:</span>
+        </label>
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line" id="modalBodyText"></div>
       </div>
 
-      <!-- Status Update Form inside Modal -->
-      <form method="POST" id="modalStatusForm" class="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="update_status">
-        <input type="hidden" name="contact_id" id="modalContactId" value="">
-        <div class="flex items-center gap-2 text-xs">
-          <label for="modalStatusSelect" class="font-bold text-slate-700">Update Status:</label>
-          <select name="status" id="modalStatusSelect"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            {% for s_val, s_label in status_choices %}
-            <option value="{{ s_val }}">{{ s_label }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition">
-            Save Status
-          </button>
+      <!-- Previous Reply Box (if already replied) -->
+      <div id="modalPreviousReplyBox" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 hidden">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+            <i data-lucide="check-check" class="w-4 h-4 text-emerald-600"></i>
+            <span>Previously Sent Reply:</span>
+          </span>
+          <span class="text-[11px] font-semibold text-emerald-700" id="modalPreviousReplyDate"></span>
         </div>
-        <a id="modalMailBtn" href="#" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition">
-          <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-          <span>Reply via Email</span>
-        </a>
-      </form>
+        <div class="text-xs text-emerald-950 whitespace-pre-line leading-relaxed" id="modalPreviousReplyText"></div>
+      </div>
+
+      <!-- Direct Email Reply Form Section -->
+      <div class="pt-4 border-t border-slate-200">
+        <div class="mb-3">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <i data-lucide="send" class="w-4 h-4 text-indigo-600"></i>
+            <span>Reply directly to Student's Email</span>
+          </h4>
+          <p class="text-[11px] text-slate-500 mt-0.5">
+            Typing your response below will send an official email to <span class="font-bold text-slate-700" id="modalReplyRecipientEmail">student</span> and update this ticket's status.
+          </p>
+        </div>
+
+        <form method="POST" id="modalReplyForm" class="space-y-3.5">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="reply_contact">
+          <input type="hidden" name="contact_id" id="modalContactId" value="">
+
+          <div>
+            <label for="modalReplySubject" class="block text-xs font-bold text-slate-700 mb-1">Email Subject:</label>
+            <input type="text" name="reply_subject" id="modalReplySubject" value=""
+                   class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div>
+            <label for="modalReplyMessage" class="block text-xs font-bold text-slate-700 mb-1">Reply Message Content *:</label>
+            <textarea name="reply_message" id="modalReplyMessage" rows="5" required
+                      placeholder="Write your detailed answer or solution for the student here..."
+                      class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+            <div class="flex items-center gap-2">
+              <label for="modalReplyStatus" class="text-xs font-bold text-slate-700">Set Ticket Status:</label>
+              <select name="status" id="modalReplyStatus"
+                      class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                {% for s_val, s_label in status_choices %}
+                <option value="{{ s_val }}" {% if s_val == 'resolved' %}selected{% endif %}>{{ s_label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <button type="submit"
+                    class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              <span>Send Email Reply to Student</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Modal Footer -->
-    <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+    <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+      <span class="text-[11px] text-slate-400">Quizopedia Admin Help Desk</span>
       <button type="button" onclick="closeMessageModal()" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition">
         Close
       </button>
@@ -418,27 +495,60 @@
 </div>
 
 <script>
-  function openMessageModal(id, senderName, senderEmail, username, subject, message, status, date) {
-    document.getElementById('modalContactId').value = id;
-    document.getElementById('modalSubject').textContent = subject;
-    document.getElementById('modalMeta').textContent = `Inquiry #${id} — Received on ${date}`;
-    document.getElementById('modalSenderName').textContent = senderName;
-    document.getElementById('modalSenderEmail').textContent = senderEmail;
-    document.getElementById('modalUsername').textContent = username ? `@${username}` : '[Direct Submission]';
-    document.getElementById('modalDate').textContent = date;
-    document.getElementById('modalBodyText').textContent = message;
-    document.getElementById('modalStatusSelect').value = status;
-    document.getElementById('modalMailBtn').href = `mailto:${encodeURIComponent(senderEmail)}?subject=Re:%20Quizopedia%20Inquiry%20-%20${encodeURIComponent(subject)}`;
-    
+  function openMessageModalFromBtn(btn, focusReply = false) {
+    const d = btn.dataset;
+    document.getElementById('modalContactId').value = d.id;
+    document.getElementById('modalSubject').textContent = d.subject;
+    document.getElementById('modalMeta').textContent = `Inquiry #${d.id} — Received on ${d.date}`;
+    document.getElementById('modalSenderName').textContent = d.senderName || 'Anonymous Student';
+    document.getElementById('modalSenderEmail').textContent = d.senderEmail || 'N/A';
+    document.getElementById('modalReplyRecipientEmail').textContent = d.senderEmail || 'student email';
+    document.getElementById('modalUsername').textContent = d.username ? `@${d.username}` : '[Direct]';
+    document.getElementById('modalDate').textContent = d.date;
+    document.getElementById('modalBodyText').textContent = d.message;
+
+    // Prefill reply subject
+    const subj = d.subject || '';
+    document.getElementById('modalReplySubject').value = subj.toLowerCase().startsWith('re:') ? subj : `Re: ${subj}`;
+
+    // Handle previous reply display
+    const prevReplyBox = document.getElementById('modalPreviousReplyBox');
+    if (d.reply && d.reply.trim().length > 0) {
+      prevReplyBox.classList.remove('hidden');
+      document.getElementById('modalPreviousReplyText').textContent = d.reply;
+      document.getElementById('modalPreviousReplyDate').textContent = d.repliedAt ? `Sent on ${d.repliedAt}` : 'Replied';
+    } else {
+      prevReplyBox.classList.add('hidden');
+      document.getElementById('modalPreviousReplyText').textContent = '';
+      document.getElementById('modalPreviousReplyDate').textContent = '';
+    }
+
+    // Default status to resolved
+    const replyStatusEl = document.getElementById('modalReplyStatus');
+    if (replyStatusEl) {
+      replyStatusEl.value = 'resolved';
+    }
+
     document.getElementById('messageDetailModal').classList.remove('hidden');
     lucide.createIcons();
+
+    if (focusReply) {
+      setTimeout(() => {
+        const textarea = document.getElementById('modalReplyMessage');
+        if (textarea) {
+          textarea.focus();
+          textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    }
   }
 
   function closeMessageModal() {
     document.getElementById('messageDetailModal').classList.add('hidden');
+    document.getElementById('modalReplyMessage').value = '';
   }
 
-  // Close modal when clicking outside
+  // Close modal when clicking backdrop
   document.getElementById('messageDetailModal').addEventListener('click', function(e) {
     if (e.target === this) {
       closeMessageModal();

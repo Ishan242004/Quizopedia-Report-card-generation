@@ -104,6 +104,18 @@
           <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.4rem;">
             {{ msg.message|truncatechars:65 }}
           </p>
+          {% if msg.admin_reply %}
+          <div style="margin: 0.4rem 0 0.5rem 0; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm); background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 0.725rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="font-weight: 800; color: #166534; display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="mail-check" style="width: 13px; height: 13px;"></i>
+                <span>Instructor's Email Reply:</span>
+              </span>
+              <span style="font-size: 0.65rem; color: #15803d;">{{ msg.replied_at|date:"M d, h:i A" }}</span>
+            </div>
+            <p style="color: #14532d; line-height: 1.4; margin: 0; white-space: pre-line;">{{ msg.admin_reply }}</p>
+          </div>
+          {% endif %}
           <span style="font-size: 0.685rem; color: var(--text-light); display: block;">
             {{ msg.created_at|date:"M d, Y • h:i A" }}
           </span>
