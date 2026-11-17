@@ -2072,6 +2072,127 @@ class AdminContactReplyTests(TestCase):
         self.assertIn('Got your query from dashboard', mail.outbox[0].body)
 
 
+class StudentAvailableQuizzesSectionTests(TestCase):
+    """
+    Tests verifying that the Student Available Quizzes section is split
+    into two distinct categories just like in Admin:
+    1) 4 Option MCQ (question_type='mcq')
+    2) Question & Answer (question_type='qna')
+    """
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from .models import Student, Subject, Question
+
+        self.student_user = User.objects.create_user(
+            username='student_quiz_sections',
+            email='student_sections@example.com',
+            password='password123'
+        )
+        self.student = Student.objects.create(user=self.student_user, phone='1234567890')
+
+        # Create MCQ Subject and Questions
+        self.mcq_subject = Subject.objects.create(
+            name='Python MCQ Fundamentals',
+            description='Test with multiple choice questions'
+        )
+        self.q1_mcq = Question.objects.create(
+            subject=self.mcq_subject,
+            question_type='mcq',
+            question_text='What is the keyword for functions?',
+            option_a='def', option_b='func', option_c='function', option_d='define',
+            correct_option='A'
+        )
+        self.q2_mcq = Question.objects.create(
+            subject=self.mcq_subject,
+            question_type='mcq',
+            question_text='Which data type is immutable?',
+            option_a='list', option_b='dict', option_c='tuple', option_d='set',
+            correct_option='C'
+        )
+
+        # Create QnA Subject and Questions
+        self.qna_subject = Subject.objects.create(
+            name='Python Q&A Concepts',
+            description='Direct short answer questions'
+        )
+        self.q1_qna = Question.objects.create(
+            subject=self.qna_subject,
+            question_type='qna',
+            question_text='Explain Python list comprehensions in brief.',
+            option_a='Concise way to create lists'
+        )
+
+    def test_student_dashboard_overview_metrics_and_portals(self):
+        """Dashboard overview should show separate metrics and shortcut portals for MCQ and Q&A."""
+        self.client.login(username='student_quiz_sections', password='password123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['mcq_subjects_count'], 1)
+        self.assertEqual(response.context['qna_subjects_count'], 1)
+        self.assertContains(response, '4 Option MCQ')
+        self.assertContains(response, 'Question &amp; Answer')
+        self.assertContains(response, 'Browse 4 Option MCQ')
+        self.assertContains(response, 'Browse Q&amp;A Quizzes')
+
+    def test_student_quizzes_mcq_filter(self):
+        """Filtering by type=mcq returns only MCQ subjects."""
+        self.client.login(username='student_quiz_sections', password='password123')
+        response = self.client.get(reverse('dashboard') + '?view=quizzes&type=mcq')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['active_quiz_type'], 'mcq')
+        subjects = list(response.context['available_subjects'])
+        self.assertEqual(len(subjects), 1)
+        self.assertEqual(subjects[0]['name'], 'Python MCQ Fundamentals')
+        self.assertEqual(subjects[0]['total_questions'], 2)
+        self.assertTrue(subjects[0]['is_mcq'])
+        self.assertContains(response, '4 Option MCQ Section')
+        self.assertContains(response, 'Python MCQ Fundamentals')
+        self.assertNotContains(response, 'Python Q&amp;A Concepts')
+
+    def test_student_quizzes_qna_filter(self):
+        """Filtering by type=qna returns only Q&A subjects."""
+        self.client.login(username='student_quiz_sections', password='password123')
+        response = self.client.get(reverse('dashboard') + '?view=quizzes&type=qna')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['active_quiz_type'], 'qna')
+        subjects = list(response.context['available_subjects'])
+        self.assertEqual(len(subjects), 1)
+        self.assertEqual(subjects[0]['name'], 'Python Q&A Concepts')
+        self.assertEqual(subjects[0]['total_questions'], 1)
+        self.assertTrue(subjects[0]['is_qna'])
+        self.assertContains(response, 'Question &amp; Answer Section')
+        self.assertContains(response, 'Python Q&amp;A Concepts')
+        self.assertNotContains(response, 'Python MCQ Fundamentals')
+
+    def test_student_quizzes_all_filter(self):
+        """Filtering by type=all returns both subjects."""
+        self.client.login(username='student_quiz_sections', password='password123')
+        response = self.client.get(reverse('dashboard') + '?view=quizzes&type=all')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['active_quiz_type'], 'all')
+        subjects = list(response.context['available_subjects'])
+        self.assertEqual(len(subjects), 2)
+
+    def test_student_sidebar_has_mcq_and_qna_sublinks(self):
+        """Sidebar should contain separate links and badges for 4 Option MCQ and Question & Answer."""
+        self.client.login(username='student_quiz_sections', password='password123')
+        response = self.client.get(reverse('dashboard') + '?view=quizzes')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '?view=quizzes&type=mcq')
+        self.assertContains(response, '?view=quizzes&type=qna')
+        self.assertContains(response, 'id="subnav-mcq"')
+        self.assertContains(response, 'id="subnav-qna"')
+
+    def test_student_quiz_attempt_with_mcq_type(self):
+        """Student can take the MCQ quiz."""
+        self.client.login(username='student_quiz_sections', password='password123')
+        response = self.client.get(reverse('quiz_attempt', args=[self.mcq_subject.id]) + '?type=mcq')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['total_questions'], 2)
+        self.assertContains(response, 'What is the keyword for functions?')
+
+
 
 
 

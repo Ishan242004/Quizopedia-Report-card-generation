@@ -371,30 +371,98 @@ def dashboard(request):
     current_view = request.GET.get('view', 'overview')
     search_query = request.GET.get('search', '').strip()
     page_number = request.GET.get('page', 1)
+    quiz_type = request.GET.get('type', '').strip().lower()
     
     # Calculate statistics
     completed_quizzes = student.report_cards.count() if student else 0
     avg_score = student.report_cards.aggregate(Avg('percentage'))['percentage__avg'] if student else None
     avg_score_formatted = f"{round(avg_score, 1)}%" if avg_score is not None else "0%"
     
-    # Retrieve available quizzes (subjects) with question counts
-    base_subjects = Subject.objects.filter(questions__isnull=False).distinct().order_by('name')
-    total_subjects_count = base_subjects.count()
+    # Precalculate quiz counts for both sections (4 Option MCQ & Question & Answer)
+    mcq_subjects_qs = Subject.objects.filter(questions__question_type='mcq').distinct()
+    qna_subjects_qs = Subject.objects.filter(questions__question_type='qna').distinct()
+    all_subjects_qs = Subject.objects.filter(questions__isnull=False).distinct()
+
+    mcq_subjects_count = mcq_subjects_qs.count()
+    qna_subjects_count = qna_subjects_qs.count()
+    total_subjects_count = all_subjects_qs.count()
+    mcq_questions_count = Question.objects.filter(question_type='mcq').count()
+    qna_questions_count = Question.objects.filter(question_type='qna').count()
+
+    # Determine active section/quiz type:
+    # If not explicitly specified or invalid, default gracefully:
+    # If MCQ quizzes exist, default to 'mcq' (mirroring admin panel)
+    # Else if only QnA quizzes exist, default to 'qna'
+    # Otherwise default to 'mcq'
+    if quiz_type not in ['mcq', 'qna', 'all']:
+        if mcq_subjects_count > 0:
+            active_quiz_type = 'mcq'
+        elif qna_subjects_count > 0:
+            active_quiz_type = 'qna'
+        else:
+            active_quiz_type = 'mcq'
+    else:
+        active_quiz_type = quiz_type
+
+    # Filter base subjects according to active section
+    if active_quiz_type == 'mcq':
+        base_subjects = mcq_subjects_qs.order_by('name')
+    elif active_quiz_type == 'qna':
+        base_subjects = qna_subjects_qs.order_by('name')
+    else:
+        base_subjects = all_subjects_qs.order_by('name')
 
     filtered_subjects = base_subjects
     if search_query:
-        filtered_subjects = filtered_subjects.filter(
-            Q(name__icontains=search_query) | Q(description__icontains=search_query)
-        ).distinct()
+        if active_quiz_type in ['mcq', 'qna']:
+            filtered_subjects = filtered_subjects.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(questions__question_text__icontains=search_query, questions__question_type=active_quiz_type)
+            ).distinct()
+        else:
+            filtered_subjects = filtered_subjects.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(questions__question_text__icontains=search_query)
+            ).distinct()
 
     all_available_subjects = []
     for s in filtered_subjects:
-        total_q = s.questions.count()
+        mcq_cnt = s.questions.filter(question_type='mcq').count()
+        qna_cnt = s.questions.filter(question_type='qna').count()
+
+        if active_quiz_type == 'mcq':
+            total_q = mcq_cnt
+            q_label = "4 Option MCQ"
+            q_code = "mcq"
+        elif active_quiz_type == 'qna':
+            total_q = qna_cnt
+            q_label = "Question & Answer"
+            q_code = "qna"
+        else:
+            total_q = mcq_cnt + qna_cnt
+            if mcq_cnt > 0 and qna_cnt == 0:
+                q_label = "4 Option MCQ"
+                q_code = "mcq"
+            elif qna_cnt > 0 and mcq_cnt == 0:
+                q_label = "Question & Answer"
+                q_code = "qna"
+            else:
+                q_label = "Mixed (MCQ + Q&A)"
+                q_code = "mixed"
+
         all_available_subjects.append({
             'id': s.id,
             'name': s.name,
             'description': s.description,
-            'total_questions': total_q
+            'total_questions': total_q,
+            'mcq_count': mcq_cnt,
+            'qna_count': qna_cnt,
+            'question_type': q_code,
+            'question_type_label': q_label,
+            'is_mcq': (q_code == 'mcq'),
+            'is_qna': (q_code == 'qna'),
         })
         
     # Paginate with 6 subjects per page
@@ -415,6 +483,12 @@ def dashboard(request):
         'completed_quizzes': completed_quizzes,
         'avg_score': avg_score_formatted,
         'subjects_count': total_subjects_count,
+        'mcq_subjects_count': mcq_subjects_count,
+        'qna_subjects_count': qna_subjects_count,
+        'mcq_questions_count': mcq_questions_count,
+        'qna_questions_count': qna_questions_count,
+        'active_quiz_type': active_quiz_type,
+        'quiz_type': active_quiz_type,
         'available_subjects': available_subjects,
         'search_query': search_query,
         'recent_progress': recent_progress,
@@ -517,7 +591,14 @@ def profile_view(request):
 def quiz_attempt(request, subject_id):
     student = get_object_or_404(Student, user=request.user)
     subject = get_object_or_404(Subject, id=subject_id)
-    questions = Question.objects.filter(subject=subject).order_by('id')
+    quiz_type = request.GET.get('type', '').strip().lower()
+
+    questions = Question.objects.filter(subject=subject)
+    if quiz_type in ['mcq', 'qna']:
+        type_questions = questions.filter(question_type=quiz_type)
+        if type_questions.exists():
+            questions = type_questions
+    questions = questions.order_by('id')
     
     if request.method == 'POST':
         attempted_count = 0
@@ -623,6 +704,7 @@ def quiz_attempt(request, subject_id):
         'subject': subject,
         'questions': questions,
         'total_questions': questions.count(),
+        'quiz_type': quiz_type,
     })
 
 def grade_descriptive_answer(question_text, student_answer):
