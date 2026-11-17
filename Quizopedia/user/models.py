@@ -175,15 +175,66 @@ class Question(models.Model):
         super().save(*args, **kwargs)
         if self.question_type == 'mcq' and (self.option_a or self.option_b):
             self.sync_options()
+        elif self.question_type == 'qna' and self.option_a:
+            self.sync_options()
+
+    @property
+    def correct_options(self):
+        """Returns QuerySet of correct options for this question."""
+        return self.options.filter(is_answer=True)
+
+    @property
+    def correct_option_instance(self):
+        """Returns the single correct option instance for this question, if any."""
+        return self.options.filter(is_answer=True).first()
 
     def __str__(self):
         return f"[{self.get_question_type_display()}] {self.subject.name}: {self.question_text[:50]}"
 
 
 class Option(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
-    option_text = models.CharField(max_length=255)
-    is_answer = models.BooleanField(default=False)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options', verbose_name="Question")
+    option_text = models.CharField(max_length=255, verbose_name="Option Text")
+    is_answer = models.BooleanField(default=False, verbose_name="Is Correct Answer")
+
+    class Meta:
+        verbose_name = 'Option'
+        verbose_name_plural = 'Options'
+        ordering = ['id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['question', 'option_text'],
+                name='unique_question_option_text'
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(option_text=''),
+                name='option_text_not_empty'
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['question', 'is_answer'], name='option_question_is_ans_idx'),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.option_text is not None:
+            self.option_text = self.option_text.strip()
+            if not self.option_text:
+                raise ValidationError({'option_text': 'Option text cannot be empty.'})
+        else:
+            raise ValidationError({'option_text': 'Option text is required.'})
+
+    def save(self, *args, **kwargs):
+        if self.option_text:
+            self.option_text = self.option_text.strip()
+        super().save(*args, **kwargs)
+
+    @property
+    def is_correct(self):
+        return self.is_answer
+
+
+
 
     def __str__(self):
         return f"{self.option_text} ({'Correct' if self.is_answer else 'Incorrect'})"

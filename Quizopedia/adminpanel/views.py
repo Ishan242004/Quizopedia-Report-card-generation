@@ -1152,6 +1152,10 @@ def admin_contact_messages(request):
 
     if status_filter in ['new', 'in_progress', 'resolved', 'closed']:
         contacts_qs = contacts_qs.filter(status=status_filter)
+    elif status_filter == 'replied':
+        contacts_qs = contacts_qs.filter(admin_reply__isnull=False).exclude(admin_reply='')
+    elif status_filter == 'pending':
+        contacts_qs = contacts_qs.filter(Q(admin_reply__isnull=True) | Q(admin_reply=''))
 
     if search_query:
         contacts_qs = contacts_qs.filter(
@@ -1166,12 +1170,17 @@ def admin_contact_messages(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
+    replied_count = Contact.objects.filter(admin_reply__isnull=False).exclude(admin_reply='').count()
+    pending_reply_count = Contact.objects.filter(Q(admin_reply__isnull=True) | Q(admin_reply='')).count()
+
     status_counts = {
         'all': Contact.objects.count(),
         'new': Contact.objects.filter(status='new').count(),
         'in_progress': Contact.objects.filter(status='in_progress').count(),
         'resolved': Contact.objects.filter(status='resolved').count(),
         'closed': Contact.objects.filter(status='closed').count(),
+        'replied': replied_count,
+        'pending': pending_reply_count,
     }
 
     return render(request, 'adminpanel/contact_messages.html', {

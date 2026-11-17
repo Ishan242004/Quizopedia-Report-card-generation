@@ -37,22 +37,29 @@ class SubjectAdmin(admin.ModelAdmin):
 
 class OptionInline(admin.TabularInline):
     model = Option
-    extra = 0
+    extra = 1
+    fields = ('option_text', 'is_answer')
+    ordering = ('id',)
 
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'question_text')
-    list_filter = ('subject',)
+    list_display = ('subject', 'question_text', 'question_type', 'options_count')
+    list_filter = ('subject', 'question_type')
     search_fields = ('question_text',)
     inlines = [OptionInline]
+
+    def options_count(self, obj):
+        return obj.options.count()
+    options_count.short_description = 'Options'
 
 
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
     list_display = ('question', 'option_text', 'is_answer')
-    list_filter = ('is_answer',)
+    list_filter = ('is_answer', 'question__subject')
     search_fields = ('option_text', 'question__question_text')
+    ordering = ('question', 'id')
 
 
 @admin.register(StudentOTP)

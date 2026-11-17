@@ -716,6 +716,84 @@ class OptionModelFlowTests(TestCase):
         self.assertEqual(options[1].option_text, 'Java')
         self.assertFalse(options[1].is_answer)
 
+    def test_multiple_options_and_related_name(self):
+        """Each Question supports multiple Options accessible via related_name 'options'."""
+        question = self.Question.objects.create(
+            subject=self.subject,
+            question_text='What are primary data types?',
+            question_type='mcq'
+        )
+        for i in range(1, 6):
+            self.Option.objects.create(
+                question=question,
+                option_text=f'Option {i}',
+                is_answer=(i == 1)
+            )
+
+        self.assertEqual(question.options.count(), 5)
+        for opt in question.options.all():
+            self.assertEqual(opt.question, question)
+
+    def test_is_answer_identifies_correct_option(self):
+        """is_answer=True specifically identifies correct option(s)."""
+        question = self.Question.objects.create(
+            subject=self.subject,
+            question_text='Which keyword defines a function in Python?',
+            question_type='mcq'
+        )
+        opt_def = self.Option.objects.create(question=question, option_text='def', is_answer=True)
+        opt_fn = self.Option.objects.create(question=question, option_text='fn', is_answer=False)
+        opt_fun = self.Option.objects.create(question=question, option_text='function', is_answer=False)
+
+        self.assertTrue(opt_def.is_answer)
+        self.assertTrue(opt_def.is_correct)
+        self.assertFalse(opt_fn.is_answer)
+        self.assertFalse(opt_fn.is_correct)
+
+        correct_opts = question.correct_options
+        self.assertEqual(correct_opts.count(), 1)
+        self.assertEqual(correct_opts.first(), opt_def)
+        self.assertEqual(question.correct_option_instance, opt_def)
+
+    def test_option_validation_empty_text(self):
+        """Option clean() validates that option_text cannot be empty or whitespace."""
+        from django.core.exceptions import ValidationError
+        question = self.Question.objects.create(
+            subject=self.subject,
+            question_text='Sample Question?',
+            question_type='mcq'
+        )
+        opt_blank = self.Option(question=question, option_text='   ', is_answer=False)
+        with self.assertRaises(ValidationError):
+            opt_blank.full_clean()
+
+    def test_database_constraint_unique_question_option_text(self):
+        """Database constraint enforces uniqueness of option_text per question."""
+        from django.db import IntegrityError
+        question = self.Question.objects.create(
+            subject=self.subject,
+            question_text='Is Python interpreted?',
+            question_type='mcq'
+        )
+        self.Option.objects.create(question=question, option_text='Yes', is_answer=True)
+        with self.assertRaises(IntegrityError):
+            self.Option.objects.create(question=question, option_text='Yes', is_answer=False)
+
+    def test_admin_registration_and_option_inline(self):
+        """Ensure both Question and Option are registered in Django admin with OptionInline."""
+        from django.contrib import admin
+        from .admin import QuestionAdmin, OptionAdmin, OptionInline
+
+        self.assertIn(self.Question, admin.site._registry)
+        self.assertIn(self.Option, admin.site._registry)
+
+        q_admin = admin.site._registry[self.Question]
+        self.assertIsInstance(q_admin, QuestionAdmin)
+        self.assertTrue(any(issubclass(inline, OptionInline) or inline == OptionInline for inline in q_admin.inlines))
+
+        opt_admin = admin.site._registry[self.Option]
+        self.assertIsInstance(opt_admin, OptionAdmin)
+
 
 class SampleReportCardQuizDataTests(TestCase):
     def test_populate_sample_quiz_data_command(self):
