@@ -9,6 +9,9 @@ def pending_approvals_count(request):
         'student_mcq_count': 0,
         'student_qna_count': 0,
         'student_total_quizzes_count': 0,
+        'subjects_count': 0,
+        'mcq_subjects_count': 0,
+        'qna_subjects_count': 0,
     }
     if request.user.is_authenticated:
         mcq_count = Subject.objects.filter(questions__question_type='mcq').distinct().count()
@@ -17,6 +20,9 @@ def pending_approvals_count(request):
         data['student_mcq_count'] = mcq_count
         data['student_qna_count'] = qna_count
         data['student_total_quizzes_count'] = total_count
+        data['subjects_count'] = total_count
+        data['mcq_subjects_count'] = mcq_count
+        data['qna_subjects_count'] = qna_count
         data['sidebar_mcq_count'] = mcq_count
         data['sidebar_qna_count'] = qna_count
 
