@@ -103,14 +103,82 @@ def send_profile_status_email(req, status, rejection_reason='', old_email=None):
         safe_print(line)
     safe_print(border + "\n")
 
-    # 2. Send email via Django's mail backend (console backend or SMTP)
+    # 2. Rich Professional HTML Email
+    import html
+    escaped_student = html.escape(student_name)
+    escaped_username = html.escape(user.username)
+    escaped_req_name = html.escape(req.name or '')
+    escaped_req_email = html.escape(req.email or '')
+    escaped_req_phone = html.escape(req.phone or '')
+
+    if status == 'approved':
+        header_color = "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+        status_badge = '<span style="background-color: #d1fae5; color: #065f46; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase;">Approved &amp; Active</span>'
+        body_intro = "Great news! Your request to update your student profile credentials has been <strong>approved</strong> by the administrator and is now live on your account."
+        details_box = f"""
+        <table role="presentation" width="100%" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; margin: 0 0 24px 0; font-size: 13px;">
+          <tr><td style="padding: 4px 0; color: #065f46; font-weight: 700; width: 110px;">Full Name:</td><td style="padding: 4px 0; color: #0f172a; font-weight: 600;">{escaped_req_name}</td></tr>
+          <tr><td style="padding: 4px 0; color: #065f46; font-weight: 700;">Email Address:</td><td style="padding: 4px 0; color: #0f172a; font-weight: 600;">{escaped_req_email}</td></tr>
+          <tr><td style="padding: 4px 0; color: #065f46; font-weight: 700;">Phone Number:</td><td style="padding: 4px 0; color: #0f172a; font-weight: 600;">{escaped_req_phone}</td></tr>
+        </table>
+        """
+    else:
+        header_color = "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"
+        status_badge = '<span style="background-color: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase;">Request Cancelled</span>'
+        escaped_reason = html.escape(reason_text)
+        body_intro = "Your request to update your student profile credentials has been <strong>reviewed and cancelled</strong> by the administrator."
+        details_box = f"""
+        <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 8px; padding: 14px 16px; margin: 0 0 20px 0; font-size: 13px;">
+          <strong style="color: #991b1b; display: block; margin-bottom: 4px;">Reason for Rejection:</strong>
+          <span style="color: #7f1d1d;">"{escaped_reason}"</span>
+        </div>
+        """
+
+    html_message = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>{html.escape(subject)}</title></head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <tr>
+            <td style="background: {header_color}; padding: 26px 32px; text-align: left;">
+              <span style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; display: block;">Quizopedia</span>
+              <span style="display: block; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px;">Profile Update Notification</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px;">
+              <div style="margin-bottom: 16px;">{status_badge}</div>
+              <p style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0;">Hello {escaped_student},</p>
+              <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;">{body_intro}</p>
+              {details_box}
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p style="font-size: 13px; color: #334155; margin: 0; font-weight: 600;">
+                Best regards,<br>
+                <span style="color: #4f46e5;">Quizopedia Support Team</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+    # 3. Send email via Django's mail backend (SMTP)
     try:
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@quizopedia.com')
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or (
+            f"Quizopedia Support <{getattr(settings, 'EMAIL_HOST_USER', 'noreply@quizopedia.com')}>"
+        )
         send_mail(
             subject=subject,
             message=message,
             from_email=from_email,
             recipient_list=recipients,
+            html_message=html_message,
             fail_silently=False,
         )
     except Exception as e:
@@ -119,9 +187,11 @@ def send_profile_status_email(req, status, rejection_reason='', old_email=None):
 
 def send_contact_reply_email(contact_obj, reply_message, reply_subject=None, admin_user=None):
     """
-    Sends an email reply to the student's email regarding their submitted contact inquiry,
-    and prints the formatted email clearly to the terminal console.
+    Sends a professional email reply directly to the student's email inbox regarding their submitted inquiry,
+    with rich responsive HTML formatting and fallback plain text, and logs the details to the console.
     """
+    import html
+
     student_name = contact_obj.sender_name
     if not student_name and contact_obj.student:
         student_name = contact_obj.student.name or contact_obj.student.username
@@ -145,10 +215,11 @@ def send_contact_reply_email(contact_obj, reply_message, reply_subject=None, adm
 
     created_str = contact_obj.created_at.strftime('%b %d, %Y at %I:%M %p') if contact_obj.created_at else "Earlier"
 
-    message = (
+    # 1. Plain Text Message (Fallback)
+    plain_message = (
         f"Dear {student_name},\n\n"
         f"Thank you for contacting Quizopedia Support.\n\n"
-        f"An instructor / administrator has reviewed your inquiry and replied:\n"
+        f"An instructor / administrator has reviewed your inquiry regarding '{contact_obj.subject}' and replied:\n"
         f"----------------------------------------------------------------------\n"
         f"{reply_message.strip()}\n"
         f"----------------------------------------------------------------------\n\n"
@@ -162,7 +233,100 @@ def send_contact_reply_email(contact_obj, reply_message, reply_subject=None, adm
         f"Quizopedia Learning Platform"
     )
 
-    # 1. Print formatted notification clearly to terminal console
+    # 2. Rich Professional HTML Message
+    escaped_reply = html.escape(reply_message.strip()).replace('\n', '<br>')
+    escaped_query = html.escape(contact_obj.message.strip()).replace('\n', '<br>')
+    escaped_subject = html.escape(contact_obj.subject)
+    escaped_student = html.escape(student_name)
+    escaped_admin = html.escape(admin_display_name)
+    escaped_recip = html.escape(recipient_email)
+
+    html_message = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{html.escape(reply_subject)}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 30px 15px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 16px rgba(15,23,42,0.06);">
+          <!-- Header Banner -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%); padding: 28px 32px; text-align: left;">
+              <span style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; display: block;">Quizopedia</span>
+              <span style="display: block; font-size: 11px; font-weight: 700; color: #c7d2fe; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px;">Student Support Response</span>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 32px;">
+              <p style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0;">
+                Dear {escaped_student},
+              </p>
+              <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;">
+                Thank you for reaching out to us. An administrator / instructor has reviewed your inquiry regarding <strong>"{escaped_subject}"</strong> and replied:
+              </p>
+
+              <!-- Administrator Reply Box -->
+              <div style="background-color: #f5f3ff; border-left: 4px solid #6366f1; border-radius: 10px; padding: 18px 20px; margin: 0 0 24px 0;">
+                <div style="font-size: 11px; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">
+                  Official Administrator Response:
+                </div>
+                <div style="font-size: 14px; color: #1e1b4b; line-height: 1.6; font-weight: 500;">
+                  {escaped_reply}
+                </div>
+              </div>
+
+              <!-- Original Inquiry Box -->
+              <table role="presentation" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 0 0 24px 0; font-size: 13px;">
+                <tr>
+                  <td style="padding: 4px 0; color: #64748b; font-weight: 600; width: 90px;">Subject:</td>
+                  <td style="padding: 4px 0; color: #0f172a; font-weight: 700;">{escaped_subject}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; color: #64748b; font-weight: 600;">Submitted:</td>
+                  <td style="padding: 4px 0; color: #334155;">{created_str}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0 0 0; color: #64748b; font-weight: 600; vertical-align: top;">Your Query:</td>
+                  <td style="padding: 8px 0 0 0; color: #334155; line-height: 1.5;">"{escaped_query}"</td>
+                </tr>
+              </table>
+
+              <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin: 0 0 24px 0;">
+                If you have any further questions or require additional assistance, feel free to submit a new message anytime from your student portal.
+              </p>
+
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+
+              <p style="font-size: 13px; color: #334155; margin: 0; font-weight: 600;">
+                Best regards,<br>
+                <span style="color: #4f46e5;">{escaped_admin}</span><br>
+                <span style="font-size: 12px; color: #64748b; font-weight: 400;">Quizopedia Learning Platform</span>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f1f5f9; padding: 18px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+                &copy; Quizopedia Learning Platform. This email was delivered to {escaped_recip} in response to your support inquiry.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+    # 3. Print formatted notification clearly to terminal console
     border = "=" * 65
     safe_print("\n" + border)
     safe_print("[EMAIL NOTIFICATION - STUDENT CONTACT REPLY]")
@@ -172,19 +336,22 @@ def send_contact_reply_email(contact_obj, reply_message, reply_subject=None, adm
     if admin_user:
         safe_print(f"Replied By:   {admin_user.username}")
     safe_print("-" * 65)
-    for line in message.strip().splitlines():
+    for line in plain_message.strip().splitlines():
         safe_print(line)
     safe_print(border + "\n")
 
-    # 2. Send email via Django's mail backend
+    # 4. Deliver email via Django's SMTP backend directly to student's inbox
     try:
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@quizopedia.com')
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or (
+            f"Quizopedia Support <{getattr(settings, 'EMAIL_HOST_USER', 'noreply@quizopedia.com')}>"
+        )
         if recipients:
             send_mail(
                 subject=reply_subject,
-                message=message,
+                message=plain_message,
                 from_email=from_email,
                 recipient_list=recipients,
+                html_message=html_message,
                 fail_silently=False,
             )
         return True, None

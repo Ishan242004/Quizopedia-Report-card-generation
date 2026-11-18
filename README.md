@@ -1,58 +1,92 @@
-# Quizopedia - Report Card Generation (Core Setup)
+# Quizopedia
 
-This project implements a streamlined student and admin authentication and management system using Django, styled with custom Glassmorphism/ambient-blob aesthetics using Tailwind CSS and Lucide icons.
+Quizopedia is a comprehensive Django-based online quiz and academic assessment platform that enables students to participate in multiple-choice (4 Option MCQ) and short-answer (Question & Answer) quizzes, track real-time learning metrics, generate verified printable report cards, and provides administrators with an executive management dashboard, bulk question authoring, student profile verification, and direct SMTP email inquiry support.
 
----
+## Project Features
 
-## Core Features (Tasks 1-6)
+- Dual quiz assessment formats: 4 Option Multiple Choice (MCQ) with automatic instant grading and direct Question & Answer (Q&A) for conceptual mastery
+- Executive Admin Management Dashboard featuring live statistics, student roster, question vault, report cards overview, and direct inquiry management
+- Student learning workspace with personalized dashboard, quiz progress meters, and dynamic subject catalogs
+- Automated report card generation with comprehensive score breakdowns, percentage grading, and printable verified academic certificates
+- Bulk question authoring and parser with real-time interactive previews for both 4 Option MCQ and direct Q&A quiz formats
+- Subject & quiz category management with dynamic search filters, pagination, and instant quiz attempts
+- Contact & Support portal enabling students to submit inquiries and receive replies delivered directly to their email via Gmail SMTP with responsive HTML email templates
+- Student profile management with administrator review and approval workflows for credential updates (name, email, phone)
+- Modern and responsive user interface crafted with Tailwind CSS, Lucide icons, glassmorphism card designs, and mobile-friendly navigation
 
-1. **Django Project Initialization**: Fully configured project settings including database, static, and media directories.
-2. **Admin & Student Profiles**:
-   - `Student` model (extending Django's built-in `User` with custom `phone` field).
-   - `Admin` model (extending Django's built-in `User` with custom `phone` field).
-3. **Django Admin Registrations**: Both models are registered and fully managed under the default Django Admin panel (`/admin/`).
-4. **Secure Case-Insensitive Authentication**:
-   - Login page (`/login/`) supports secure authentication using password and either the registered **email address** or **username** (both looked up case-insensitively).
-   - Registration page (`/register/`) for students with real-time validation and success state displays.
-   - Logout redirection.
-5. **Role-Based Redirection & Dashboards**:
-   - **Student Dashboard** (`/dashboard/`): Displays the logged-in student's profile information (Username, Email, Phone).
-   - **Admin Dashboard** (`/admin-dashboard/`): Displays summary statistics (Total Students count) and acts as the entry point for student account management.
-   - **Student Accounts Manager** (`/admin-dashboard/students/`): Allows administrators to view, add, edit, and delete student accounts directly.
+## Setup Commands
 
----
+### Clone Repository
 
-## Technical Layout
+```bash
+git clone https://github.com/Ishan242004/Quizopedia-Report-card-generation.git
+cd Quizopedia-Report-card-generation/Quizopedia
+```
 
-- **Settings**: [Quizopedia/settings.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/Quizopedia/settings.py)
-- **URLs**:
-  - Global: [Quizopedia/urls.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/Quizopedia/urls.py)
-  - Student: [user/urls.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/user/urls.py)
-  - Admin: [adminpanel/urls.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/adminpanel/urls.py)
-- **Models**:
-  - Student: `Student` in [user/models.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/user/models.py)
-  - Admin: `Admin` in [adminpanel/models.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/adminpanel/models.py)
-- **Decorators**: [user/decorators.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/user/decorators.py) (includes `@student_required` and `@admin_required`)
-- **Unit Tests**: [user/tests.py](file:///c:/Users/Dell/Desktop/python%20task/Quizopedia%20card%20generation/myenv/Quizopedia/user/tests.py)
+### Installation on macOS/Linux
 
----
+```bash
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-## Running the Application
+# Install dependencies
+pip install -r requirements.txt
 
-### 1. Activate Environment & Run Dev Server
-In your PowerShell terminal:
-```powershell
-# Navigate to environment
-cd myenv
-.\Scripts\activate
+# Create environment file
+cp .env.example .env
 
-# Navigate to project and run development server
-cd Quizopedia
+# Run migrations
+python manage.py migrate
+
+# Start development server
 python manage.py runserver
 ```
 
-### 2. Run Test Suite
-To execute the unit tests verifying authentication, validations, and role-based redirection:
+### Installation on Windows
+
 ```powershell
-python manage.py test
+# Create and activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create environment file
+Copy-Item .env.example .env
+
+# Run migrations
+python manage.py migrate
+
+# Start development server
+python manage.py runserver
 ```
+
+## LocalServer
+http://127.0.0.1:8000/
+
+## credentials
+
+User:- admin1<br>
+Email:- admin1@gmail.com<br>
+Password:- admin123
+
+## Test User Credentials
+
+| Role | Username | Password |
+|---|---|---|
+| Admin / Superuser | `admin1` | `admin123` |
+| Student | `ishan` | `ishan` |
+| Student | `sneh` | `sneh` |
+
+## Screenshots
+
+### 1. Register Page
+![Register Page](Quizopedia/docs/images/Register.png)
+
+### 2. Admin Dashboard
+![Admin Dashboard](Quizopedia/docs/images/Admin.png)
+
+### 3. Student Dashboard
+![Student Dashboard](Quizopedia/docs/images/Student.png)

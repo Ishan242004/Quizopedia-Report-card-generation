@@ -1,0 +1,15 @@
+# Quizopedia - Online Quiz & Learning Assessment Platform
+# Core Django & Server
+Django>=5.0.0,<7.0.0
+asgiref>=3.8.1
+sqlparse>=0.5.0
+
+# Environment & Configuration
+python-dotenv>=1.0.1
+
+# Timezones (Windows support)
+tzdata>=2024.1; sys_platform == 'win32'
+
+# Images & Reporting
+Pillow>=10.2.0
+reportlab>=4.0.0
