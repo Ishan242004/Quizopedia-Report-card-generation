@@ -415,28 +415,12 @@
           class="pl-4 pr-1 space-y-1 {% if '/questions/' not in request.path %}hidden{% endif %}">
           <a href="{% url 'question_list' %}?type=mcq"
             class="sidebar-sub-link {% block active_mcq %}{% endblock %}" title="4 Option MCQ Quizzes">
-            <div class="flex items-center gap-2 min-w-0">
-              <i data-lucide="list-checks" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
-              <span class="truncate">4 Option MCQ</span>
-            </div>
-            {% if sidebar_mcq_count %}
-            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-indigo-500/20 text-indigo-300 shrink-0">
-              {{ sidebar_mcq_count }}
-            </span>
-            {% endif %}
+            <span class="truncate">4 Option MCQ</span>
           </a>
 
           <a href="{% url 'question_list' %}?type=qna"
             class="sidebar-sub-link {% block active_qna %}{% endblock %}" title="Question & Answer Quizzes">
-            <div class="flex items-center gap-2 min-w-0">
-              <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-              <span class="truncate">Question &amp; Answer</span>
-            </div>
-            {% if sidebar_qna_count %}
-            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-emerald-500/20 text-emerald-300 shrink-0">
-              {{ sidebar_qna_count }}
-            </span>
-            {% endif %}
+            <span class="truncate">Question &amp; Answer</span>
           </a>
         </div>
       </div>

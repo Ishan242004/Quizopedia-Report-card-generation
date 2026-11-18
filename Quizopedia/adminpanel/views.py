@@ -269,6 +269,10 @@ def admin_dashboard(request):
     subject_count = Subject.objects.filter(questions__isnull=False).distinct().count()
     report_card_count = ReportCard.objects.count()
     question_count = Question.objects.count()
+    mcq_questions_count = Question.objects.filter(question_type='mcq').count()
+    qna_questions_count = Question.objects.filter(question_type='qna').count()
+    mcq_subjects_count = Subject.objects.filter(questions__question_type='mcq').distinct().count()
+    qna_subjects_count = Subject.objects.filter(questions__question_type='qna').distinct().count()
     contact_count = Contact.objects.count()
     new_contact_count = Contact.objects.filter(status='new').count()
     recent_contact_messages = Contact.objects.select_related('student__user').order_by('-created_at')[:5]
@@ -279,6 +283,10 @@ def admin_dashboard(request):
         'total_students': total_students,
         'question_count': question_count,
         'subject_count': subject_count,
+        'mcq_questions_count': mcq_questions_count,
+        'qna_questions_count': qna_questions_count,
+        'mcq_subjects_count': mcq_subjects_count,
+        'qna_subjects_count': qna_subjects_count,
         'report_card_count': report_card_count,
         'contact_count': contact_count,
         'new_contact_count': new_contact_count,

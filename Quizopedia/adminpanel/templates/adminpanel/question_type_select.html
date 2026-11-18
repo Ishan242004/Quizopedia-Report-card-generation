@@ -42,12 +42,12 @@
   </div>
 
   <!-- Question & Answer Card -->
-  <div class="glass-card rounded-[24px] p-8 flex flex-col items-center text-center gap-5 bg-white border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-emerald-300 transition-all duration-300 group">
-    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform duration-300 text-white">
+  <div class="glass-card rounded-[24px] p-8 flex flex-col items-center text-center gap-5 bg-white border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-indigo-300 transition-all duration-300 group">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-110 transition-transform duration-300 text-white">
       <i data-lucide="message-square" class="w-8 h-8"></i>
     </div>
     <div>
-      <div class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 uppercase tracking-wider mb-2">
+      <div class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100 uppercase tracking-wider mb-2">
         Short Answer Mode
       </div>
       <h2 class="text-xl font-extrabold text-slate-900 mb-1.5">Question &amp; Answer</h2>
@@ -56,7 +56,7 @@
       </p>
     </div>
     <a href="{% url 'question_add_qna' %}{% if subject %}?subject={{ subject|urlencode }}{% endif %}"
-      class="w-full h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 mt-auto transition bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 shadow-md shadow-emerald-500/25">
+      class="cta-btn w-full h-11 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 mt-auto shadow-md">
       <span>Select Q&amp;A Mode</span>
       <i data-lucide="arrow-right" class="w-4 h-4"></i>
     </a>

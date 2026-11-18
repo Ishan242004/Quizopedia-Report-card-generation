@@ -291,18 +291,12 @@
       background: rgba(255, 255, 255, 0.06);
     }
 
-    .qp-subnav-item.active {
+    .qp-subnav-item.active,
+    .qp-subnav-item.active-qna {
       color: #ffffff;
       background: rgba(99, 102, 241, 0.18);
       font-weight: 700;
       border-left: 3px solid var(--primary);
-    }
-
-    .qp-subnav-item.active-qna {
-      color: #ffffff;
-      background: rgba(16, 185, 129, 0.18);
-      font-weight: 700;
-      border-left: 3px solid #10b981;
     }
 
     /* Sidebar Footer User Card */
@@ -779,12 +773,9 @@
             <a href="{% url 'dashboard' %}?view=quizzes" style="display: flex; align-items: center; gap: 0.85rem; flex: 1; color: inherit; text-decoration: none;">
               <span>Available Quizzes</span>
             </a>
-            <div style="display: flex; align-items: center; gap: 0.45rem;">
-              <span class="qp-nav-pill">{{ student_total_quizzes_count }}</span>
-              <button type="button" onclick="toggleQuizzesSubmenu(event)" aria-label="Toggle Quizzes Submenu" style="background: none; border: none; padding: 0.2rem; color: inherit; cursor: pointer; display: flex; align-items: center;">
-                <i data-lucide="chevron-down" id="quizzesChevron" style="width: 14px; height: 14px; transition: transform 0.2s; {% if current_view == 'quizzes' %}transform: rotate(180deg);{% endif %}"></i>
-              </button>
-            </div>
+            <button type="button" onclick="toggleQuizzesSubmenu(event)" aria-label="Toggle Quizzes Submenu" style="background: none; border: none; padding: 0.2rem; color: inherit; cursor: pointer; display: flex; align-items: center;">
+              <i data-lucide="chevron-down" id="quizzesChevron" style="width: 14px; height: 14px; transition: transform 0.2s; {% if current_view == 'quizzes' %}transform: rotate(180deg);{% endif %}"></i>
+            </button>
           </div>
 
           <!-- 2 Distinct Sub-sections (Always expanded when current_view == 'quizzes') -->
@@ -794,27 +785,15 @@
               class="qp-subnav-item {% if current_view == 'quizzes' and active_quiz_type == 'mcq' %}active{% endif %}"
               id="subnav-mcq"
               title="4 Option Multiple Choice Questions">
-              <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
-                <i data-lucide="list-checks" style="width: 14px; height: 14px; color: #818cf8; flex-shrink: 0;"></i>
-                <span class="truncate">4 Option MCQ</span>
-              </div>
-              <span class="qp-nav-pill" style="margin-left: 0.5rem; background: rgba(99,102,241,0.25); color: #c7d2fe;">
-                {{ student_mcq_count }}
-              </span>
+              <span>4 Option MCQ</span>
             </a>
 
             <!-- Question & Answer Sub-link -->
             <a href="{% url 'dashboard' %}?view=quizzes&type=qna"
-              class="qp-subnav-item {% if current_view == 'quizzes' and active_quiz_type == 'qna' %}active-qna{% endif %}"
+              class="qp-subnav-item {% if current_view == 'quizzes' and active_quiz_type == 'qna' %}active{% endif %}"
               id="subnav-qna"
               title="Question & Answer Direct Questions">
-              <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
-                <i data-lucide="message-square" style="width: 14px; height: 14px; color: #34d399; flex-shrink: 0;"></i>
-                <span class="truncate">Question &amp; Answer</span>
-              </div>
-              <span class="qp-nav-pill" style="margin-left: 0.5rem; background: rgba(16,185,129,0.25); color: #a7f3d0; border-color: rgba(16,185,129,0.3);">
-                {{ student_qna_count }}
-              </span>
+              <span>Question &amp; Answer</span>
             </a>
 
             <!-- All Quizzes Sub-link -->
@@ -822,13 +801,7 @@
               class="qp-subnav-item {% if current_view == 'quizzes' and active_quiz_type == 'all' %}active{% endif %}"
               id="subnav-all"
               title="All Available Quizzes">
-              <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
-                <i data-lucide="layers" style="width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0;"></i>
-                <span class="truncate">All Quizzes</span>
-              </div>
-              <span class="qp-nav-pill" style="margin-left: 0.5rem; background: rgba(255,255,255,0.1); color: #e2e8f0;">
-                {{ student_total_quizzes_count }}
-              </span>
+              <span>All Quizzes</span>
             </a>
           </div>
         </div>
@@ -836,9 +809,6 @@
         <!-- Recent Report Cards -->
         <a href="{% url 'dashboard' %}?view=reports" class="qp-nav-item {% if current_view == 'reports' %}active{% endif %}" id="nav-results">
           <span>Recent Report Cards</span>
-          {% if completed_quizzes %}
-          <span class="qp-nav-pill">{{ completed_quizzes }}</span>
-          {% endif %}
         </a>
 
         <!-- Contact Support -->
